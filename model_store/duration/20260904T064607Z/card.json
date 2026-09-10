@@ -1,0 +1,29 @@
+{
+  "name": "duration",
+  "version": "20260904T064607Z",
+  "trained_at": "2026-09-04T06:46:07.576009+00:00",
+  "rows_trained": 4000,
+  "backend": "sklearn-gbq",
+  "metrics": {
+    "coverage_raw_p50": 0.522,
+    "conformal_delta_p50": 0.9250797654986229,
+    "coverage_p50": 0.54,
+    "pinball_p50": 7.0894450481561115,
+    "mean_pred_p50": 103.50476043883218,
+    "coverage_raw_p90": 0.87,
+    "conformal_delta_p90": 5.338838402904415,
+    "coverage_p90": 0.921,
+    "pinball_p90": 3.678329314857495,
+    "mean_pred_p90": 126.85040802771432,
+    "mean_actual": 102.01428486873236,
+    "padding_ratio": 1.2255514383097252
+  },
+  "params": {
+    "quantiles": [
+      0.5,
+      0.9
+    ]
+  },
+  "passed_gate": true,
+  "notes": ""
+}

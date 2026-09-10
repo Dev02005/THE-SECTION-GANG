@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!--
+    Corridor. Two rails and three sleepers on the dark ground the site uses,
+    which is also the graph paper the plan is drawn on.
+
+    Few elements on purpose: at 16px in a browser tab anything finer turns to
+    mush. It replaced the create-next-app favicon, which put the Next.js logo
+    on a Ministry of Railways submission.
+  -->
+  <rect width="32" height="32" rx="6" fill="#101b23"/>
+  <g stroke="#f5bb32" stroke-linecap="round">
+    <path d="M4 12h24M4 20h24" stroke-width="2.6"/>
+    <path d="M9 9v14M16 9v14M23 9v14" stroke-width="2"/>
+  </g>
+</svg>

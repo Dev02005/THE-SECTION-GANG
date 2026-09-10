@@ -1,0 +1,19 @@
+{
+  "name": "hazard",
+  "version": "20260904T064603Z",
+  "trained_at": "2026-09-04T06:46:03.333578+00:00",
+  "rows_trained": 12526,
+  "backend": "sklearn-discrete",
+  "metrics": {
+    "brier": 0.09503999504130911,
+    "brier_baseline": 0.09954423633214271,
+    "brier_skill": 0.04524863976860094,
+    "concordance": 0.6898542025003752,
+    "event_rate": 0.11474188398084087
+  },
+  "params": {
+    "period_days": 7
+  },
+  "passed_gate": true,
+  "notes": ""
+}

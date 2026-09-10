@@ -1,0 +1,19 @@
+{
+  "name": "detention",
+  "version": "20260904T064611Z",
+  "trained_at": "2026-09-04T06:46:11.058424+00:00",
+  "rows_trained": 46080,
+  "backend": "sklearn-gbm",
+  "metrics": {
+    "mae_gbm": 5.004751421936665,
+    "mae_naive": 26.058931409714816,
+    "skill_vs_naive": 0.8079448714435433,
+    "mean_actual": 43.63971883081847
+  },
+  "params": {
+    "slot_min": 15,
+    "graph": "GBM with neighbour features"
+  },
+  "passed_gate": true,
+  "notes": ""
+}

@@ -1,0 +1,35 @@
+# Corridor - files that are generated, local, or secret.
+
+# ── Python ───────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+*.egg-info/
+
+# ── Node / Next ──────────────────────────────────────────────────────────
+node_modules/
+.next/
+out/
+.vercel/
+*.tsbuildinfo
+
+# ── Secrets ──────────────────────────────────────────────────────────────
+# The Supabase URL and publishable key. web/.env.example is the template,
+# holds no values, and IS committed.
+.env*.local
+
+# ── Generated, and regenerable in one command ────────────────────────────
+# Supabase CLI scratch.
+supabase/.temp/
+# The station master as CSV for the table editor's importer - 348 KB derived
+# from web/public/data/stations.json by web/scripts/build-stations-csv.ts.
+supabase/stations.csv
+
+# ── OS ───────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini

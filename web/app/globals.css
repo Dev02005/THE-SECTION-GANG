@@ -1,0 +1,407 @@
+@import "tailwindcss";
+
+/*
+  Design tokens.
+
+  Every colour is defined once on bare :root (the light palette), then
+  redefined for dark in two places: the prefers-color-scheme media query,
+  guarded so an explicit light choice still wins, and the [data-theme="dark"]
+  stamp so the toggle wins in the other direction.
+
+  A colour whose only definition sits inside a media query never applies in the
+  un-stamped default state - that is the classic unreadable-page bug.
+
+  Colour is used where it carries information and nowhere else:
+    department identity   ENGG / SNT / TRD / clubbed
+    detention cost        a single-hue heat ramp
+    signal aspects        red / amber / green, for status only
+  Everything else is neutral, biased slightly toward the accent so the greys
+  read as chosen rather than inherited.
+*/
+
+:root {
+  --ground: #f9f7f1;
+  --surface: #fefdfb;
+  --surface-sunk: #eeeae2;
+  --surface-raised: #ffffff;
+
+  --ink: #1a2c38;         /* AA 11.98 worst-case */
+  --ink-mid: #3c505d;     /* AA  7.01 */
+  --ink-mut: #566976;     /* AA  4.76 */
+  --ink-faint: #5a6b77;   /* AA  4.60 */
+
+  --rule: #dfd8ce;
+  --rule-soft: #e9e4da;
+
+  --accent: #1d3a4e;      /* AA  9.90 - carries text and buttons */
+  --accent-ink: #fefdfb;
+  --accent-soft: #e0e8ed;
+
+  /*
+    Signal brass. A marker, never text: it rules the left edge of a block and
+    draws the focus ring. The bright gold this palette is built around scores
+    1.45 on cream, so on the light theme it is darkened to clear the 3:1 that
+    non-text UI needs. Dark mode keeps the bright gold, where it scores 7.46.
+  */
+  --marker: #ad7c0b;      /* AA  3.09 non-text */
+
+  /* departments - carried identically from chart to table to legend */
+  --engg: #2563eb;
+  --snt: #15803d;
+  --trd: #c2410c;
+  --clubbed: #6d28d9;
+
+  --engg-soft: #e3ebfb;
+  --snt-soft: #e2efe6;
+  --trd-soft: #fbe8dc;
+  --clubbed-soft: #ede6fb;
+
+  /* signal aspects - status only, never decoration */
+  --go: #2d6a45;          /* AA  5.37 */
+  --caution: #8a5a00;     /* AA  4.94 */
+  --danger: #b3312a;      /* AA  5.16 */
+  --go-soft: #e2eee7;
+  --caution-soft: #f6ecd6;
+  --danger-soft: #f8e4e2;
+
+  /* detention heat ramp, cheap -> expensive */
+  --heat: 217 91% 60%;
+  --heat-max: #dc2626;
+
+  --shadow-sm: 0 1px 2px rgb(29 58 78 / 0.05), 0 2px 5px -1px rgb(29 58 78 / 0.06);
+  --shadow-md: 0 1px 2px rgb(29 58 78 / 0.05), 0 5px 12px -3px rgb(29 58 78 / 0.09);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ground: #101b23;
+    --surface: #182630;
+    --surface-sunk: #22333f;
+    --surface-raised: #1e2f3a;
+
+    --ink: #f0ead9;         /* AA 10.83 worst-case */
+    --ink-mid: #a2b3be;     /* AA  6.03 */
+    --ink-mut: #8e9ea9;     /* AA  4.72 */
+    --ink-faint: #909ea7;   /* AA  4.73 */
+
+    --rule: #2d4351;
+    --rule-soft: #24343f;
+
+    --accent: #f5bb32;      /* AA  7.46 - bright gold works on navy */
+    --accent-ink: #101b23;
+    --accent-soft: #2c3a3d;
+
+    --marker: #f5bb32;      /* AA  7.46 non-text */
+
+    --engg: #6098f5;
+    --snt: #52b96f;
+    --trd: #f5924f;
+    --clubbed: #a684f0;
+
+    --engg-soft: #17233a;
+    --snt-soft: #16281c;
+    --trd-soft: #2e1e12;
+    --clubbed-soft: #241c38;
+
+    --go: #5fb47b;          /* AA  5.15 */
+    --caution: #e0a93c;     /* AA  6.14 */
+    --danger: #e78074;      /* AA  4.80 - was 4.45 and failed */
+    --go-soft: #1a2a20;
+    --caution-soft: #2e2617;
+    --danger-soft: #301c1a;
+
+    --heat-max: #ef4444;
+
+    --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.4);
+    --shadow-md: 0 2px 8px rgb(0 0 0 / 0.5);
+  }
+}
+
+:root[data-theme="dark"] {
+  --ground: #101b23;
+  --surface: #182630;
+  --surface-sunk: #22333f;
+  --surface-raised: #1e2f3a;
+
+  --ink: #f0ead9;     /* AA 10.83 worst-case */
+  --ink-mid: #a2b3be;   /* AA  6.03 */
+  --ink-mut: #8e9ea9;   /* AA  4.72 */
+  --ink-faint: #909ea7;   /* AA  4.73 */
+
+  --rule: #2d4351;
+  --rule-soft: #24343f;
+
+  --accent: #f5bb32;    /* AA  7.46 - bright gold works on navy */
+  --accent-ink: #101b23;
+  --accent-soft: #2c3a3d;
+
+  --marker: #f5bb32;    /* AA  7.46 non-text */
+
+  --engg: #6098f5;
+  --snt: #52b96f;
+  --trd: #f5924f;
+  --clubbed: #a684f0;
+
+  --engg-soft: #17233a;
+  --snt-soft: #16281c;
+  --trd-soft: #2e1e12;
+  --clubbed-soft: #241c38;
+
+  --go: #5fb47b;      /* AA  5.15 */
+  --caution: #e0a93c;   /* AA  6.14 */
+  --danger: #e78074;    /* AA  4.80 - was 4.45 and failed */
+  --go-soft: #1a2a20;
+  --caution-soft: #2e2617;
+  --danger-soft: #301c1a;
+
+  --heat-max: #ef4444;
+
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.4);
+  --shadow-md: 0 2px 8px rgb(0 0 0 / 0.5);
+}
+
+@theme inline {
+  --color-ground: var(--ground);
+  --color-surface: var(--surface);
+  --color-surface-sunk: var(--surface-sunk);
+  --color-surface-raised: var(--surface-raised);
+
+  --color-ink: var(--ink);
+  --color-ink-mid: var(--ink-mid);
+  --color-ink-mut: var(--ink-mut);
+  --color-ink-faint: var(--ink-faint);
+
+  --color-rule: var(--rule);
+  --color-rule-soft: var(--rule-soft);
+
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-accent-soft: var(--accent-soft);
+  --color-marker: var(--marker);
+
+  --color-engg: var(--engg);
+  --color-snt: var(--snt);
+  --color-trd: var(--trd);
+  --color-clubbed: var(--clubbed);
+  --color-engg-soft: var(--engg-soft);
+  --color-snt-soft: var(--snt-soft);
+  --color-trd-soft: var(--trd-soft);
+  --color-clubbed-soft: var(--clubbed-soft);
+
+  --color-go: var(--go);
+  --color-caution: var(--caution);
+  --color-danger: var(--danger);
+  --color-go-soft: var(--go-soft);
+  --color-caution-soft: var(--caution-soft);
+  --color-danger-soft: var(--danger-soft);
+
+  --font-display: var(--font-display-src), "Helvetica Neue", Arial, sans-serif;
+  --font-sans: var(--font-sans-src), "Helvetica Neue", Arial, sans-serif;
+  --font-mono: var(--font-mono-src), ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  color-scheme: light dark;
+}
+
+body {
+  /*
+    Graph paper is the GROUND, not a decoration on one section.
+    It used to be applied per hero band, which drew a visible rectangle with
+    edges wherever a band started or stopped - the grid appeared to break
+    mid-page. Here it is continuous under everything, and every surface that
+    carries reading matter (--surface cards, tables, the header) is opaque, so
+    nothing has to compete with it.
+  */
+  background-color: var(--ground);
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--rule) 34%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--rule) 34%, transparent) 1px, transparent 1px);
+  background-size: 32px 32px;
+  color: var(--ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  text-wrap: balance;
+  letter-spacing: -0.01em;
+}
+
+/* digits that line up in columns must not dance */
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-mut);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/*
+  Print.
+
+  The document is meant to be carried into a divisional block meeting and
+  marked up, so printing is a first-class output rather than an afterthought:
+  ink on white regardless of the viewer's theme, no chrome, and days kept whole
+  across page breaks.
+*/
+@media print {
+  :root,
+  :root[data-theme="dark"],
+  :root[data-theme="light"] {
+    --ground: #ffffff;
+    --surface: #ffffff;
+    --surface-sunk: #ffffff;
+    --ink: #000000;
+    --ink-mid: #1a1a1a;
+    --ink-mut: #4a4a4a;
+    --ink-faint: #6a6a6a;
+    --rule: #999999;
+    --rule-soft: #cccccc;
+    --danger: #8a2018;
+    --accent: #000000;
+    --marker: #444444;
+  }
+
+  @page {
+    size: A4 portrait;
+    margin: 14mm 12mm;
+  }
+
+  body {
+    background: #ffffff;
+    background-image: none;
+    font-size: 10.5pt;
+  }
+
+  header[class*="sticky"],
+  nav,
+  .print\:hidden {
+    display: none !important;
+  }
+
+  .doc {
+    max-width: none;
+    padding: 0;
+  }
+
+  /* a day's table should not be split mid-block if it can be helped */
+  section {
+    break-inside: avoid-page;
+  }
+
+  tr {
+    break-inside: avoid;
+  }
+
+  a[href]::after {
+    content: "";
+  }
+}
+
+/*
+  Two textures, both structural rather than decorative.
+
+  Graph paper moved to `body` - see the note there. `.rail-grid` remains as a
+  utility for any panel that wants the ground to show through a surface, but no
+  page applies it now: as a per-section band it drew visible edges wherever the
+  band started and stopped, which read as the grid breaking mid-page.
+
+  `.signal-rule` puts a brass bar down the left edge of a panel, the way a
+  signal aspect marks a block on a control chart. The bar is a MARKER, never a
+  carrier of text: on the light theme the bright gold scores 1.45 on cream, so
+  --marker darkens to a brass that clears the 3:1 non-text minimum. Anything
+  that has to be read uses --ink or --accent instead.
+
+  Both are switched off for print: the plan goes to paper as ink on white.
+*/
+.rail-grid {
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--rule) 42%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--rule) 42%, transparent) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+/*
+  `.justified` sets body copy the way a printed circular does - flush on both
+  edges. It is applied to a MAIN, not to individual paragraphs, so nothing new
+  has to be remembered when copy is added.
+
+  `hyphens: auto` is not optional here. Justification without it opens rivers
+  of white space down a narrow column, and this page has to hold at 360px; the
+  document is `lang="en"`, which is what lets the browser break words at all.
+
+  A single-line paragraph is untouched - a last line stays flush left by
+  definition - so eyebrows, labels and short notices need no exception.
+*/
+.justified p {
+  text-align: justify;
+  hyphens: auto;
+}
+
+/*  Never justify a table cell or a printed plan: columns are already measured,
+    and the block plan goes to paper as a form, not as prose.  */
+.justified td p,
+.justified th p {
+  text-align: left;
+  hyphens: manual;
+}
+
+@media print {
+  .justified p {
+    text-align: left;
+    hyphens: manual;
+  }
+}
+
+.signal-rule {
+  position: relative;
+  padding-left: 0.9rem;
+}
+
+.signal-rule::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.15em;
+  bottom: 0.15em;
+  width: 3px;
+  border-radius: 2px;
+  background: var(--marker);
+}
+
+@media print {
+  .rail-grid {
+    background-image: none;
+  }
+  .signal-rule::before {
+    background: #444444;
+  }
+}

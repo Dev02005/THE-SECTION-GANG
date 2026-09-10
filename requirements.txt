@@ -1,0 +1,21 @@
+# Corridor engine - Python dependencies.
+#
+#   pip install -r requirements.txt
+#
+# Pinned to the versions the 148 tests were run against. ortools in
+# particular is pinned exactly: the plan is deterministic for a given solver
+# version and work budget, and a different CP-SAT release is free to explore
+# the search differently and return a different (equally valid) plan.
+#
+# This is the ONLY dependency list. pyproject.toml carries tool configuration
+# and deliberately no dependencies, so the two cannot drift apart.
+
+numpy==2.5.0
+ortools==9.15.6755
+pydantic==2.13.5
+scikit-learn==1.9.0
+
+# development
+pytest==9.1.1
+ruff==0.16.6
+mypy==2.3.1

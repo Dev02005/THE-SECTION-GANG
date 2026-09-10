@@ -1,0 +1,39 @@
+[project]
+name = "corridor-engine"
+version = "0.1.0"
+description = "AI-powered automatic block planning for Indian Railways (SIH26027)"
+requires-python = ">=3.12"
+#  Dependencies live in requirements.txt and only there. Listing them here as
+#  well would be two copies kept in step by hand - the drift bug this project
+#  has already paid for four times.
+
+[tool.ruff]
+line-length = 90
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "UP", "B", "SIM", "RUF"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["N802", "N812"]  # test names describe behaviour; `features as F` matches engine
+"engine/core/corridor.py" = ["RUF001"]  # en-dash is correct in station-name ranges
+"engine/models/*.py" = ["N812"]  # `features as F` is the conventional alias here
+
+[tool.mypy]
+python_version = "3.12"
+warn_unused_configs = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+strict_equality = true
+ignore_missing_imports = true
+
+#  OR-Tools ships type stubs that expose only the snake_case API surface while
+#  the PascalCase methods (NewBoolVar, AddNoOverlap, Minimize, ...) are what
+#  actually exist at runtime and are what the OR-Tools documentation uses.
+#  mypy therefore reports ~36 attr-defined false positives against a module that
+#  works and is covered by 21 passing tests.  Suppressing that ONE error code in
+#  the two modules that touch the solver keeps the rest of the codebase under
+#  real type checking rather than turning mypy off wholesale.
+[[tool.mypy.overrides]]
+module = ["engine.solver.build", "engine.solver.objective"]
+disable_error_code = ["attr-defined"]

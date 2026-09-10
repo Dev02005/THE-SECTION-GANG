@@ -1,0 +1,279 @@
+# Corridor — Automatic Block Planning
+
+**Three registers. One corridor. One plan.**
+
+Joint maintenance block planning for Indian Railways. Engineering, S&T and
+Traction each keep their own register and each ask the corridor for time
+separately; Corridor plans all three together, pricing asset risk and train
+detention in one unit and buying the most risk reduction per minute of line
+occupation.
+
+**Smart India Hackathon 2026 · Problem statement SIH26027 · Ministry of Railways**
+
+`Python 3.14` · `OR-Tools CP-SAT` · `scikit-learn` · `Next.js 16` · `PostgreSQL / Supabase` · `MIT`
+
+---
+
+## The idea
+
+Nothing in the present process puts the three departments' registers in front
+of a division together, so work that could travel in one block is granted as
+three — and a block at 02:30 looks as free as one at 07:30, though they are
+nothing alike in the traffic they hold up.
+
+Corridor prices both sides in the same unit, **detention-minute equivalents**:
+what a defect will eventually cost in train delay if left alone, and what a
+block costs in train delay at that hour on that section. With both in one
+currency, a constraint-programming model can trade them against each other
+across all three departments at once.
+
+We do not *rank* maintenance tasks. We *price* them.
+
+---
+
+## Measured result
+
+90 tasks, model-priced, deterministic, 90-second solve. Both plans are scored
+by one function on one instance, so the comparison cannot be tilted.
+
+| Metric | Current practice | Optimised | Change |
+|---|---|---|---|
+| Blocks granted | 43 | 18 | **−58.1%** |
+| Block-hours on line | 116.8 | 53.8 | −53.9% |
+| Train detention (min) | 14,165 | 6,875 | **−51.5%** |
+| Detention per task done | 329.4 | 143.2 | **−56.5%** |
+| Residual risk carried | 8,549 | 4,919 | −42.5% |
+| Tasks completed | 43 | 48 | +11.6% |
+| Statutory closed | 21/35 | 30/35 | |
+| Multi-department blocks | 0% | **72.2%** | |
+| Packing (work-hr/block-hr) | 0.82 | 2.06 | **2.51×** |
+
+*This table is checked against the plan artefact by `tests/test_docs.py`; a
+stale number fails the build.*
+
+The baseline is not a strawman. It books the same P90 durations the optimiser
+books and respects the same line-occupation, resource, per-day and
+night-working limits — all asserted by tests. The gap it leaves is structural:
+no department can see the other two.
+
+**The optimality bound.** No plan of this work costs less than **30,093,381**
+detention-minute equivalents; ours costs 31,883,629 — a **5.61%** placement gap,
+proven by the solver rather than claimed.
+
+---
+
+## How it fits together
+
+```
+ engine/  (Python, offline)                     web/  (Next.js, static)
+ ─────────────────────────                      ───────────────────────
+ synthetic backlog                              /planner   comparison screen
+   → 3 models price every task      plan.json   /plan      printable block plan
+   → current-practice baseline   ──────────────▶/login     zone → division → post
+   → CP-SAT joint solve                 │       /method /limits /scale /network
+   → explanations, Pareto, bound        │
+                                        ▼
+                             supabase/  (PostgreSQL)
+                             ─────────────────────
+                             plan · 425 posts · stations · audit log
+                             row-level security + 16 stored procedures
+```
+
+The engine runs offline and writes an artefact. The database serves it,
+scoped to whoever is signed in. There is no application server in between.
+
+---
+
+## Access control — the database decides
+
+Every account is a **post**, not a person: five per division, five per zone,
+from the Ministry of Railways list of **17 zones and 68 divisions** — 425 in all.
+
+| Post | Sees | Can |
+|---|---|---|
+| Sr.DEN · Sr.DSTE · Sr.DEE | own division's plan | **submit** it to the DRM |
+| Sr.DOM | own division's plan | — |
+| DRM | own division's plan | **approve**, or **reject with a reason** |
+| PCE · PCSTE · PCEE · PCOM · GM | every division in their zone | — |
+| any post of another zone | **nothing** | — |
+
+These rules live in PostgreSQL, not the browser. Every table has row-level
+security and the client cannot read one directly; the whole API is 16
+`SECURITY DEFINER` functions that take the caller's credential and return only
+what that post may see. Passwords are bcrypt-hashed. Every transition writes to
+an append-only audit log, and the officer who submits can never be the one who
+approves.
+
+`web/scripts/check-auth.cjs` proves it by attacking it — **52 checks**,
+including a DRM of a *different* division trying to approve this one's plan.
+
+---
+
+## Running it
+
+### 1 · The web app, no database — two minutes
+
+```bash
+cd web
+npm install
+npm run dev              # http://localhost:3000
+```
+
+With no database configured the app runs in **offline demonstration mode**:
+sign-in is checked in the browser against the published directory, and the
+planner draws the engine's own artefact, scoped the same way the database
+would scope it. Every page in this mode says so. Nothing is enforced — that
+needs step 2.
+
+### 2 · With the database — Supabase
+
+1. Create a Supabase project.
+2. In its SQL editor, run every file in `supabase/migrations/` **in numeric
+   order**, `0001` through `0010`.
+   `0003b_seed_stations.sql` is 1.8 MB and the editor will refuse it; instead
+   run `cd web && npx tsx scripts/build-stations-csv.ts` and import the
+   resulting `supabase/stations.csv` into the `stations` table.
+3. `cp web/.env.example web/.env.local` and fill in the project URL and the
+   **publishable** key. Never the service-role key — it bypasses row-level
+   security entirely.
+4. Verify: `cd web && node scripts/check-auth.cjs` should report 52 passed.
+
+### 3 · The engine
+
+```bash
+pip install -r requirements.txt
+python -m pytest tests -q                              # 148 tests
+python -m engine.build_plan --tasks 90 --time 90       # writes web/public/data/plan.json
+cd web && npx tsx scripts/build-seed.ts                # refreshes the plan seed SQL
+```
+
+Trained models ship in `model_store/`, so the plan builds without retraining.
+To retrain: `python -c "from engine.models.pricing import train_all; train_all()"`.
+
+### Demo accounts
+
+Pick **Zone → Division → Post** on `/login`; the form fills itself. Every post
+uses the demonstration password `block@2026`, printed on the sign-in page.
+
+- **East Coast Railway → Waltair → Sr.DEN** — the one division with a solved plan
+- **East Coast Railway → Zone headquarters → GM** — all three divisions, with a picker (database mode)
+- **Northern Railway → Ambala → any post** — a real post with no plan behind it
+
+---
+
+## Repository layout
+
+```
+engine/
+  core/         schema · activities · stations · corridor · traffic · candidates · synthetic
+  solver/       build (constraints C1–C11) · objective · extract · placement · config
+  models/       hazard · duration · detention · features · registry · pricing
+  baseline/     current-practice simulation · KPIs
+  export/       plan_json — the artefact the web app loads
+  explain.py    per-block explanations
+  pareto.py     the policy-dial sweep
+  benchmark.py  the scale ladder
+  build_plan.py the CLI
+tools/          extract_traffic.py — published timetable → engine/core/traffic.py
+model_store/    the three promoted models and their cards
+tests/          148 tests — one per constraint, plus a doc-drift guard
+supabase/
+  migrations/   schema · row-level security · seed · credentials · approval chain
+web/
+  app/          /  /login  /planner  /plan  /method  /limits  /scale  /network
+  components/   charts · heat canvas · panels · account menu · approval
+  lib/          db · session · plan · railways · roles
+  scripts/      build-seed · build-stations-csv · check-db · check-auth
+docs/           LIMITATIONS.md · IMPLEMENTATION.md
+```
+
+---
+
+## The optimiser
+
+One CP-SAT model decides, jointly for all three departments: which candidate
+windows to grant, how long each block runs, which tasks go inside it and when,
+and what to defer. Every constraint has a test that fails without it.
+
+| | |
+|---|---|
+| C1 | Block duration within corridor policy; an ungranted block is zero |
+| C2 | Each task in exactly one window, or deferred |
+| C3 | Statutory work done this horizon — **hard first**, so feasibility is a proof |
+| C4 | Statutory and schedule due dates |
+| C5 | A block is granted only if a task uses it |
+| C6 | Containment: work starts after protection, ends before clearance |
+| C7 | Line occupation — a section block takes **both roads** |
+| C8 | Resources — one tower wagon, one tamper, two USFD units, gangs and crews |
+| C9 | Blocks per section per day |
+| C10 | Night-working cap per section per week |
+| C11 | Technological precedence — USFD test before rail renewal |
+
+The objective's last term is the point of the system:
+
+```
+− α_C · B · Σ e_w        e_w = extra departments sharing block w
+```
+
+It is the one quantity no single department can see or express when it bids
+for its own block. Solves are **deterministic**: the budget is solver work, not
+wall-clock time, so the same input always produces the same plan.
+
+Protected paths are measured from the published timetable — four premium
+services the model is structurally unable to draw a block across.
+
+---
+
+## The three models
+
+All three are scikit-learn, and each has a promotion gate that can fail.
+
+| Model | Method | Result |
+|---|---|---|
+| Hazard | Discrete-time survival: person-period expansion, logistic link | Concordance 0.690 · prices an overdue rail **109×** a fresh signal lamp |
+| Duration | Gradient-boosted quantile + **split-conformal calibration** | P90 coverage **0.870 raw → 0.921 calibrated** |
+| Detention | Gradient-boosted regression with neighbour-section features | MAE 5.00 vs naive 26.06 · skill 0.808 |
+
+Without the conformal step, blocks return late roughly one time in eight. The
+consequence table is a **published policy input, not a learned parameter** — it
+is where railway judgment enters, and it is meant to be argued with.
+
+---
+
+## What we do not claim
+
+`docs/LIMITATIONS.md` and the `/limits` page set this out in full.
+
+- **The maintenance backlog is generated.** TMS, SMMS, TDMS, COA and BDMS have no
+  external access. Declared in the interface, the artefact and the printed plan.
+- **The models train on generated data**, which bounds what their validation is
+  worth. Hazard concordance 0.690 is modest, and we say so.
+- **One division is solved.** The other 67 resolve to real posts with no plan
+  behind them, and the app says so rather than relabelling Waltair's numbers.
+- **Statutory is 30/35.** Five tasks cannot be placed, every one behind the
+  single tower wagon, and the shortfall list names that constraint against each.
+- **Scale is measured, including where it fails:** feasible to ~1,000 tasks
+  across 20 sections in about two minutes; no solution found at 2,500.
+- **The optimality gap** is 5.6% on placement and 34.7% including the choice of
+  what to defer. Both are root-LP bounds and do not improve with more time.
+
+This is a planning system, not a safety system. It does not touch signalling or
+interlocking and it does not grant blocks — BDMS remains the system of record.
+
+---
+
+## Data sources
+
+| Data | Source | Licence |
+|---|---|---|
+| Station master — 8,697 stations with coordinates | [DataMeet `railways`](https://github.com/datameet/railways) | CC0 |
+| Passenger timetable, distilled to section traffic | DataMeet `railways` | CC0 |
+| Zones and divisions — 17 and 68, with HQ and year | Ministry of Railways, *List of Zones & Divisions* | public |
+| Maintenance backlog | **generated** — seed 7, distributions published in the code | — |
+
+---
+
+## Licence
+
+Code released under the [MIT Licence](LICENSE). The data above keeps its own
+terms.
