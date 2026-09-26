@@ -29,36 +29,36 @@ integrity. Pashupatastra beats us on volume (91k lines, ~2,200 test functions).
 
 ---
 
-## Phase 0 — REWRITTEN 27 Sep · the database is gone
+## Phase 0 — DONE 27 Sep
 
-**Do not follow the old version of this step.** It said to add
-`NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` to Vercel. The
-project those point at, `xabdudjhscrqnwgipxwl.supabase.co`, **no longer
-resolves** — NXDOMAIN, checked against 8.8.8.8, not a timeout. Free-tier
-projects are removed after a period of inactivity and this one has been idle
-since 6 Sep.
+**The database was gone and is now back.** `xabdudjhscrqnwgipxwl.supabase.co`
+stopped resolving entirely (NXDOMAIN against 8.8.8.8, not a timeout) after
+sitting idle since 6 Sep. The team restored the project and ran the ten
+migrations; it came back **empty**, 0 of 12 tables, and was re-migrated from
+the files in `supabase/migrations/`, which is the first time that path has
+been exercised as a stranger would run it.
 
-Adding those variables would have pointed the live site at a dead host. The
-live site currently works *because* it has no database and runs in offline
-demonstration mode; the variables would have replaced a working demo with a
-sign-in page that rejects every credential.
+Measured after: **12/12 tables present**, anonymous row counts zero everywhere
+(row-level security doing its job), and `check-auth.cjs` at **52 passed, 0
+failed**.
 
-So, in order:
+An earlier version of this step said to add `NEXT_PUBLIC_SUPABASE_URL` and
+`NEXT_PUBLIC_SUPABASE_ANON_KEY` to Vercel. Following it *while the host was
+dead* would have pointed the live site at nothing and replaced a working
+offline demonstration with a sign-in page that rejected every credential. It
+is safe now, and it is still the right step - but only against a project that
+answers.
 
-1. **Decide about the database.** A new Supabase project costs about fifteen
-   minutes: run the ten migrations, import the station CSV, re-seed. That
-   restores real scoping, the approval chain, the zone view and the audit log.
-   Without it the live site is still a complete demonstration, but the RLS
-   story becomes something we describe rather than something a judge can press.
-2. **Only then** set the Vercel variables — to the *new* project.
-3. Push. `Corridor/` already has the GitHub remote, so the drag-and-drop
-   upload the old step described is unnecessary.
+Remaining, in order:
 
-**The application no longer depends on the answer to survive.** Configured and
-reachable used to be treated as the same thing; they are now distinguished, so
-an unreachable database degrades to offline mode behind a banner saying the
-record could not be read, and only a *transport* failure does that — a refusal
-from Postgres is still obeyed. See LIMITATIONS §8b.
+1. Vercel → Settings → Environment Variables → both keys (Production +
+   Preview).
+2. Push. `Corridor/` already carries the GitHub remote, so no drag-and-drop.
+
+**The application no longer depends on the database being up.** Configured and
+reachable are distinguished: an unreachable host degrades to offline mode
+behind a banner saying the record could not be read, and only a *transport*
+failure does that - a refusal from Postgres is still obeyed. LIMITATIONS §8b.
 
 ---
 
@@ -106,10 +106,12 @@ is a checked claim, not a slogan: `audit_log` has a select policy and an
 insert policy and no update or delete policy, and no routine in the schema
 edits a row.
 
-**Unverified, and declared.** The populated table has never been rendered
-against real rows, because the database disappeared before it could be. Empty,
-unreachable and no-database states were all verified in the browser; the rows
-themselves were not. That is the one claim here we cannot yet make.
+**Verified against real rows**, once the database came back: 73 entries, with
+designations resolved from the officer id, the division named, and the
+`detail` jsonb rendered - a rejection showing *"tower wagon double-booked on
+Thursday"* and the demonstration reset showing its note. The empty,
+unreachable and no-database states were checked separately. Nothing here is
+claimed from reading the code.
 
 ## Phase 3 — visible parity · ~7 h
 

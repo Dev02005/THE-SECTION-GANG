@@ -106,9 +106,25 @@ function check(label, ok, detail = "") {
   }
   //  The blob must not become a side door: it is returned only through
   //  my_plan, so another zone must get null here too, not an empty envelope.
-  check("**another zone gets no payload either**",
-        np.body === null || np.body?.payload == null,
-        np.body === null ? "(no bundle at all)" : "LEAK: payload returned to NR");
+  //  THREE outcomes, not two. A missing function answers HTTP 404 with a
+  //  PGRST code and no `payload` key - which satisfied "payload is absent"
+  //  and PASSED, for the wrong reason, while printing "LEAK" on the same
+  //  line. A check whose note contradicts its own verdict is reporting
+  //  nothing, and passing because the routine is absent is the same defect
+  //  this file was already written once to avoid.
+  const npAnswered = np.status < 400;
+  const npLeaked = npAnswered && np.body !== null && np.body?.payload != null;
+  check(
+    "**another zone gets no payload either**",
+    npAnswered && !npLeaked,
+    !npAnswered
+      ? `no answer to read - HTTP ${np.status} ${np.body?.code ?? ""}`.trim()
+      : npLeaked
+        ? "LEAK: payload returned to NR"
+        : np.body === null
+          ? "(no bundle at all)"
+          : "(bundle, no payload)",
+  );
 
   console.log("\n=== 3b. the zone view (migration 0008) ===");
   const gmDivs = await rpc("my_divisions", { p_officer_id: "GM/ECoR", p_password: PW });
