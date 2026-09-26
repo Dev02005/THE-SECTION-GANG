@@ -1,0 +1,26 @@
+#  Line endings, settled once.
+#
+#  This repository stores text as LF, and did so before this file existed -
+#  nothing was enforcing it, which is the problem. `core.autocrlf=true` is set
+#  on the machine this was built on, so a clone checks out CRLF; any tool that
+#  then writes \n turns a two-sentence edit into a whole-file diff. That
+#  already happened once in the parent working repository, where a two-number
+#  correction to IMPLEMENTATION.md showed as 748 changed lines.
+#
+#  `text=auto eol=lf` fixes the stored form as LF regardless of what the
+#  working tree holds, so a diff shows only what actually changed.
+#
+#  (Checked, not assumed: the blobs here were already LF. `git show HEAD:<f>`
+#  appeared to print CRLF, but that is autocrlf smudging the OUTPUT - the blob
+#  OIDs are unchanged by `git add --renormalize`, which is the real test.)
+* text=auto eol=lf
+
+#  Binary, never touched.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.ico binary
+*.woff2 binary
+*.docx binary
+*.pdf binary
+*.zip binary
