@@ -24,6 +24,7 @@ from engine.core.schema import (
     Task,
 )
 from engine.solver.build import ModelVars
+from engine.solver.constraints import label
 
 
 def extract(
@@ -124,11 +125,17 @@ def binding_constraint(task: Task) -> str:
     """
     Best-effort attribution of why a task could not be placed.  Crude, but far
     more useful to a DRM than the word 'infeasible'.
+
+    Named, not numbered.  This string is carried into the shortfall list on the
+    printed plan and taken to the zonal machine-allocation meeting; "TOWER_WAGON
+    capacity (C8)" reads like a compiler error, "tower wagon" reads like the
+    reason.  The paper identifier stays in brackets for anyone following the
+    model.
     """
     if task.resources.get("TOWER_WAGON"):
-        return "TOWER_WAGON capacity (C8)"
+        return f"{label('C8')} — tower wagon"
     if task.resources.get("TAMPER"):
-        return "TAMPER capacity (C8)"
+        return f"{label('C8')} — tamper"
     if task.needs_power_block:
-        return "SECTION-scope window availability (C7)"
-    return "blocks per section per day (C9)"
+        return f"{label('C7')} — no section-scope window free"
+    return label("C9")

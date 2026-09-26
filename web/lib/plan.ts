@@ -105,6 +105,11 @@ export interface PlanPayload {
     slotsPerDay: number;
   };
   sections: { id: string; name: string; kmFrom: number; kmTo: number }[];
+  /**
+   * The eleven constraints, named by the engine. Carried in the artefact so a
+   * page renders the model's own words instead of a second copy that drifts.
+   */
+  constraints?: { id: string; name: string; detail: string }[];
   roads: Road[];
   /**
    * The real premium paths the plan is drawn around, measured from the

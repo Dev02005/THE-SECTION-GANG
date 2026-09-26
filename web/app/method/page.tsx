@@ -92,18 +92,21 @@ export default async function MethodPage() {
         </DocSection>
 
         <DocSection n="03" title="The constraints that carry the domain">
+          <p>
+            Eleven of them, each with a test that fails without it. They are
+            named the way a division says them; the model&rsquo;s own
+            identifier is kept in brackets. These are descriptions of what the
+            constraints do, <strong>not citations of the General and Subsidiary
+            Rules</strong> — we have not checked them against that book, so we
+            do not label them as if we had.
+          </p>
           <ul className="my-2 flex flex-col gap-2.5">
-            {[
-              ["Line occupation", "No two blocks hold the same road at once. A section-scope window is inserted into both roads' sets — one line of the model encoding the power-block coupling: OHE work takes the section down and pays detention twice."],
-              ["Resources", "One tower wagon, one tamper, two USFD units, gangs and crews, shared division-wide. The single tower wagon is the classic binding constraint and the model finds it without being told."],
-              ["Containment", "Work starts after protection is complete and ends before clearance begins. A block does not start when the gang starts."],
-              ["Statutory", "Criticality-A work is a hard constraint, solved first. When a plan comes back feasible we have a proof every obligation is met — not a claim the penalty was large enough."],
-              ["Protected paths", "Measured from the timetable, not assumed. Windows overlapping a real premium path are never generated, and a window is shortened rather than discarded so a block can still run and clear before the train."],
-            ].map(([h, p]) => (
-              <li key={h} className="border-l-2 border-rule pl-3">
-                <strong className="text-ink">{h}</strong>
+            {(plan.constraints ?? []).map((c) => (
+              <li key={c.id} className="border-l-2 border-rule pl-3">
+                <strong className="text-ink">{c.name}</strong>{" "}
+                <span className="font-mono text-[11px] text-ink-mut">{c.id}</span>
                 <br />
-                <span className="text-[13.5px] text-ink-mid">{p}</span>
+                <span className="text-[13.5px] text-ink-mid">{c.detail}</span>
               </li>
             ))}
           </ul>

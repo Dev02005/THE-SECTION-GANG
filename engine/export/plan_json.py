@@ -27,6 +27,7 @@ from engine.core.schema import SLOT_MIN, SLOTS_DAY, Line, Plan
 from engine.core.traffic import PROTECTED
 from engine.explain import explain_plan
 from engine.models.registry import current_versions, load
+from engine.solver.constraints import CONSTRAINTS
 
 SCHEMA_VERSION = 2
 
@@ -187,6 +188,12 @@ def build_payload(
             for train, name, entry, exit_, days in PROTECTED
         ],
         "resources": instance["resources"],
+        #  The eleven constraints, named once in engine/solver/constraints.py
+        #  and carried here so the method page renders the engine's own words
+        #  rather than a second copy of them.
+        "constraints": [
+            {"id": c.cid, "name": c.name, "detail": c.detail} for c in CONSTRAINTS
+        ],
         "detentionSurface": surface,
         "weights": optimised.weights.model_dump(),
         "solver": {

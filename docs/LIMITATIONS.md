@@ -213,11 +213,11 @@ the same machine**:
 
 | Task | Risk rate | Binding constraint |
 |---|---|---|
-| TRD-006 | 93/slot | TOWER_WAGON capacity (C8) |
-| TRD-010 | 150/slot | TOWER_WAGON capacity (C8) |
-| TRD-011 | 88/slot | TOWER_WAGON capacity (C8) |
-| TRD-078 | 143/slot | TOWER_WAGON capacity (C8) |
-| TRD-079 | 106/slot | TOWER_WAGON capacity (C8) |
+| TRD-006 | 93/slot | Machine and gang availability (C8) — tower wagon |
+| TRD-010 | 150/slot | Machine and gang availability (C8) — tower wagon |
+| TRD-011 | 88/slot | Machine and gang availability (C8) — tower wagon |
+| TRD-078 | 143/slot | Machine and gang availability (C8) — tower wagon |
+| TRD-079 | 106/slot | Machine and gang availability (C8) — tower wagon |
 
 It was one task before the corridor became real. Measuring the traffic and the
 protected paths shortened the night window — a Duronto crosses it at 03:30 —

@@ -107,6 +107,37 @@ def test_the_proven_floor_is_quoted_correctly(plan: dict) -> None:
     )
 
 
+def test_binding_constraints_in_the_docs_match_the_artefact(plan: dict) -> None:
+    """
+    The shortfall table in LIMITATIONS.md names the binding constraint against
+    each task, and those strings were typed by hand. They are the sentence a
+    DRM carries to the zonal meeting, and they changed the moment the
+    constraints were renamed - so they get an assertion rather than a promise.
+    """
+    text = LIMITATIONS.read_text(encoding="utf-8")
+    for entry in plan["shortfall"]:
+        binding = entry["bindingConstraint"]
+        assert binding in text, (
+            f"{entry['taskId']} is attributed to {binding!r} in the artefact, "
+            f"and docs/LIMITATIONS.md does not say so"
+        )
+
+
+def test_constraint_names_are_not_presented_as_rulebook_citations() -> None:
+    """
+    The eleven constraints are named in operating language on purpose. Labelling
+    them as General and Subsidiary Rules would be a citation we have not
+    checked, which is the one thing this project refuses to do - so if anyone
+    ever writes G&SR next to them, this fails.
+    """
+    for doc in (README, LIMITATIONS):
+        text = doc.read_text(encoding="utf-8")
+        for cid in (f"C{n}" for n in range(1, 12)):
+            assert f"G&SR-{cid}" not in text and f"G&SR {cid}" not in text, (
+                f"{doc.name} labels {cid} as a G&SR rule; we have not verified "
+                "our constraints against that rulebook"
+            )
+
 def test_shortfall_count_is_not_understated(plan: dict) -> None:
     """
     Five statutory tasks are unplaceable, not one. Understating this is the
@@ -123,3 +154,51 @@ def test_shortfall_count_is_not_understated(plan: dict) -> None:
     for entry in plan["shortfall"]:
         tid = entry["taskId"]
         assert tid in text, f"{tid} is not named in the limitations"
+
+
+#  Where the suite's size is stated. Each is required to be present: a claim
+#  that quietly disappears is how a check stops checking.
+COUNT_CLAIMS = (
+    ("README.md", r"pytest tests -q\s+#\s+(\d+) tests"),
+    ("README.md", r"tests/\s+(\d+) tests [-—] one per constraint"),
+    ("../CLAUDE.md", r"tests/\s+(\d+) tests, one per constraint"),
+)
+
+
+def test_the_stated_test_count_matches_the_suite(request: pytest.FixtureRequest) -> None:
+    """
+    The README said "148 tests" in two places while 150 existed, because the
+    Phase 1 guards were added and the prose was not. Small, but it is the same
+    drift bug the rest of this file exists to catch, and a count is the easiest
+    number in the project to check.
+
+    Counting `def test_` would be wrong - 137 functions expand to 151 cases
+    through parametrise - so this asks pytest what it actually collected. That
+    figure only means something for a whole-suite run, so a partial run skips
+    rather than failing spuriously.
+
+    Only the three current claim sites are read. CLAUDE.md also records counts
+    from earlier tasks ("99 tests green"), which are history and must not be
+    dragged forward to today's number.
+    """
+    collected = request.session.items
+    ran = {Path(str(item.fspath)).name for item in collected}
+    whole = {p.name for p in (ROOT / "tests").glob("test_*.py")}
+    if ran != whole:
+        pytest.skip("partial run; the count means nothing without the whole suite")
+
+    n = len(collected)
+    for name, pattern in COUNT_CLAIMS:
+        doc = ROOT / name
+        if not doc.exists():
+            #  CLAUDE.md is not shipped in the published repository.
+            assert name.startswith(".."), f"{name} is missing from the repo"
+            continue
+        m = re.search(pattern, doc.read_text(encoding="utf-8"))
+        assert m is not None, (
+            f"{name} no longer states the test count where this test looks "
+            f"({pattern!r}); update the pattern or restore the claim"
+        )
+        assert int(m.group(1)) == n, (
+            f"{name} says {m.group(1)} tests; pytest collected {n}"
+        )

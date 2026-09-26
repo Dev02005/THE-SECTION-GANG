@@ -10,6 +10,8 @@ occupation.
 
 **Smart India Hackathon 2026 · Problem statement SIH26027 · Ministry of Railways**
 
+**Live:** [the-section-gang.vercel.app](https://the-section-gang.vercel.app) · **Code:** [github.com/Dev02005/THE-SECTION-GANG](https://github.com/Dev02005/THE-SECTION-GANG)
+
 `Python 3.14` · `OR-Tools CP-SAT` · `scikit-learn` · `Next.js 16` · `PostgreSQL / Supabase` · `MIT`
 
 ---
@@ -142,13 +144,27 @@ needs step 2.
 
 ```bash
 pip install -r requirements.txt
-python -m pytest tests -q                              # 148 tests
+python -m pytest tests -q                              # 151 tests
 python -m engine.build_plan --tasks 90 --time 90       # writes web/public/data/plan.json
 cd web && npx tsx scripts/build-seed.ts                # refreshes the plan seed SQL
 ```
 
 Trained models ship in `model_store/`, so the plan builds without retraining.
 To retrain: `python -c "from engine.models.pricing import train_all; train_all()"`.
+
+### 4 · Deploying — Vercel
+
+1. Import this repository into Vercel.
+2. Set **Root Directory** to `web` in the project settings — the dependable
+   route. Alternatively leave it at the repository root, and `vercel.json`
+   will install and build from `web/`.
+3. Add the two variables from `web/.env.example` under the project's
+   environment variables, then **redeploy** — `NEXT_PUBLIC_` values are baked
+   in when the site is built, so adding them does nothing to a build that
+   already exists. Without them the site runs in offline demonstration mode.
+4. Nothing to edit afterwards: `web/lib/site.ts` reads Vercel's own production
+   address for canonical links, the share image, robots and the sitemap. On
+   any other host, change the fallback address in that one file.
 
 ### Demo accounts
 
@@ -176,7 +192,7 @@ engine/
   build_plan.py the CLI
 tools/          extract_traffic.py — published timetable → engine/core/traffic.py
 model_store/    the three promoted models and their cards
-tests/          148 tests — one per constraint, plus a doc-drift guard
+tests/          151 tests — one per constraint, plus a doc-drift guard
 supabase/
   migrations/   schema · row-level security · seed · credentials · approval chain
 web/
@@ -195,19 +211,24 @@ One CP-SAT model decides, jointly for all three departments: which candidate
 windows to grant, how long each block runs, which tasks go inside it and when,
 and what to defer. Every constraint has a test that fails without it.
 
-| | |
+They are named the way a division says them, with the model's own identifier
+kept alongside. These are descriptions of what each constraint does — **not
+citations of the General and Subsidiary Rules.** We have not checked them
+against that rulebook, so we do not label them as though we had.
+
+| Constraint | What it holds |
 |---|---|
-| C1 | Block duration within corridor policy; an ungranted block is zero |
-| C2 | Each task in exactly one window, or deferred |
-| C3 | Statutory work done this horizon — **hard first**, so feasibility is a proof |
-| C4 | Statutory and schedule due dates |
-| C5 | A block is granted only if a task uses it |
-| C6 | Containment: work starts after protection, ends before clearance |
-| C7 | Line occupation — a section block takes **both roads** |
-| C8 | Resources — one tower wagon, one tamper, two USFD units, gangs and crews |
-| C9 | Blocks per section per day |
-| C10 | Night-working cap per section per week |
-| C11 | Technological precedence — USFD test before rail renewal |
+| **Sanctioned window length** | A granted block runs at least the minimum the corridor policy allows and no longer than its window; an ungranted one has zero length. <sub>C1</sub> |
+| **One sanction per work item** | Each task is placed in exactly one block, or it is deferred and priced as deferred. Nothing is half-scheduled. <sub>C2</sub> |
+| **Statutory obligation** | Criticality-A work is a hard constraint, solved first. A feasible plan is therefore a proof that every obligation is met, not a claim that the penalty was set high enough. <sub>C3</sub> |
+| **Due-date compliance** | Statutory and scheduled work finishes on or before the date it is due. <sub>C4</sub> |
+| **No sanction without work** | A block is granted only if a task uses it. The line is never closed for nothing. <sub>C5</sub> |
+| **Protection and clearance** | Work starts only after protection is complete and ends before clearance begins. A block does not start when the gang starts. <sub>C6</sub> |
+| **Line occupation and power-block coupling** | No two blocks hold the same road at once, and a section-scope window enters both roads at once - OHE work takes the section down and pays detention on both. <sub>C7</sub> |
+| **Machine and gang availability** | One tower wagon, one tamper, two USFD units, gangs and crews, shared across the division. The single tower wagon is the classic binding constraint, and the model finds it without being told. <sub>C8</sub> |
+| **Blocks per section per day** | A cap on how often one section is taken in a day - controller workload and caution-order churn, not track capacity. <sub>C9</sub> |
+| **Night-working limit** | A cap on night blocks per section per week, because night working is rationed by gang welfare rules and not only by traffic. <sub>C10</sub> |
+| **Technological sequence** | Work that must follow other work does: the USFD test precedes the rail renewal it justifies. <sub>C11</sub> |
 
 The objective's last term is the point of the system:
 

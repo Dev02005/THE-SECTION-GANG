@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-09-06T14:17:26.318265+00:00",
+  "generatedAt": "2026-09-26T21:03:03.248564+00:00",
   "provenance": {
     "synthetic": true,
     "notice": "TMS, SMMS, TDMS, COA and BDMS are internal Indian Railways systems with no external access. The maintenance backlog shown here is generated, not observed. Corridor geometry, train traffic and protected paths are measured from published data.",
@@ -123,6 +123,63 @@
     "TRD_CREW": 2,
     "TOWER_WAGON": 1
   },
+  "constraints": [
+    {
+      "id": "C1",
+      "name": "Sanctioned window length",
+      "detail": "A granted block runs at least the minimum the corridor policy allows and no longer than its window; an ungranted one has zero length."
+    },
+    {
+      "id": "C2",
+      "name": "One sanction per work item",
+      "detail": "Each task is placed in exactly one block, or it is deferred and priced as deferred. Nothing is half-scheduled."
+    },
+    {
+      "id": "C3",
+      "name": "Statutory obligation",
+      "detail": "Criticality-A work is a hard constraint, solved first. A feasible plan is therefore a proof that every obligation is met, not a claim that the penalty was set high enough."
+    },
+    {
+      "id": "C4",
+      "name": "Due-date compliance",
+      "detail": "Statutory and scheduled work finishes on or before the date it is due."
+    },
+    {
+      "id": "C5",
+      "name": "No sanction without work",
+      "detail": "A block is granted only if a task uses it. The line is never closed for nothing."
+    },
+    {
+      "id": "C6",
+      "name": "Protection and clearance",
+      "detail": "Work starts only after protection is complete and ends before clearance begins. A block does not start when the gang starts."
+    },
+    {
+      "id": "C7",
+      "name": "Line occupation and power-block coupling",
+      "detail": "No two blocks hold the same road at once, and a section-scope window enters both roads at once - OHE work takes the section down and pays detention on both."
+    },
+    {
+      "id": "C8",
+      "name": "Machine and gang availability",
+      "detail": "One tower wagon, one tamper, two USFD units, gangs and crews, shared across the division. The single tower wagon is the classic binding constraint, and the model finds it without being told."
+    },
+    {
+      "id": "C9",
+      "name": "Blocks per section per day",
+      "detail": "A cap on how often one section is taken in a day - controller workload and caution-order churn, not track capacity."
+    },
+    {
+      "id": "C10",
+      "name": "Night-working limit",
+      "detail": "A cap on night blocks per section per week, because night working is rationed by gang welfare rules and not only by traffic."
+    },
+    {
+      "id": "C11",
+      "name": "Technological sequence",
+      "detail": "Work that must follow other work does: the USFD test precedes the rail renewal it justifies."
+    }
+  ],
   "detentionSurface": {
     "SEC-01|UP": [
       27,
@@ -5528,7 +5585,7 @@
     "objective": 36639101,
     "bound": 23942400,
     "gapPct": 34.65,
-    "wallTimeS": 99.294,
+    "wallTimeS": 92.365,
     "deterministic": true,
     "statutoryProven": false
   },
@@ -5537,7 +5594,7 @@
     "objective": 31883629,
     "bound": 30093381,
     "gapPct": 5.61,
-    "wallTimeS": 123.492,
+    "wallTimeS": 128.879,
     "tasksPinned": 48,
     "restriction": "Optimality of the placement, with the set of scheduled work held fixed at what the full solve chose. Does not bound the choice of which work to defer."
   },
@@ -10504,31 +10561,31 @@
       "taskId": "TRD-006",
       "criticality": "A",
       "riskRate": 93,
-      "bindingConstraint": "TOWER_WAGON capacity (C8)"
+      "bindingConstraint": "Machine and gang availability (C8) \u2014 tower wagon"
     },
     {
       "taskId": "TRD-010",
       "criticality": "A",
       "riskRate": 150,
-      "bindingConstraint": "TOWER_WAGON capacity (C8)"
+      "bindingConstraint": "Machine and gang availability (C8) \u2014 tower wagon"
     },
     {
       "taskId": "TRD-011",
       "criticality": "A",
       "riskRate": 88,
-      "bindingConstraint": "TOWER_WAGON capacity (C8)"
+      "bindingConstraint": "Machine and gang availability (C8) \u2014 tower wagon"
     },
     {
       "taskId": "TRD-078",
       "criticality": "A",
       "riskRate": 143,
-      "bindingConstraint": "TOWER_WAGON capacity (C8)"
+      "bindingConstraint": "Machine and gang availability (C8) \u2014 tower wagon"
     },
     {
       "taskId": "TRD-079",
       "criticality": "A",
       "riskRate": 106,
-      "bindingConstraint": "TOWER_WAGON capacity (C8)"
+      "bindingConstraint": "Machine and gang availability (C8) \u2014 tower wagon"
     }
   ],
   "baselineShortfall": [
@@ -10536,85 +10593,85 @@
       "taskId": "ENGG-005",
       "criticality": "A",
       "riskRate": 90,
-      "bindingConstraint": "blocks per section per day (C9)"
+      "bindingConstraint": "Blocks per section per day (C9)"
     },
     {
       "taskId": "ENGG-069",
       "criticality": "A",
       "riskRate": 88,
-      "bindingConstraint": "blocks per section per day (C9)"
+      "bindingConstraint": "Blocks per section per day (C9)"
     },
     {
       "taskId": "SNT-084",
       "criticality": "A",
       "riskRate": 108,
-      "bindingConstraint": "blocks per section per day (C9)"
+      "bindingConstraint": "Blocks per section per day (C9)"
     },
     {
       "taskId": "SNT-075",
       "criticality": "A",
       "riskRate": 83,
-      "bindingConstraint": "blocks per section per day (C9)"
+      "bindingConstraint": "Blocks per section per day (C9)"
     },
     {
       "taskId": "SNT-053",
       "criticality": "A",
       "riskRate": 114,
-      "bindingConstraint": "blocks per section per day (C9)"
+      "bindingConstraint": "Blocks per section per day (C9)"
     },
     {
       "taskId": "TRD-029",
       "criticality": "A",
       "riskRate": 190,
-      "bindingConstraint": "TOWER_WAGON capacity (C8)"
+      "bindingConstraint": "Machine and gang availability (C8) \u2014 tower wagon"
     },
     {
       "taskId": "TRD-010",
       "criticality": "A",
       "riskRate": 150,
-      "bindingConstraint": "TOWER_WAGON capacity (C8)"
+      "bindingConstraint": "Machine and gang availability (C8) \u2014 tower wagon"
     },
     {
       "taskId": "TRD-043",
       "criticality": "A",
       "riskRate": 197,
-      "bindingConstraint": "TOWER_WAGON capacity (C8)"
+      "bindingConstraint": "Machine and gang availability (C8) \u2014 tower wagon"
     },
     {
       "taskId": "TRD-089",
       "criticality": "A",
       "riskRate": 184,
-      "bindingConstraint": "TOWER_WAGON capacity (C8)"
+      "bindingConstraint": "Machine and gang availability (C8) \u2014 tower wagon"
     },
     {
       "taskId": "TRD-078",
       "criticality": "A",
       "riskRate": 143,
-      "bindingConstraint": "TOWER_WAGON capacity (C8)"
+      "bindingConstraint": "Machine and gang availability (C8) \u2014 tower wagon"
     },
     {
       "taskId": "TRD-079",
       "criticality": "A",
       "riskRate": 106,
-      "bindingConstraint": "TOWER_WAGON capacity (C8)"
+      "bindingConstraint": "Machine and gang availability (C8) \u2014 tower wagon"
     },
     {
       "taskId": "TRD-006",
       "criticality": "A",
       "riskRate": 93,
-      "bindingConstraint": "TOWER_WAGON capacity (C8)"
+      "bindingConstraint": "Machine and gang availability (C8) \u2014 tower wagon"
     },
     {
       "taskId": "TRD-011",
       "criticality": "A",
       "riskRate": 88,
-      "bindingConstraint": "TOWER_WAGON capacity (C8)"
+      "bindingConstraint": "Machine and gang availability (C8) \u2014 tower wagon"
     },
     {
       "taskId": "TRD-032",
       "criticality": "A",
       "riskRate": 88,
-      "bindingConstraint": "TOWER_WAGON capacity (C8)"
+      "bindingConstraint": "Machine and gang availability (C8) \u2014 tower wagon"
     }
   ]
 }

@@ -84,7 +84,8 @@ def build(
             granted[win.wid],
             f"wi[{win.wid}]",
         )
-        # C1  a granted block runs at least the minimum; an ungranted one is zero
+        # C1  Sanctioned window length
+        #     a granted block runs at least the minimum; an ungranted one is zero
         m.Add(dur[win.wid] >= Corridor.MIN_BLOCK_SLOTS).OnlyEnforceIf(granted[win.wid])
         m.Add(dur[win.wid] == 0).OnlyEnforceIf(granted[win.wid].Not())
 
@@ -122,14 +123,15 @@ def build(
 
     # ---- assignment and linking ------------------------------------------ #
     for t in tasks:
-        # C2  each task is placed in exactly one window, or deferred
+        # C2  One sanction per work item
+        #     each task is placed in exactly one window, or deferred
         m.Add(sum(x[(t.tid, wid)] for wid in by_task[t.tid]) == sched[t.tid])
-        # C3  statutory work must be done this horizon
+        # C3  Statutory obligation: statutory work must be done this horizon
         if t.criticality is Criticality.A and hard_statutory:
             m.Add(sched[t.tid] == 1)
         if pinned_schedule is not None:
             m.Add(sched[t.tid] == (1 if t.tid in pinned_schedule else 0))
-        # C4  statutory / schedule due date
+        # C4  Due-date compliance: statutory / schedule due date
         if t.due_slot <= horizon:
             m.Add(te[t.tid] <= t.due_slot).OnlyEnforceIf(sched[t.tid])
 
@@ -138,14 +140,16 @@ def build(
         if not tids:
             m.Add(granted[win.wid] == 0)
             continue
-        # C5  a block is granted iff at least one task uses it
+        # C5  No sanction without work
+        #     a block is granted iff at least one task uses it
         for tid in tids:
             m.AddImplication(x[(tid, win.wid)], granted[win.wid])
         m.Add(sum(x[(tid, win.wid)] for tid in tids) >= 1).OnlyEnforceIf(
             granted[win.wid]
         )
 
-    # C6  containment: work starts after protection, ends before clearance
+    # C6  Protection and clearance
+    #     containment: work starts after protection, ends before clearance
     for (tid, wid), var in x.items():
         win = by_wid[wid]
         m.Add(ts[tid] >= win.start + SETUP_SLOTS).OnlyEnforceIf(var)
@@ -164,7 +168,8 @@ def build(
                 >= sum((by_wid[v].start + SETUP_SLOTS) * x[(t.tid, v)] for v in wids)
             )
 
-    # C7  line occupation.  A SECTION window goes into BOTH roads' sets - one
+    # C7  Line occupation and power-block coupling
+    #     line occupation.  A SECTION window goes into BOTH roads' sets - one
     #     line of code encoding the power-block coupling.
     for sec in sections:
         for road in (Line.UP, Line.DN):
@@ -176,7 +181,8 @@ def build(
             if ivs:
                 m.AddNoOverlap(ivs)
 
-    # C8  resources: machines and crews are shared division-wide
+    # C8  Machine and gang availability
+    #     resources: machines and crews are shared division-wide
     for res, cap in capacity.items():
         ivs, dem = [], []
         for t in tasks:
@@ -187,7 +193,8 @@ def build(
         if ivs:
             m.AddCumulative(ivs, dem, cap)
 
-    # C9  blocks per section per day (controller workload, caution-order churn)
+    # C9  Blocks per section per day
+    #     blocks per section per day (controller workload, caution-order churn)
     n_days = horizon // SLOTS_DAY
     for sec in sections:
         for day in range(n_days):
@@ -199,13 +206,14 @@ def build(
             if gs:
                 m.Add(sum(gs) <= MAX_BLOCKS_PER_SECTION_DAY)
 
-    # C10 night-working cap per section per week
+    # C10  Night-working limit: night-working cap per section per week
     for sec in sections:
         gs = [granted[u.wid] for u in windows if u.section == sec.sid and u.night]
         if gs:
             m.Add(sum(gs) <= MAX_NIGHT_BLOCKS_PER_SECTION_WEEK)
 
-    # C11 technological precedence (USFD test before rail renewal)
+    # C11  Technological sequence
+    #     technological precedence (USFD test before rail renewal)
     for t in tasks:
         for pid in t.predecessors:
             if pid in by_tid:
