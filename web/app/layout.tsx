@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { DM_Mono, DM_Sans, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import { ThemeScript } from "@/components/ThemeScript";
+import { SITE } from "@/lib/site";
 
 /*
   Three typefaces, each doing one job: Space Grotesk for headings, where its
@@ -34,7 +35,6 @@ const mono = DM_Mono({
   display: "swap",
 });
 
-const SITE = "https://corridor-rail.vercel.app";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE),
