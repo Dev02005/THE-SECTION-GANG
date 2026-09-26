@@ -29,18 +29,36 @@ integrity. Pashupatastra beats us on volume (91k lines, ~2,200 test functions).
 
 ---
 
-## Phase 0 — only the team can do this · 15 min
+## Phase 0 — REWRITTEN 27 Sep · the database is gone
 
-Judges open the live link first, and it currently shows the weaker product.
+**Do not follow the old version of this step.** It said to add
+`NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` to Vercel. The
+project those point at, `xabdudjhscrqnwgipxwl.supabase.co`, **no longer
+resolves** — NXDOMAIN, checked against 8.8.8.8, not a timeout. Free-tier
+projects are removed after a period of inactivity and this one has been idle
+since 6 Sep.
 
-1. Vercel → Settings → Environment Variables → add `NEXT_PUBLIC_SUPABASE_URL`
-   and `NEXT_PUBLIC_SUPABASE_ANON_KEY` (Production + Preview).
-2. GitHub → Add file → Upload files → `web/`, `README.md`, `.gitattributes`
-   from the prepared folder.
+Adding those variables would have pointed the live site at a dead host. The
+live site currently works *because* it has no database and runs in offline
+demonstration mode; the variables would have replaced a working demo with a
+sign-in page that rejects every credential.
 
-Order matters: variables first, upload second, one rebuild covers both.
-Until this is done the live site runs in offline demonstration mode — no
-database scoping, no approval chain, no zone view.
+So, in order:
+
+1. **Decide about the database.** A new Supabase project costs about fifteen
+   minutes: run the ten migrations, import the station CSV, re-seed. That
+   restores real scoping, the approval chain, the zone view and the audit log.
+   Without it the live site is still a complete demonstration, but the RLS
+   story becomes something we describe rather than something a judge can press.
+2. **Only then** set the Vercel variables — to the *new* project.
+3. Push. `Corridor/` already has the GitHub remote, so the drag-and-drop
+   upload the old step described is unnecessary.
+
+**The application no longer depends on the answer to survive.** Configured and
+reachable used to be treated as the same thing; they are now distinguished, so
+an unreachable database degrades to offline mode behind a banner saying the
+record could not be read, and only a *transport* failure does that — a refusal
+from Postgres is still obeyed. See LIMITATIONS §8b.
 
 ---
 
@@ -75,10 +93,23 @@ state it - and fails, separately, if one of those statements disappears.
 
 | | Feature | Time | Why |
 |---|---|---|---|
-| 2a | Audit log page | 1 h | `my_audit` exists in Postgres and nothing reads it |
+| 2a | Audit log page | **DONE** | `my_audit` existed and nothing read it. `/audit`, zone-scoped, append-only stated on the page |
 | 2b | Plan hash / tamper-evidence | 1 h | rail-bloc's best non-solver idea; one sha256 on the plan row |
 | 2c | Premium-class detention (Vande Bharat / Rajdhani) | 2 h | We hold the data and the protected paths. Likely unique, unmistakably railway |
 | 2d | Dashboard | 2–3 h | Every number already computed |
+
+**2a as built.** `/audit` is a third nav link rather than a Docs entry,
+because it is this zone's own record and not documentation. It states its own
+scope before the rows — `my_audit` is ZONE-wide, so a Sr.DEN of Waltair sees
+Khurda Road's entries too, which "my audit log" would not suggest. Append-only
+is a checked claim, not a slogan: `audit_log` has a select policy and an
+insert policy and no update or delete policy, and no routine in the schema
+edits a row.
+
+**Unverified, and declared.** The populated table has never been rendered
+against real rows, because the database disappeared before it could be. Empty,
+unreachable and no-database states were all verified in the browser; the rows
+themselves were not. That is the one claim here we cannot yet make.
 
 ## Phase 3 — visible parity · ~7 h
 

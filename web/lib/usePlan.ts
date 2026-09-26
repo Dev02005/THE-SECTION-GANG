@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { isSupabaseConfigured, myPlan } from "./db";
+import { DbUnreachableError, isSupabaseConfigured, myPlan } from "./db";
 import { type PlanPayload, planReference } from "./plan";
 import { REFERENCE_DIVISION, REFERENCE_ZONE } from "./railways";
 import { useSession } from "./session";
@@ -47,6 +47,15 @@ export type PlanSource =
    * to prevent, so the match is the condition, not a nicety.
    */
   | "artefact-matched"
+  /**
+   * A database IS configured and could not be reached at all - the host did
+   * not resolve, or the request never left. Not a refusal: a refusal is an
+   * answer and is obeyed. We learned nothing, so this post gets exactly what
+   * it would get with no database configured, under the same entitlement
+   * rule, and the page says the record could not be read rather than letting
+   * a fallback pass for the live plan.
+   */
+  | "artefact-unreachable"
   | "none";
 
 export interface PlanState {
@@ -97,12 +106,12 @@ export function usePlan(
   useEffect(() => {
     if (!ready) return;
 
-    if (!isSupabaseConfigured) {
-      //  Offline demonstration mode. The static artefact is Waltair's plan,
-      //  so it goes only to the posts Postgres would give it to: a divisional
-      //  post of Waltair, or a zonal post of East Coast Railway. Handing it to
-      //  every post - which this branch used to do - would show Ambala
-      //  Waltair's numbers, the exact relabelling the database refuses.
+    //  Offline demonstration mode. The static artefact is Waltair's plan, so
+    //  it goes only to the posts Postgres would give it to: a divisional post
+    //  of Waltair, or a zonal post of East Coast Railway. Handing it to every
+    //  post - which this branch used to do - would show Ambala Waltair's
+    //  numbers, the exact relabelling the database refuses.
+    const offline = (source: PlanSource) => {
       const o = session?.officer ?? null;
       const entitled =
         o !== null &&
@@ -110,11 +119,15 @@ export function usePlan(
         (o.level === "zone" || o.division_code === REFERENCE_DIVISION);
       setState({
         plan: entitled ? fallback : null,
-        source: "artefact",
+        source,
         loading: false,
         error: null,
         record: null,
       });
+    };
+
+    if (!isSupabaseConfigured) {
+      offline("artefact");
       return;
     }
     if (session === null) {
@@ -163,6 +176,15 @@ export function usePlan(
       })
       .catch((e: unknown) => {
         if (cancelled) return;
+        //  Unreachable is not the same as refused. If the request never
+        //  arrived we know nothing, so fall back to exactly what this post
+        //  would see with no database at all - same entitlement rule, no
+        //  plan row, and a source the page names out loud. Any other failure
+        //  is something Postgres said, and gets shown as the error it is.
+        if (e instanceof DbUnreachableError) {
+          offline("artefact-unreachable");
+          return;
+        }
         setState({
           plan: null,
           source: "none",

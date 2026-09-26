@@ -80,9 +80,6 @@ export function ScopedPlan({
   //  `== null` catches undefined too. A component that renders whatever it is
   //  handed will dereference undefined and take the page down; the state above
   //  is the one worth being strict about.
-  //  `== null` catches undefined too. A component that renders whatever it is
-  //  handed will dereference undefined and take the page down; the state above
-  //  is the one worth being strict about.
   if (plan == null) {
     return (
       <>
@@ -116,6 +113,16 @@ export function ScopedPlan({
               the engine&rsquo;s file. It is scoped the way the database would
               scope it, but nothing here is enforced — connect Supabase for
               that. The approval chain needs the database and is hidden.
+            </>
+          ) : source === "artefact-unreachable" ? (
+            <>
+              <strong>The database could not be reached.</strong> One is
+              configured for this build, but the request never arrived — so
+              this is the engine&rsquo;s file, scoped the way the database
+              would scope it, and not the plan your division currently holds.
+              Its real status, and anything another officer has changed, are
+              unknown here rather than what is shown. The approval chain needs
+              the database and is hidden.
             </>
           ) : (
             <>

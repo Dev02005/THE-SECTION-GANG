@@ -145,6 +145,41 @@ function client() {
 
 export { isSupabaseConfigured };
 
+/**
+ * The database was configured but could not be reached at all.
+ *
+ * Distinct from every other failure on purpose. A refusal from Postgres is an
+ * ANSWER - this post may not do that, that plan is another zone's - and must
+ * be shown as one. A host that does not resolve is not an answer; it means we
+ * learned nothing, and the caller is entitled to know the difference before
+ * deciding what to put on screen.
+ *
+ * This is not hypothetical. The free-tier project behind this build stopped
+ * resolving (NXDOMAIN, not a timeout) while the application went on treating
+ * it as configured, so sign-in failed outright instead of degrading.
+ */
+export class DbUnreachableError extends Error {
+  constructor(readonly fn: string, message: string) {
+    super(message);
+    this.name = "DbUnreachableError";
+  }
+}
+
+/**
+ * The messages a browser gives for "the request never got there".
+ *
+ * Chrome says "Failed to fetch", Firefox "NetworkError when attempting to
+ * fetch resource.", Safari "Load failed", undici "fetch failed". Matching on
+ * text is crude, but supabase-js reports a transport failure and a SQL error
+ * through the same `error` object, and getting this wrong in the other
+ * direction - treating a refusal as unreachable - would turn "you may not see
+ * this" into a fallback that shows something. So the list is deliberately
+ * narrow: anything unrecognised stays an ordinary error.
+ */
+function looksUnreachable(message: string): boolean {
+  return /failed to fetch|networkerror|fetch failed|load failed/i.test(message);
+}
+
 async function call<T>(fn: string, args: Record<string, unknown>): Promise<T | null> {
   const c = client();
   if (c === null) return null;
@@ -154,6 +189,9 @@ async function call<T>(fn: string, args: Record<string, unknown>): Promise<T | n
     //  "this officer is not entitled to see anything", which is the one wrong
     //  conclusion to draw from a broken query.
     console.error(`rpc ${fn} failed`, error.message);
+    if (looksUnreachable(error.message)) {
+      throw new DbUnreachableError(fn, error.message);
+    }
     throw new Error(error.message);
   }
   return (data ?? null) as T | null;
@@ -283,4 +321,43 @@ export async function changePassword(
  */
 export async function restoreDemoPassword(cred: Credential): Promise<void> {
   await call("restore_demo_password", args(cred));
+}
+
+/**
+ * One entry in the append-only audit log.
+ *
+ * The column names are prefixed because the routine's RETURNS TABLE names are
+ * in scope inside its own body, so a column called `actor` beside a table
+ * aliased `actor` makes `actor.id` ambiguous and Postgres refuses the script.
+ * The prefix is not decoration; it is why the function compiles.
+ */
+export interface DbAuditRow {
+  log_at: string;
+  log_actor: string;
+  log_action: string;
+  log_entity: string;
+  log_entity_id: string | null;
+  log_detail: Record<string, unknown> | null;
+}
+
+/**
+ * The audit log this officer may read.
+ *
+ * ZONE-SCOPED, not division-scoped, and the page says so rather than implying
+ * otherwise. `my_audit` joins each entry to the officer who wrote it and keeps
+ * the ones whose zone matches the caller's, so a Sr.DEN of Waltair sees what
+ * Khurda Road's officers did too. That is deliberate - a zone's officers are
+ * accountable to the same GM - but it is not what "my log" would suggest.
+ *
+ * Two consequences of the query worth knowing at the call site. It is an INNER
+ * join to `officers`, so an entry whose actor is null is invisible here; the
+ * column is nullable but nothing in the schema writes a null actor. And the
+ * limit is clamped to 200 inside Postgres, so asking for more is not an error,
+ * it just does not get you more.
+ */
+export async function myAudit(
+  cred: Credential,
+  limit = 50,
+): Promise<DbAuditRow[]> {
+  return (await call<DbAuditRow[]>("my_audit", args(cred, { p_limit: limit }))) ?? [];
 }

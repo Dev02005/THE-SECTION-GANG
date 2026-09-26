@@ -6,14 +6,20 @@ import { useSession } from "@/lib/session";
 /**
  * The nav, which only exists once an officer is signed in.
  *
- * Two links, and only two: THIS DIVISION'S WORK - the plan on screen and the
- * plan on paper. Everything else explains the system rather than showing a
- * plan, and it lives under Docs inside the account menu rather than as a
- * second dropdown out here. One menu in the header, not two side by side.
+ * THIS DIVISION'S WORK and nothing else: the plan on screen, the plan on
+ * paper, and the record of what has been done to it. Everything that explains
+ * the system rather than showing a plan lives under Docs inside the account
+ * menu - one menu in the header, not two side by side.
+ *
+ * The audit log earns its place out here rather than under Docs because it is
+ * not documentation: it is this zone's own record, it changes when an officer
+ * acts, and "who approved this" is an operational question, not a question
+ * about how the optimiser works.
  */
 const WORK = [
   { href: "/planner", label: "Planner" },
   { href: "/plan", label: "Block plan" },
+  { href: "/audit", label: "Audit" },
 ];
 
 export function SiteNav() {

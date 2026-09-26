@@ -333,6 +333,42 @@ amends.
 
 ---
 
+## 8b. The database may not be there, and the application says so
+
+Postgres is the system of record here: it holds the officer directory, the
+plan, the approval chain and the audit log, and row-level security is what
+makes the sign-in mean anything. None of that is in the browser.
+
+It is also a free-tier project, and on 27 Sep the one behind this build
+stopped resolving entirely - NXDOMAIN, not a timeout. Until then the
+application treated *configured* and *reachable* as the same thing, so a dead
+host did not degrade the site, it broke the front door: every credential came
+back "does not match", on the sign-in page, with every page behind it
+unreachable. A dead database left the application less usable than no database
+at all.
+
+What happens now, and the distinction is the whole point:
+
+- **No database configured.** Offline demonstration mode. The credential is
+  checked in the browser against the published directory, and the engine's
+  static file is handed out under the same entitlement rule Postgres applies -
+  Waltair's own posts and East Coast Railway's zonal posts, nobody else. Every
+  page says so.
+- **Configured but unreachable.** The same fallback, under a different banner
+  that says the record could not be read. The plan's real status, and anything
+  another officer has changed, are *unknown* rather than what is drawn.
+- **Configured and it refused.** Obeyed. A refusal is an answer - this post may
+  not do that, that plan belongs to another zone - and it is never fallen back
+  past. Only a transport failure degrades.
+
+What offline mode costs, stated plainly: there is no enforcement. The scoping
+is reproduced by the browser rather than applied by Postgres, so it is a
+demonstration of the shape and not a security boundary. Nothing can be written
+- no submission, no approval - because there is nowhere to write it, and the
+audit log shows nothing rather than an invented history.
+
+---
+
 ## 9. Reproducibility
 
 Every plan records the instance seed, the model versions, the policy weights,

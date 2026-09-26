@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { Credential, Officer, Zone } from "./db";
-import { isSupabaseConfigured, myZone, signIn } from "./db";
+import { DbUnreachableError, isSupabaseConfigured, myZone, signIn } from "./db";
 import { DEMO_PASSWORD, ROLES, type Role, roleById } from "./roles";
 import { zoneByCode } from "./railways";
 
@@ -76,11 +76,25 @@ export function readSession(): Session | null {
  *
  * So without a database the credential is checked against the generated
  * directory in roles.ts instead. That is a check in the BROWSER, and it is
- * weaker than the real one in every way that matters - which is why it can
- * never run when a database is configured, and why every page it reaches says
- * "offline demonstration mode". It reveals nothing new: the directory and the
- * one demonstration password are printed on the sign-in page already, and the
- * static plan it unlocks is a public file.
+ * weaker than the real one in every way that matters - which is why every
+ * page it reaches says "offline demonstration mode". It reveals nothing new:
+ * the directory and the one demonstration password are printed on the sign-in
+ * page already, and the static plan it unlocks is a public file.
+ *
+ * THIS ONCE SAID "it can never run when a database is configured", and that
+ * rule was too strict by one case. Configured is not the same as reachable:
+ * the free-tier project behind this build stopped resolving entirely, and the
+ * application kept insisting on a host that was not there, so sign-in failed
+ * outright on a site whose every page would have worked without it. A dead
+ * database made the application less usable than no database at all.
+ *
+ * The rule now: this runs when there is no database, OR when the database is
+ * configured and PROVABLY UNREACHABLE - `DbUnreachableError`, which is thrown
+ * only for a transport failure and never for a refusal. A refusal is an
+ * answer and is still obeyed. Nothing is loosened about what an offline
+ * session may then SEE: the plan is handed out by the same entitlement rule,
+ * the pages still say so, and nothing can be written, because there is
+ * nowhere to write it.
  */
 function offlineOfficer(officerId: string, password: string): Officer | null {
   const id = officerId.trim().toLowerCase();
@@ -108,9 +122,22 @@ export async function authenticate(
   password: string,
 ): Promise<Session | null> {
   const credential: Credential = { officerId, password };
-  const officer = isSupabaseConfigured
-    ? await signIn(credential)
-    : offlineOfficer(officerId, password);
+
+  let officer: Officer | null;
+  if (isSupabaseConfigured) {
+    try {
+      officer = await signIn(credential);
+    } catch (e) {
+      //  Only a transport failure falls back. Anything Postgres actually
+      //  said - including "no", including a broken function - is rethrown,
+      //  because degrading past a real answer is how an application starts
+      //  showing things it was told not to.
+      if (!(e instanceof DbUnreachableError)) throw e;
+      officer = offlineOfficer(officerId, password);
+    }
+  } else {
+    officer = offlineOfficer(officerId, password);
+  }
   if (officer === null) return null;
   const zone = await myZone(credential).catch(() => null);
   const session: Session = { officer, credential, zone };
