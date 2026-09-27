@@ -118,6 +118,10 @@ create table if not exists plans (
   --  `add column if not exists` is a no-op now, and still correct on any
   --  database that was built before this line.
   payload         jsonb,
+  --  SHA-256 of what the plan grants - see web/lib/fingerprint.ts. Declared
+  --  here for the same reason as payload: 0004 writes it, and 0004 runs before
+  --  0011 on a fresh database.
+  plan_hash       text,
   created_at      timestamptz not null default now()
 );
 

@@ -95,6 +95,12 @@ export interface DbPlanBundle {
     submitted_by: string | null;
     decided_by: string | null;
     decision_reason: string | null;
+    /**
+     * SHA-256 of the plan's blocks and tasks, written by the seed. Optional
+     * and nullable for the same reason as `payload`: a database before 0011
+     * returns no such key, and a row seeded before it carries null.
+     */
+    plan_hash?: string | null;
   };
   /**
    * The engine artefact as the screen renders it.

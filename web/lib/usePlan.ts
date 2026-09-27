@@ -73,6 +73,7 @@ export interface PlanState {
     submitted_by: string | null;
     decided_by: string | null;
     decision_reason: string | null;
+    plan_hash?: string | null;
   } | null;
   /**
    * Re-read the plan. The approval panel calls this after submitting or

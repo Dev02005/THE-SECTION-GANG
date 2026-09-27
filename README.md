@@ -106,6 +106,13 @@ what that post may see. Passwords are bcrypt-hashed. Every transition writes to
 an append-only audit log, and the officer who submits can never be the one who
 approves.
 
+**Every plan carries a fingerprint** — a SHA-256 of the blocks and tasks it
+grants, printed on the issued document. Submission and approval each write it
+into the audit log, which nothing can revise, so the plan that was approved is
+recorded as it was approved. The planner recomputes it from the plan on screen
+and says plainly if the two ever disagree. Status and approver fields are
+outside the hash, so moving through the approval chain does not change it.
+
 `web/scripts/check-auth.cjs` proves it by attacking it — **52 checks**,
 including a DRM of a *different* division trying to approve this one's plan.
 
@@ -131,14 +138,17 @@ needs step 2.
 
 1. Create a Supabase project.
 2. In its SQL editor, run every file in `supabase/migrations/` **in numeric
-   order**, `0001` through `0010`.
+   order**, `0001` through `0011`.
    `0003b_seed_stations.sql` is 1.8 MB and the editor will refuse it; instead
    run `cd web && npx tsx scripts/build-stations-csv.ts` and import the
    resulting `supabase/stations.csv` into the `stations` table.
 3. `cp web/.env.example web/.env.local` and fill in the project URL and the
    **publishable** key. Never the service-role key — it bypasses row-level
    security entirely.
-4. Verify: `cd web && node scripts/check-auth.cjs` should report 52 passed.
+4. Verify: `cd web && node scripts/check-auth.cjs` should report 52 passed,
+   and `npx tsx scripts/check-fingerprint.ts` should report 11 passed — the
+   fingerprint's properties, the seed agreeing with the library, and the
+   database agreeing with both.
 
 ### 3 · The engine
 
@@ -201,7 +211,7 @@ web/
   app/          /  /login  /dashboard  /planner  /plan  /audit  /method  /limits  /scale  /network
   components/   charts · heat canvas · panels · account menu · approval
   lib/          db · session · plan · railways · roles
-  scripts/      build-seed · build-stations-csv · check-db · check-auth
+  scripts/      build-seed · build-stations-csv · check-db · check-auth · check-fingerprint
 docs/           LIMITATIONS.md · IMPLEMENTATION.md
 ```
 

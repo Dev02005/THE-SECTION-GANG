@@ -24,6 +24,7 @@ import path from "node:path";
 import { REFERENCE_DIVISION, REFERENCE_ZONE, ZONES } from "../lib/railways";
 import { ROLES } from "../lib/roles";
 import { planReference } from "../lib/plan";
+import { planFingerprint } from "../lib/fingerprint";
 
 const ROOT = path.resolve(__dirname, "..");
 const MIG = path.resolve(ROOT, "..", "supabase", "migrations");
@@ -119,7 +120,7 @@ type Variant = "optimised" | "baseline";
 interface Plan {
   generatedAt?: string;
   provenance: { seed?: number };
-  horizon: { days: number };
+  horizon: { days: number; slotMinutes: number };
   sections: { id: string; name: string; kmFrom: number; kmTo: number }[];
   protectedPaths?: {
     train: string;
@@ -147,6 +148,7 @@ interface PlanSide {
     detentionMinutes: number;
     clubbed: boolean;
     departments: string[];
+    tasks: { id: string }[];
   }[];
   tasks: {
     id: string;
@@ -182,6 +184,12 @@ for (const s of plan.sections) {
   );
 }
 
+//  The fingerprint is async (Web Crypto) and this file is CommonJS, so there is
+//  no top-level await. The insert carries a placeholder that is filled in at
+//  the end, once the hash is known - and the fill asserts it replaced exactly
+//  one occurrence, so the token can never reach the SQL unreplaced.
+const PLAN_HASH_TOKEN = "'__PLAN_HASH_PENDING__'";
+
 planOut.push(
   "",
   "-- The plan. A re-solve supersedes; it does not accumulate.",
@@ -202,13 +210,13 @@ planOut.push(
   `    and status <> 'superseded';`,
   `delete from plans where reference = ${q(REF)};`,
   `insert into plans (reference, zone_code, division_code, horizon_days, seed, status,`,
-  `  solver_status, objective, bound, placement_objective, placement_bound, generated_at, payload)`,
+  `  solver_status, objective, bound, placement_objective, placement_bound, generated_at, payload, plan_hash)`,
   `values (${q(REF)}, ${q(ZONE)}, ${q(DIV)}, ${plan.horizon.days}, ${n(plan.provenance.seed)}, 'draft',`,
   `  ${q(plan.solver?.status ?? null)}, ${n(plan.solver?.objective)}, ${n(plan.solver?.bound)},`,
   //  The artefact itself, so the tables and the screen cannot disagree: both
   //  are written here, in one transaction, from this one file.
   `  ${n(plan.placement?.objective)}, ${n(plan.placement?.bound)}, ${q(plan.generatedAt ?? new Date().toISOString())},`,
-  `  ${q(JSON.stringify(plan))}::jsonb);`,
+  `  ${q(JSON.stringify(plan))}::jsonb, ${PLAN_HASH_TOKEN});`,
   "",
   `create temporary table _p as select id from plans where reference = ${q(REF)};`,
 );
@@ -255,8 +263,20 @@ const NL = "\n";
 stationsOut.push("", "commit;", "");
 writeFileSync(OUT_ORG, out.join(NL), "utf-8");
 writeFileSync(OUT_STATIONS, stationsOut.join(NL), "utf-8");
-writeFileSync(OUT_PLAN, planOut.join(NL), "utf-8");
 const kb = (b: string[]) => (Buffer.byteLength(b.join(NL)) / 1024).toFixed(0);
+
+void (async () => {
+  //  The same function the browser runs to verify it - one implementation.
+  const hash = await planFingerprint(plan);
+  const sql = planOut.join(NL);
+  const hits = sql.split(PLAN_HASH_TOKEN).length - 1;
+  if (hits !== 1) {
+    throw new Error(`expected the fingerprint placeholder exactly once, found ${hits}`);
+  }
+  writeFileSync(OUT_PLAN, sql.replace(PLAN_HASH_TOKEN, q(hash)), "utf-8");
+  console.log(`  fingerprint ${hash}`);
+})();
+
 console.log(`org        0003_seed_org.sql       (${kb(out)} KB)`);
 console.log(`stations   0003b_seed_stations.sql (${kb(stationsOut)} KB)`);
 console.log(

@@ -2,6 +2,7 @@
 
 import type { DbAuditRow } from "@/lib/db";
 import { roleById } from "@/lib/roles";
+import { shortFingerprint } from "@/lib/fingerprint";
 import { useAudit } from "@/lib/useAudit";
 import { asRole, useSession } from "@/lib/session";
 
@@ -197,7 +198,16 @@ function Detail({ detail }: { detail: Record<string, unknown> | null }) {
       {pairs.map(([k, v]) => (
         <div key={k} className="flex gap-1.5 text-[11.5px]">
           <dt className="shrink-0 font-mono text-ink-mut">{k}</dt>
-          <dd className="text-ink-mid">{String(v)}</dd>
+          {/*  A fingerprint is 64 hex digits - shortened to read, full on
+               hover, because the point of recording it is that someone can
+               compare it character for character later.  */}
+          {k === "plan_hash" && typeof v === "string" ? (
+            <dd className="font-mono text-ink-mid" title={v}>
+              {shortFingerprint(v)}
+            </dd>
+          ) : (
+            <dd className="text-ink-mid">{String(v)}</dd>
+          )}
         </div>
       ))}
     </dl>

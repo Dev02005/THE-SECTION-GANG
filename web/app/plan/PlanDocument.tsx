@@ -1,5 +1,6 @@
 "use client";
 
+import { PlanFingerprint } from "@/components/PlanFingerprint";
 import { DAY_NAMES, DEPT_LABEL, num, planReference } from "@/lib/plan";
 import type { PlanBlock, PlanPayload } from "@/lib/plan";
 import { ScopedPlan } from "@/components/ScopedPlan";
@@ -240,6 +241,8 @@ function PlanDocument({ plan }: { plan: PlanPayload }) {
       {String(plan.solver.deterministic)}, objective{" "}
       {num(plan.solver.objective)}, proven floor{" "}
       {num((plan.placement?.bound ?? plan.solver.bound ?? 0))}.
+      <br />
+      <PlanFingerprint plan={plan} variant="document" />
       <br />
       <strong className="text-ink">
         Maintenance backlog is synthetic.

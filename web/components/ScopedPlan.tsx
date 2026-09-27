@@ -7,6 +7,7 @@ import { useDivisions } from "@/lib/useDivisions";
 import { ZoneDivisions } from "@/components/ZoneDivisions";
 import { ApprovalPanel } from "@/components/ApprovalPanel";
 import { NoPlanPanel } from "@/components/NoPlanPanel";
+import { PlanFingerprint } from "@/components/PlanFingerprint";
 import { asRole, useSession } from "@/lib/session";
 
 /**
@@ -103,6 +104,14 @@ export function ScopedPlan({
            below it means: a draft is a proposal, an approved plan is a
            programme.  */}
       <ApprovalPanel record={record} refresh={refresh} />
+      {/*  Recomputed from the plan being drawn and checked against the record.
+           No record at all - offline, or the artefact fallback - is passed as
+           undefined, which the component states rather than hides.  */}
+      <PlanFingerprint
+        plan={plan}
+        stored={record === null ? undefined : (record.plan_hash ?? null)}
+        variant="panel"
+      />
       {source !== "database" && (
         <p className="mb-4 rounded border border-caution bg-caution-soft px-3 py-2 text-[12.5px] leading-relaxed text-ink print:hidden">
           {source === "artefact" ? (

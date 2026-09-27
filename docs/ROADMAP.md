@@ -94,7 +94,7 @@ state it - and fails, separately, if one of those statements disappears.
 | | Feature | Time | Why |
 |---|---|---|---|
 | 2a | Audit log page | **DONE** | `my_audit` existed and nothing read it. `/audit`, zone-scoped, append-only stated on the page |
-| 2b | Plan hash / tamper-evidence | 1 h | rail-bloc's best non-solver idea; one sha256 on the plan row |
+| 2b | Plan fingerprint / tamper-evidence | **DONE** | SHA-256 of what the plan grants, on the row, on the printed document, and written into the append-only audit log at submission and approval |
 | 2c | Premium-class detention (Vande Bharat / Rajdhani) | 2 h | We hold the data and the protected paths. Likely unique, unmistakably railway |
 | 2d | Dashboard | 2–3 h | Every number already computed |
 
