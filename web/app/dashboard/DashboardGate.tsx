@@ -3,6 +3,7 @@
 import { Dashboard } from "@/components/Dashboard";
 import { ScopedPlan } from "@/components/ScopedPlan";
 import type { PlanPayload } from "@/lib/plan";
+import type { CorridorStop } from "@/lib/stations";
 
 /**
  * The client boundary between the static page and the scoped plan.
@@ -17,10 +18,16 @@ import type { PlanPayload } from "@/lib/plan";
  * its fallback; everything scoped happens below this line, in the browser,
  * under the signed-in officer's own credential.
  */
-export function DashboardGate({ fallback }: { fallback: PlanPayload }) {
+export function DashboardGate({
+  fallback,
+  chain,
+}: {
+  fallback: PlanPayload;
+  chain: CorridorStop[];
+}) {
   return (
     <ScopedPlan fallback={fallback}>
-      {(plan) => <Dashboard plan={plan} />}
+      {(plan) => <Dashboard plan={plan} chain={chain} />}
     </ScopedPlan>
   );
 }

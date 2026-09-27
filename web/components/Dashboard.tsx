@@ -4,6 +4,8 @@ import Link from "next/link";
 import type { PlanPayload } from "@/lib/plan";
 import { DEPT_LABEL, num, planReference } from "@/lib/plan";
 import type { Department } from "@/lib/plan";
+import type { CorridorStop } from "@/lib/stations";
+import { CorridorMap } from "@/components/CorridorMap";
 
 /**
  * The fifteen-second view.
@@ -24,7 +26,13 @@ import type { Department } from "@/lib/plan";
  * leading with the comparison is the thing none of them can copy, so this sits
  * beside the planner rather than in front of it.
  */
-export function Dashboard({ plan }: { plan: PlanPayload }) {
+export function Dashboard({
+  plan,
+  chain,
+}: {
+  plan: PlanPayload;
+  chain: CorridorStop[];
+}) {
   const k = plan.kpis;
   const d = k.deltas;
   const blocks = plan.optimised.blocks;
@@ -53,6 +61,8 @@ export function Dashboard({ plan }: { plan: PlanPayload }) {
         </p>
         <h1 className="text-[26px] font-bold">The week at a glance</h1>
       </header>
+
+      <CorridorMap plan={plan} chain={chain} />
 
       {/*  What changed. Both sides scored by one function on one instance -
            the baseline is a real simulated plan, not a straw man.  */}

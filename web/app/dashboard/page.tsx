@@ -3,6 +3,7 @@ import { RequireSignIn } from "@/components/RequireSignIn";
 import { SiteHeader } from "@/components/SiteHeader";
 import { DashboardGate } from "./DashboardGate";
 import { loadPlan } from "@/lib/loadPlan";
+import { corridorChain, loadStations } from "@/lib/stations";
 
 export const dynamic = "force-static";
 
@@ -23,13 +24,16 @@ export const metadata = {
  */
 export default async function DashboardPage() {
   const plan = await loadPlan();
+  //  Coordinates are read on the server from the CC0 station master; the
+  //  client gets the five resolved stops, not the 8,697-row file.
+  const chain = corridorChain(await loadStations());
   return (
     <>
       <SiteHeader />
       <ProvenanceBanner provenance={plan.provenance} />
       <RequireSignIn>
         <main className="mx-auto w-full max-w-[1100px] flex-1 px-4 py-8 sm:px-6">
-          <DashboardGate fallback={plan} />
+          <DashboardGate fallback={plan} chain={chain} />
         </main>
       </RequireSignIn>
     </>
