@@ -1,6 +1,6 @@
 "use client";
 
-import { DAY_NAMES, DEPT_LABEL, planReference } from "@/lib/plan";
+import { DAY_NAMES, DEPT_LABEL, num, planReference } from "@/lib/plan";
 import type { PlanBlock, PlanPayload } from "@/lib/plan";
 import { ScopedPlan } from "@/components/ScopedPlan";
 import { PrintButton } from "./PrintButton";
@@ -238,8 +238,8 @@ function PlanDocument({ plan }: { plan: PlanPayload }) {
       <br />
       Solver {plan.solver.status}, deterministic{" "}
       {String(plan.solver.deterministic)}, objective{" "}
-      {plan.solver.objective.toLocaleString()}, proven floor{" "}
-      {(plan.placement?.bound ?? plan.solver.bound ?? 0).toLocaleString()}.
+      {num(plan.solver.objective)}, proven floor{" "}
+      {num((plan.placement?.bound ?? plan.solver.bound ?? 0))}.
       <br />
       <strong className="text-ink">
         Maintenance backlog is synthetic.

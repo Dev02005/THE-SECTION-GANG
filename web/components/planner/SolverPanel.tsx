@@ -1,4 +1,5 @@
 import type { PlanPayload } from "@/lib/plan";
+import { num } from "@/lib/plan";
 
 /**
  * What the solver actually proved.
@@ -32,11 +33,11 @@ export function SolverPanel({
       <p className="text-[12.5px] leading-relaxed text-ink-mid">
         No plan of this work costs less than{" "}
         <strong className="tnum font-mono font-medium text-ink">
-          {(placement?.bound ?? solver.bound ?? 0).toLocaleString()}
+          {num((placement?.bound ?? solver.bound ?? 0))}
         </strong>{" "}
         detention-minute equivalents. Ours costs{" "}
         <strong className="tnum font-mono font-medium text-ink">
-          {(placement?.objective ?? solver.objective).toLocaleString()}
+          {num((placement?.objective ?? solver.objective))}
         </strong>
         .
       </p>

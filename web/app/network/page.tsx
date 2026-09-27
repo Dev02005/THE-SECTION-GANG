@@ -1,3 +1,4 @@
+import { num } from "@/lib/plan";
 import { ProvenanceBanner } from "@/components/ProvenanceBanner";
 import { DocSection } from "@/components/DocSection";
 import { RequireSignIn } from "@/components/RequireSignIn";
@@ -63,7 +64,7 @@ export default async function NetworkPage() {
         </section>
 
         <dl className="mt-8 grid grid-cols-2 gap-x-4 gap-y-5 sm:grid-cols-4">
-          <Stat value={data.stations.toLocaleString()} label="Stations" note="with coordinates" />
+          <Stat value={num(data.stations)} label="Stations" note="with coordinates" />
           <Stat value={String(TOTAL_ZONES)} label="Zones" note="Ministry list" />
           <Stat value={String(TOTAL_DIVISIONS)} label="Divisions" note="across those zones" />
           <Stat value="1" label="Divisions solved" note="Waltair, ECoR" />
@@ -72,7 +73,7 @@ export default async function NetworkPage() {
         <div className="mt-6 rounded-lg border border-caution bg-caution-soft p-4">
           <p className="text-[13.5px] leading-relaxed text-ink">
             <strong>Two halves, and they are used differently.</strong> The{" "}
-            {data.stations.toLocaleString()}-station master is reference only — it names zones, divisions
+            {num(data.stations)}-station master is reference only — it names zones, divisions
             and stations, and it is how the sign-in knows which post belongs
             where. It never reaches the optimiser. The five stations of our own
             corridor <em>do</em>: their coordinates now derive the section
@@ -106,7 +107,7 @@ export default async function NetworkPage() {
             It is also not the job. A division schedules — which four hours on
             Thursday, at fifteen-minute resolution. A zone allocates — which
             division holds the tamper this season. Planning {corridorKm.toFixed(0)}{" "}
-            km properly and saying so beats claiming {data.stations.toLocaleString()}{" "}
+            km properly and saying so beats claiming {num(data.stations)}{" "}
             stations we cannot place a block on.
           </p>
         </DocSection>

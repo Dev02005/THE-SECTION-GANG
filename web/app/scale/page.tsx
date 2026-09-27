@@ -1,3 +1,4 @@
+import { num } from "@/lib/plan";
 import { readFile } from "node:fs/promises";
 import { DocSection } from "@/components/DocSection";
 import path from "node:path";
@@ -122,7 +123,7 @@ export default async function ScalePage() {
                         }`}
                       >
                         <td className="tnum px-3 py-2 font-mono font-medium text-ink">
-                          {r.tasks.toLocaleString()}
+                          {num(r.tasks)}
                         </td>
                         <td className="tnum px-3 py-2 text-right font-mono text-ink-mid">
                           {r.sections}
@@ -134,10 +135,10 @@ export default async function ScalePage() {
                           {r.start_step_min}m
                         </td>
                         <td className="tnum px-3 py-2 text-right font-mono text-ink-mid">
-                          {r.windows.toLocaleString()}
+                          {num(r.windows)}
                         </td>
                         <td className="tnum px-3 py-2 text-right font-mono text-ink-mid">
-                          {r.assignment_vars.toLocaleString()}
+                          {num(r.assignment_vars)}
                         </td>
                         <td className="tnum px-3 py-2 text-right font-mono text-ink-mut">
                           {r.build_time_s.toFixed(1)}s
@@ -156,7 +157,7 @@ export default async function ScalePage() {
                           {ok ? r.blocks : "—"}
                         </td>
                         <td className="tnum px-3 py-2 text-right font-mono text-ink-mid">
-                          {ok ? r.scheduled.toLocaleString() : "—"}
+                          {ok ? num(r.scheduled) : "—"}
                         </td>
                         <td className="tnum px-3 py-2 text-right font-mono text-ink-mid">
                           {ok ? `${r.multidept_pct}%` : "—"}

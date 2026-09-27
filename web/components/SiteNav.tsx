@@ -17,6 +17,7 @@ import { useSession } from "@/lib/session";
  * about how the optimiser works.
  */
 const WORK = [
+  { href: "/dashboard", label: "Dashboard" },
   { href: "/planner", label: "Planner" },
   { href: "/plan", label: "Block plan" },
   { href: "/audit", label: "Audit" },

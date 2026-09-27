@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { PlanPayload } from "@/lib/plan";
+import { num } from "@/lib/plan";
 
 /**
  * The trade-off, measured.
@@ -89,7 +90,7 @@ export function ParetoChart({ pareto }: { pareto: PlanPayload["pareto"] }) {
               fontSize="9"
               fontFamily="var(--font-mono)"
             >
-              {t.toLocaleString()}
+              {num(t)}
             </text>
           </g>
         ))}
@@ -104,7 +105,7 @@ export function ParetoChart({ pareto }: { pareto: PlanPayload["pareto"] }) {
               fontSize="9"
               fontFamily="var(--font-mono)"
             >
-              {t.toLocaleString()}
+              {num(t)}
             </text>
           </g>
         ))}
@@ -161,8 +162,8 @@ export function ParetoChart({ pareto }: { pareto: PlanPayload["pareto"] }) {
                 strokeWidth={here ? 2 : 1.2}
               />
               <title>
-                {`risk weight ${p.alpha_risk} — ${p.detention_minutes.toLocaleString()} detention-min, ` +
-                  `${p.risk_carried.toLocaleString()} risk carried, ${p.blocks} blocks` +
+                {`risk weight ${p.alpha_risk} — ${num(p.detention_minutes)} detention-min, ` +
+                  `${num(p.risk_carried)} risk carried, ${p.blocks} blocks` +
                   (dominated ? " (dominated)" : "") +
                   (here ? " (current policy)" : "")}
               </title>
@@ -182,8 +183,8 @@ export function ParetoChart({ pareto }: { pareto: PlanPayload["pareto"] }) {
               <span className="text-caution"> · dominated</span>
             )}
             <br />
-            {shown.detention_minutes.toLocaleString()} detention-min ·{" "}
-            {shown.risk_carried.toLocaleString()} risk · {shown.blocks} blocks ·{" "}
+            {num(shown.detention_minutes)} detention-min ·{" "}
+            {num(shown.risk_carried)} risk · {shown.blocks} blocks ·{" "}
             {shown.scheduled} tasks · statutory {shown.statutory_done}/
             {shown.statutory_total}
           </>

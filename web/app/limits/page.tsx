@@ -1,3 +1,4 @@
+import { num } from "@/lib/plan";
 import { ProvenanceBanner } from "@/components/ProvenanceBanner";
 import { SiteHeader } from "@/components/SiteHeader";
 import { DocSection } from "@/components/DocSection";
@@ -164,7 +165,7 @@ export default async function LimitsPage() {
             rather than headline a percentage:{" "}
             <em>
               no plan of this work costs less than{" "}
-              {(placement?.bound ?? 0).toLocaleString()} detention-minute
+              {num((placement?.bound ?? 0))} detention-minute
               equivalents
             </em>
             . That is a proof, and five competing submissions run solvers

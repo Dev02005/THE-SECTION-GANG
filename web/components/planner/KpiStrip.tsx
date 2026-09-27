@@ -1,6 +1,6 @@
 import type { Deltas, Kpis } from "@/lib/plan";
 import { tone } from "@/lib/comparison";
-import { formatSigned } from "@/lib/plan";
+import { formatSigned, num } from "@/lib/plan";
 
 
 
@@ -31,10 +31,10 @@ export function KpiStrip({
         <div key={i.l} className="bg-surface px-3 py-2.5">
           <p className="eyebrow mb-1 truncate">{i.l}</p>
           <p className="tnum font-mono text-[15px] font-medium leading-none text-ink">
-            {i.o.toLocaleString()}
+            {num(i.o)}
           </p>
           <p className="tnum mt-1 font-mono text-[11px] text-ink-mut">
-            from {i.b.toLocaleString()}{" "}
+            from {num(i.b)}{" "}
             <span className={tone(i.d, i.lower)}>{formatSigned(i.d)}</span>
           </p>
         </div>

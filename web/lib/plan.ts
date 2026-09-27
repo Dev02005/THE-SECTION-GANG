@@ -198,6 +198,26 @@ export interface PlanPayload {
   baselineShortfall: ShortfallEntry[];
 }
 
+/**
+ * Every number the plan puts on screen, grouped the same way everywhere.
+ *
+ * This was `n.toLocaleString()` in four files with no locale argument, which
+ * takes the VIEWER's locale - so the proven floor rendered as 30,093,381 for
+ * one judge and 3,00,93,381 for another, from the same artefact, and the
+ * printed document could disagree with the screen that produced it. A
+ * headline number that changes shape by browser is the write-it-twice bug
+ * wearing a different hat.
+ *
+ * en-IN is fixed rather than inherited: this is an Indian Railways product,
+ * lakh/crore grouping is what a division reads, and being explicit is what
+ * makes the figure reproducible.
+ */
+const GROUPED = new Intl.NumberFormat("en-IN");
+
+export function num(n: number): string {
+  return GROUPED.format(n);
+}
+
 export const DAY_NAMES = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 export const DEPT_LABEL: Record<Department, string> = {

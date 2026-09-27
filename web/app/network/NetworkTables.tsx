@@ -1,3 +1,4 @@
+import { num } from "@/lib/plan";
 import type { Station, StationData, PremiumData } from "@/lib/stations";
 import { DocSection } from "@/components/DocSection";
 import { TOTAL_DIVISIONS, TOTAL_ZONES, ZONES } from "@/lib/railways";
@@ -78,7 +79,7 @@ export function NetworkTables({ chain, data, mapped, paths, vb }: Props) {
 
         <DocSection title="Stations by zone">
           <p>
-            {mapped.toLocaleString()} of {data.stations.toLocaleString()}{" "}
+            {num(mapped)} of {num(data.stations)}{" "}
             stations carry a zone. The CC0 source assigns one to under half of
             them, so the rest are merged from the Ministry station list — the
             two agree on 99% of the overlap, which is why the merge is
@@ -132,7 +133,7 @@ export function NetworkTables({ chain, data, mapped, paths, vb }: Props) {
                         {z.divisions.length}
                       </td>
                       <td className="tnum px-3 py-2 text-right font-mono text-ink-mid">
-                        {(data.zoneCounts[z.code] ?? 0).toLocaleString()}
+                        {num((data.zoneCounts[z.code] ?? 0))}
                       </td>
                     </tr>
                   );
