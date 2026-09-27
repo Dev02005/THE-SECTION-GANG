@@ -218,6 +218,48 @@ export function num(n: number): string {
   return GROUPED.format(n);
 }
 
+/**
+ * The one headline result per model, with the gate it had to pass.
+ *
+ * Shared by /limits and the dashboard. The dashboard first rendered all
+ * twenty-one raw keys of the model cards - `conformal_delta_p50 0.9251`,
+ * `pinball_p50 7.0894` - on the page meant to be read in fifteen seconds,
+ * while /limits had its own hand-built version of the same three lines. Two
+ * renderings of one set of numbers is the drift bug again, so there is one.
+ *
+ * Read off the promoted model cards, never transcribed: transcribed figures go
+ * stale the first time a model is retrained, and ours already had.
+ */
+export interface ModelSummary {
+  name: string;
+  result: string;
+  gate: string;
+}
+
+export function modelSummary(
+  m: Record<string, Record<string, number>> | undefined,
+): ModelSummary[] {
+  const mm = m ?? {};
+  const f = (v: number | undefined, dp = 3) => (v === undefined ? "—" : v.toFixed(dp));
+  return [
+    {
+      name: "Duration",
+      result: `P90 coverage ${f(mm.duration?.coverage_raw_p90)} raw → ${f(mm.duration?.coverage_p90)} calibrated`,
+      gate: "Coverage in [0.86, 0.94]",
+    },
+    {
+      name: "Hazard",
+      result: `Concordance ${f(mm.hazard?.concordance)}, Brier skill ${f(mm.hazard?.brier_skill)}`,
+      gate: "Concordance in [0.60, 0.95]",
+    },
+    {
+      name: "Detention",
+      result: `MAE ${f(mm.detention?.mae_gbm, 2)} vs naive ${f(mm.detention?.mae_naive, 2)}, skill ${f(mm.detention?.skill_vs_naive)}`,
+      gate: "Skill ≥ 0.30",
+    },
+  ];
+}
+
 export const DAY_NAMES = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 export const DEPT_LABEL: Record<Department, string> = {

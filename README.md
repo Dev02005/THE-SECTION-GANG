@@ -155,9 +155,11 @@ To retrain: `python -c "from engine.models.pricing import train_all; train_all()
 ### 4 · Deploying — Vercel
 
 1. Import this repository into Vercel.
-2. Set **Root Directory** to `web` in the project settings — the dependable
-   route. Alternatively leave it at the repository root, and `vercel.json`
-   will install and build from `web/`.
+2. Set **Root Directory** to `web` in the project settings. This is required:
+   there is no `vercel.json`, and Vercel detects Next.js inside `web/` on its
+   own. (There used to be one. It said `cd web` while the Root Directory had
+   already put the build inside `web/`, so the first real deploy failed looking
+   for `web/web` — two descriptions of where the app lives, disagreeing.)
 3. Add the two variables from `web/.env.example` under the project's
    environment variables, then **redeploy** — `NEXT_PUBLIC_` values are baked
    in when the site is built, so adding them does nothing to a build that
@@ -182,7 +184,7 @@ uses the demonstration password `block@2026`, printed on the sign-in page.
 ```
 engine/
   core/         schema · activities · stations · corridor · traffic · candidates · synthetic
-  solver/       build (constraints C1–C11) · objective · extract · placement · config
+  solver/       build · constraints (the eleven, named) · objective · extract · placement · config
   models/       hazard · duration · detention · features · registry · pricing
   baseline/     current-practice simulation · KPIs
   export/       plan_json — the artefact the web app loads
@@ -196,7 +198,7 @@ tests/          151 tests — one per constraint, plus a doc-drift guard
 supabase/
   migrations/   schema · row-level security · seed · credentials · approval chain
 web/
-  app/          /  /login  /planner  /plan  /method  /limits  /scale  /network
+  app/          /  /login  /dashboard  /planner  /plan  /audit  /method  /limits  /scale  /network
   components/   charts · heat canvas · panels · account menu · approval
   lib/          db · session · plan · railways · roles
   scripts/      build-seed · build-stations-csv · check-db · check-auth

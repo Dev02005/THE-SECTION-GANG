@@ -150,6 +150,28 @@ export function CorridorMap({
 
   if (geom === null) return null;
 
+  //  Sections are drawn between consecutive stops BY INDEX: section i runs from
+  //  stop i to stop i+1. `corridorChain` silently skips any station missing
+  //  from the data, so a single absent code would shift every later section
+  //  onto the wrong pair of stops and still draw a plausible-looking line.
+  //  A map that quietly mislabels its own sections is worse than no map, so
+  //  the mismatch is stated instead of drawn.
+  if (chain.length !== plan.sections.length + 1) {
+    return (
+      <section
+        aria-label="Corridor map"
+        className="rounded-lg border border-rule bg-surface p-4"
+      >
+        <h2 className="eyebrow mb-1.5">The corridor, to scale</h2>
+        <p className="text-[13px] leading-relaxed text-ink-mid">
+          Not drawn: the station data resolves {chain.length} of the{" "}
+          {plan.sections.length + 1} stops this plan&rsquo;s sections need, and
+          drawing the sections against the wrong stops would mislabel them.
+        </p>
+      </section>
+    );
+  }
+
   return (
     <section
       aria-label="Corridor map"

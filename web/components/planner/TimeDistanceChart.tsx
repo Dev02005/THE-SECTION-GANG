@@ -72,6 +72,9 @@ export function TimeDistanceChart({
   }, [blocks, rowIndex]);
 
   const pct = (slot: number) => (slot / slots) * 100;
+  //  Clamped for the same reason as the department chart: past the end of a
+  //  shorter set of lanes, no block would be tabbable at all.
+  const focus = Math.min(focusIdx, Math.max(0, lanes.length - 1));
 
   return (
     <figure className="m-0">
@@ -150,8 +153,8 @@ export function TimeDistanceChart({
               e.preventDefault();
               const next =
                 e.key === "ArrowRight"
-                  ? Math.min(focusIdx + 1, lanes.length - 1)
-                  : Math.max(focusIdx - 1, 0);
+                  ? Math.min(focus + 1, lanes.length - 1)
+                  : Math.max(focus - 1, 0);
               setFocusIdx(next);
               const el = e.currentTarget.querySelectorAll("rect")[next];
               (el as SVGElement | undefined)?.focus();
@@ -183,7 +186,7 @@ export function TimeDistanceChart({
                     strokeWidth={active ? 0.35 : 0}
                     vectorEffect="non-scaling-stroke"
                     className="cursor-pointer focus:outline-none focus-visible:stroke-[var(--ink)]"
-                    tabIndex={i === focusIdx ? 0 : -1}
+                    tabIndex={i === focus ? 0 : -1}
                     role="button"
                     aria-label={`${block.section} ${block.scope} block, ${DAY_NAMES[block.day % 7]} ${block.startHHMM} to ${block.endHHMM}, ${block.departments.join(" and ")}, ${block.detentionMinutes} detention minutes`}
                     onMouseEnter={() => setHover(block.id)}

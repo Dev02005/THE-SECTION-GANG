@@ -1,11 +1,10 @@
 import { num } from "@/lib/plan";
-import { readFile } from "node:fs/promises";
 import { DocSection } from "@/components/DocSection";
-import path from "node:path";
 import { ProvenanceBanner } from "@/components/ProvenanceBanner";
 import { RequireSignIn } from "@/components/RequireSignIn";
 import { SiteHeader } from "@/components/SiteHeader";
 import { loadPlan } from "@/lib/loadPlan";
+import { loadBenchmark } from "@/lib/benchmark";
 
 export const dynamic = "force-static";
 
@@ -15,42 +14,6 @@ export const metadata = {
     "How far the optimiser scales, measured: instance size against solve time, " +
     "solution quality and where it stops being viable.",
 };
-
-interface Row {
-  tasks: number;
-  sections: number;
-  horizon_days: number;
-  start_step_min: number;
-  windows: number;
-  assignment_vars: number;
-  build_time_s: number;
-  solve_time_s: number;
-  status: string;
-  objective: number;
-  bound: number | null;
-  gap_pct: number | null;
-  blocks: number;
-  scheduled: number;
-  statutory_done: number;
-  statutory_total: number;
-  multidept_pct: number;
-}
-
-interface Benchmark {
-  generatedAt: string;
-  secondsPerRung: number;
-  note: string;
-  rows: Row[];
-}
-
-async function loadBenchmark(): Promise<Benchmark | null> {
-  try {
-    const file = path.join(process.cwd(), "public", "data", "benchmark.json");
-    return JSON.parse(await readFile(file, "utf-8")) as Benchmark;
-  } catch {
-    return null;
-  }
-}
 
 /**
  * The scale answer, measured.

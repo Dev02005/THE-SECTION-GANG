@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import type { PlanPayload } from "@/lib/plan";
-import { DEPT_LABEL, num, planReference } from "@/lib/plan";
+import { DEPT_LABEL, modelSummary, num, planReference } from "@/lib/plan";
 import type { Department } from "@/lib/plan";
 import type { CorridorStop } from "@/lib/stations";
 import { CorridorMap } from "@/components/CorridorMap";
@@ -234,19 +234,15 @@ export function Dashboard({
         >
           <h2 className="eyebrow mb-2">What the models score</h2>
           <div className="grid gap-3 sm:grid-cols-3">
-            {Object.entries(plan.provenance.modelMetrics).map(([name, m]) => (
-              <div key={name}>
+            {modelSummary(plan.provenance.modelMetrics).map((r) => (
+              <div key={r.name}>
                 <p className="font-mono text-[11px] uppercase tracking-wider text-ink-mut">
-                  {name}
+                  {r.name}
                 </p>
-                {Object.entries(m as Record<string, unknown>).map(([kk, vv]) => (
-                  <p key={kk} className="text-[12.5px] text-ink-mid">
-                    {kk}{" "}
-                    <span className="tnum text-ink">
-                      {typeof vv === "number" ? vv : String(vv)}
-                    </span>
-                  </p>
-                ))}
+                <p className="tnum mt-0.5 text-[12.5px] leading-snug text-ink">
+                  {r.result}
+                </p>
+                <p className="mt-0.5 text-[11px] text-ink-mut">gate: {r.gate}</p>
               </div>
             ))}
           </div>

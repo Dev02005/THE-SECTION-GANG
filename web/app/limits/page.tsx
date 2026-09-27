@@ -1,9 +1,10 @@
-import { num } from "@/lib/plan";
+import { modelSummary, num } from "@/lib/plan";
 import { ProvenanceBanner } from "@/components/ProvenanceBanner";
 import { SiteHeader } from "@/components/SiteHeader";
 import { DocSection } from "@/components/DocSection";
 import { Split, Stat } from "./Parts";
 import { loadPlan } from "@/lib/loadPlan";
+import { loadBenchmark } from "@/lib/benchmark";
 
 export const dynamic = "force-static";
 
@@ -15,8 +16,17 @@ export const metadata = {
 };
 
 export default async function LimitsPage() {
-  const plan = await loadPlan();
+  const [plan, bench] = await Promise.all([loadPlan(), loadBenchmark()]);
   const { solver, placement, kpis, shortfall } = plan;
+
+  //  The reference instance, described from the data rather than typed. The
+  //  task count used to be `cond ? "90" : "90"` - identical branches, so it
+  //  read as derived and was a literal. The candidate-window count is not in
+  //  the plan artefact; the benchmark's matching rung measured it.
+  const nTasks = plan.optimised.tasks.length;
+  const refRung = bench?.rows.find(
+    (r) => r.tasks === nTasks && r.sections === plan.sections.length,
+  );
   //  DERIVED, not written. This section said "one criticality-A task cannot be
   //  placed" while its own heading read 30 of 35 off the artefact - the page
   //  contradicting itself, and docs/LIMITATIONS.md had already been corrected
@@ -27,25 +37,10 @@ export default async function LimitsPage() {
   const n = (v: number | undefined, dp = 3) =>
     v === undefined ? "—" : v.toFixed(dp);
 
-  //  Read off the promoted model cards rather than transcribed. Transcribed
-  //  figures go stale the first time a model is retrained - ours already had.
-  const modelRows: [string, string, string][] = [
-    [
-      "Duration",
-      `P90 coverage ${n(m.duration?.coverage_raw_p90)} raw → ${n(m.duration?.coverage_p90)} calibrated`,
-      "Coverage in [0.86, 0.94]",
-    ],
-    [
-      "Hazard",
-      `Concordance ${n(m.hazard?.concordance)}, Brier skill ${n(m.hazard?.brier_skill)}`,
-      "Concordance in [0.60, 0.95]",
-    ],
-    [
-      "Detention",
-      `MAE ${n(m.detention?.mae_gbm, 2)} vs naive ${n(m.detention?.mae_naive, 2)}, skill ${n(m.detention?.skill_vs_naive)}`,
-      "Skill ≥ 0.30",
-    ],
-  ];
+  //  One source for these three lines, shared with the dashboard.
+  const modelRows: [string, string, string][] = modelSummary(m).map(
+    (r) => [r.name, r.result, r.gate],
+  );
 
   return (
     <>
@@ -212,7 +207,7 @@ export default async function LimitsPage() {
               ["BDMS write-back", "The planner proposes; BDMS grants. We never write to the block register."],
               ["ST-GNN detention surface", "A graph is justified — blocking one section backs traffic into its neighbours — but an unjustified GNN is worse than a justified GBM."],
               ["Monthly horizon", "The same model at 60-minute slots over 30 days."],
-              ["Superseding a plan properly", "The chain is built and driven from the planner: draft → submitted → approved, or sent back with a reason and brought again. What a real deployment would have instead of our reset_plan is supersession - a new solve replacing the old one, with the decided plan kept as the record of what was granted. We reset to draft because this instance holds one plan and is shared, and the button says so."],
+              ["Un-approving a plan", "No railway un-approves a programme; it supersedes it. Supersession itself is built - re-solving marks the division's earlier plans superseded and keeps them as the record of what was granted. What has no real counterpart is reset_plan, which returns the same plan to draft: this instance is shared, so without it the approval chain could be exercised exactly once. The button says so, and the reset is written to the audit log."],
               ["Serving the plan only from the database", "Sign-in and scoping are applied inside Postgres, so a Northern Railway post gets nothing rather than this division's numbers. But plan.json is still served publicly at /data/plan.json so the application runs for anyone who clones it without a database, and requesting that URL directly still yields the artefact. The scoping is enforced; the file is not."],
             ].map(([h, p]) => (
               <li key={h} className="border-l-2 border-rule pl-3">
@@ -226,9 +221,12 @@ export default async function LimitsPage() {
 
         <DocSection n="06" title="Scale, and this is not a safety system">
           <p>
-            The reference instance is 4 sections, {kpis.optimised.blocks + kpis.baseline.blocks > 0 ? "90" : "90"} tasks and 576 candidate
-            windows over a 7-day horizon at 15-minute slots, solving in roughly
-            100 seconds. <strong>We have not demonstrated a full division at
+            The reference instance is {plan.sections.length} sections,{" "}
+            {nTasks} tasks
+            {refRung ? <> and {num(refRung.windows)} candidate windows</> : null}{" "}
+            over a {plan.horizon.days}-day horizon at{" "}
+            {plan.horizon.slotMinutes}-minute slots, solving in about{" "}
+            {Math.round(solver.wallTimeS)} seconds. <strong>We have not demonstrated a full division at
             this resolution.</strong> The levers exist, but decomposing across a
             shared resource produces a plan nobody can execute, and the single
             tower wagon usually couples the sections.

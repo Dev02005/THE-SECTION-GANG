@@ -277,12 +277,18 @@ Named here rather than implied by omission.
   step writes to an append-only audit log. All of it is tested by walking the
   cycle end to end.
 
-  What a real deployment would have instead of our `reset_plan` is
-  **supersession**: a new solve replaces the old one, and the decided plan stays
-  as the record of what was granted. We return a plan to draft because this
-  instance holds one plan and is shared by everyone who opens the site, so
-  without it the chain could be exercised exactly once. The button says so, and
-  the reset is itself written to the audit log.
+  **Supersession is built** for a new solve: re-seeding marks the division's
+  previous plans `superseded` rather than deleting them, so a decided plan stays
+  as the record of what was granted and the audit log keeps pointing at a row
+  that exists. (Until 27 Sep the seed deleted only rows carrying its own
+  reference; because the reference contains the generation date, a re-solve on
+  another day left two current plans side by side.)
+
+  `reset_plan` is a different thing and stays a **demonstration affordance**:
+  it returns the *same* plan to draft, because this instance is shared by
+  everyone who opens the site, and without it the chain could be exercised
+  exactly once. No railway un-approves a programme. The button says so, and the
+  reset is itself written to the audit log.
 
 ---
 
