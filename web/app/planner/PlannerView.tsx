@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import type { ChartRow } from "@/components/planner/TimeDistanceChart";
 import { TimeDistanceChart } from "@/components/planner/TimeDistanceChart";
 import { KpiStrip } from "@/components/planner/KpiStrip";
+import { DepartmentGantt } from "@/components/planner/DepartmentGantt";
 import { Legend } from "@/components/planner/Legend";
 import { ParetoChart } from "@/components/planner/ParetoChart";
 import { PolicyDials } from "@/components/planner/PolicyDials";
@@ -60,6 +61,17 @@ export function PlannerView({ plan }: { plan: PlanPayload }) {
           rows={rows}
           title="Optimised joint plan"
           subtitle={`${plan.kpis.optimised.blocks} blocks · ${plan.kpis.optimised.multidept_pct}% carry more than one department`}
+          onSelect={setSelected}
+          selectedId={selected?.id ?? null}
+        />
+
+        {/*  The same optimised blocks, grouped by department instead of by
+             section. The charts above answer "what is occupied"; this
+             answers "who is on the line, and with whom" - the question the
+             three Sr. officers bring to the block meeting.  */}
+        <DepartmentGantt
+          plan={plan}
+          blocks={plan.optimised.blocks}
           onSelect={setSelected}
           selectedId={selected?.id ?? null}
         />
