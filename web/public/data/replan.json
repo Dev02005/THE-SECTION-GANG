@@ -1,0 +1,871 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-27T16:08:15+00:00",
+  "approved": {
+    "objective": 36639101,
+    "seed": 7,
+    "blocks": 18
+  },
+  "disruption": {
+    "atSlot": 216,
+    "atLabel": "Wed 06:00",
+    "section": "SEC-02",
+    "line": "UP",
+    "activity": "USFD flaw removal / rail renewal",
+    "dueSlot": 312,
+    "dueLabel": "Thu 06:00",
+    "bookedSlots": 9,
+    "resources": {
+      "USFD": 1,
+      "GANG": 1
+    },
+    "description": "Ultrasonic flaw detection finds a rail flaw that must be removed",
+    "hoursToDue": 24,
+    "workableDays": [
+      "Wed"
+    ]
+  },
+  "urgent": {
+    "tid": "ENGG-URG-01",
+    "scheduled": true,
+    "window": "W-SEC-02-2-0660-SECTION",
+    "start": 237,
+    "end": 246,
+    "startLabel": "Wed 11:15",
+    "endLabel": "Wed 13:30"
+  },
+  "result": {
+    "status": "OPTIMAL",
+    "statutoryKept": 30,
+    "statutoryProven": true,
+    "minChanges": 1,
+    "minChangesProven": true,
+    "frozenBlocks": 8,
+    "wallTimeS": 149.1
+  },
+  "diff": {
+    "executed": [
+      "W-SEC-01-0-0660-SECTION",
+      "W-SEC-01-2-0060-UP",
+      "W-SEC-02-0-0060-SECTION",
+      "W-SEC-02-0-0660-DN",
+      "W-SEC-02-1-0060-DN",
+      "W-SEC-03-0-0060-SECTION",
+      "W-SEC-03-1-0060-DN",
+      "W-SEC-04-1-0660-SECTION"
+    ],
+    "kept": [
+      "W-SEC-01-5-0660-SECTION",
+      "W-SEC-02-4-0660-SECTION",
+      "W-SEC-03-2-0660-UP",
+      "W-SEC-03-4-0660-DN",
+      "W-SEC-03-5-0660-UP",
+      "W-SEC-04-4-0660-UP",
+      "W-SEC-04-6-0660-DN"
+    ],
+    "changed": [
+      "W-SEC-02-2-0660-SECTION",
+      "W-SEC-03-6-0660-SECTION"
+    ],
+    "dropped": [
+      "W-SEC-01-2-0660-UP"
+    ],
+    "added": [],
+    "tasksMoved": [],
+    "tasksDeferred": [
+      "ENGG-047"
+    ],
+    "tasksPickedUp": [
+      "SNT-060"
+    ],
+    "urgent": {
+      "tid": "ENGG-URG-01",
+      "scheduled": true,
+      "window": "W-SEC-02-2-0660-SECTION",
+      "start": 237,
+      "end": 246
+    },
+    "detentionAhead": {
+      "approved": 4090,
+      "replanned": 3758
+    },
+    "statutory": {
+      "approved": [
+        30,
+        35
+      ],
+      "replanned": [
+        30,
+        36
+      ]
+    }
+  },
+  "lost": [
+    {
+      "tid": "ENGG-047",
+      "activity": "SEJ / weld defect attention",
+      "section": "SEC-01",
+      "dueSlot": 384,
+      "dueLabel": "Fri 00:00",
+      "windowsBeforeDue": 12,
+      "windowDays": [
+        "Wed"
+      ],
+      "blackoutDaysBeforeDue": [
+        "Thu"
+      ]
+    }
+  ],
+  "counterfactuals": [
+    {
+      "resource": "GANG",
+      "from": 3,
+      "to": 4,
+      "statutoryKept": 31,
+      "minChanges": 0,
+      "lost": [],
+      "avoidsTheLoss": true
+    },
+    {
+      "resource": "USFD",
+      "from": 2,
+      "to": 3,
+      "statutoryKept": 30,
+      "minChanges": 1,
+      "lost": [
+        "ENGG-047"
+      ],
+      "avoidsTheLoss": false
+    }
+  ],
+  "blackoutDays": [
+    "Thu"
+  ],
+  "replannedBlocks": [
+    {
+      "id": "W-SEC-02-0-0060-SECTION",
+      "section": "SEC-02",
+      "scope": "SECTION",
+      "roads": [
+        "UP",
+        "DN"
+      ],
+      "day": 0,
+      "startSlot": 4,
+      "durSlots": 10,
+      "startHHMM": "01:00",
+      "endHHMM": "03:30",
+      "durationMin": 150,
+      "departments": [
+        "ENGG",
+        "TRD"
+      ],
+      "clubbed": true,
+      "detentionMinutes": 290,
+      "tasks": [
+        {
+          "id": "ENGG-042",
+          "department": "ENGG",
+          "activity": "SEJ / weld defect attention",
+          "criticality": "A",
+          "km": 28.2
+        },
+        {
+          "id": "TRD-065",
+          "department": "TRD",
+          "activity": "Overhead mast / cantilever setting",
+          "criticality": "C",
+          "km": 27.3
+        }
+      ]
+    },
+    {
+      "id": "W-SEC-03-0-0060-SECTION",
+      "section": "SEC-03",
+      "scope": "SECTION",
+      "roads": [
+        "UP",
+        "DN"
+      ],
+      "day": 0,
+      "startSlot": 4,
+      "durSlots": 10,
+      "startHHMM": "01:00",
+      "endHHMM": "03:30",
+      "durationMin": 150,
+      "departments": [
+        "ENGG",
+        "SNT"
+      ],
+      "clubbed": true,
+      "detentionMinutes": 290,
+      "tasks": [
+        {
+          "id": "ENGG-016",
+          "department": "ENGG",
+          "activity": "Bridge girder inspection",
+          "criticality": "B",
+          "km": 37.5
+        },
+        {
+          "id": "SNT-023",
+          "department": "SNT",
+          "activity": "Point machine overhaul",
+          "criticality": "A",
+          "km": 35.7
+        },
+        {
+          "id": "ENGG-082",
+          "department": "ENGG",
+          "activity": "SEJ / weld defect attention",
+          "criticality": "A",
+          "km": 29.1
+        },
+        {
+          "id": "SNT-084",
+          "department": "SNT",
+          "activity": "Point machine overhaul",
+          "criticality": "A",
+          "km": 35.3
+        }
+      ]
+    },
+    {
+      "id": "W-SEC-01-0-0660-SECTION",
+      "section": "SEC-01",
+      "scope": "SECTION",
+      "roads": [
+        "UP",
+        "DN"
+      ],
+      "day": 0,
+      "startSlot": 44,
+      "durSlots": 16,
+      "startHHMM": "11:00",
+      "endHHMM": "15:00",
+      "durationMin": 240,
+      "departments": [
+        "ENGG",
+        "SNT",
+        "TRD"
+      ],
+      "clubbed": true,
+      "detentionMinutes": 864,
+      "tasks": [
+        {
+          "id": "SNT-001",
+          "department": "SNT",
+          "activity": "Point machine overhaul",
+          "criticality": "A",
+          "km": 5.1
+        },
+        {
+          "id": "ENGG-020",
+          "department": "ENGG",
+          "activity": "USFD flaw removal / rail renewal",
+          "criticality": "A",
+          "km": 12.8
+        },
+        {
+          "id": "TRD-029",
+          "department": "TRD",
+          "activity": "Contact wire wear replacement",
+          "criticality": "A",
+          "km": 10.2
+        },
+        {
+          "id": "ENGG-033",
+          "department": "ENGG",
+          "activity": "USFD flaw removal / rail renewal",
+          "criticality": "A",
+          "km": 9.2
+        },
+        {
+          "id": "SNT-064",
+          "department": "SNT",
+          "activity": "Track circuit / axle counter fault",
+          "criticality": "A",
+          "km": 16.3
+        },
+        {
+          "id": "ENGG-068",
+          "department": "ENGG",
+          "activity": "Deep screening + tamping",
+          "criticality": "B",
+          "km": 17.0
+        }
+      ]
+    },
+    {
+      "id": "W-SEC-02-0-0660-DN",
+      "section": "SEC-02",
+      "scope": "DN",
+      "roads": [
+        "DN"
+      ],
+      "day": 0,
+      "startSlot": 44,
+      "durSlots": 8,
+      "startHHMM": "11:00",
+      "endHHMM": "13:00",
+      "durationMin": 120,
+      "departments": [
+        "SNT"
+      ],
+      "clubbed": false,
+      "detentionMinutes": 136,
+      "tasks": [
+        {
+          "id": "SNT-026",
+          "department": "SNT",
+          "activity": "Track circuit / axle counter fault",
+          "criticality": "A",
+          "km": 24.7
+        },
+        {
+          "id": "SNT-052",
+          "department": "SNT",
+          "activity": "Signal lamp + LED replacement",
+          "criticality": "C",
+          "km": 21.7
+        }
+      ]
+    },
+    {
+      "id": "W-SEC-02-1-0060-DN",
+      "section": "SEC-02",
+      "scope": "DN",
+      "roads": [
+        "DN"
+      ],
+      "day": 1,
+      "startSlot": 100,
+      "durSlots": 10,
+      "startHHMM": "01:00",
+      "endHHMM": "03:30",
+      "durationMin": 150,
+      "departments": [
+        "ENGG",
+        "SNT"
+      ],
+      "clubbed": true,
+      "detentionMinutes": 150,
+      "tasks": [
+        {
+          "id": "ENGG-015",
+          "department": "ENGG",
+          "activity": "Level crossing surface renewal",
+          "criticality": "C",
+          "km": 27.4
+        },
+        {
+          "id": "SNT-034",
+          "department": "SNT",
+          "activity": "Point machine overhaul",
+          "criticality": "A",
+          "km": 23.2
+        }
+      ]
+    },
+    {
+      "id": "W-SEC-03-1-0060-DN",
+      "section": "SEC-03",
+      "scope": "DN",
+      "roads": [
+        "DN"
+      ],
+      "day": 1,
+      "startSlot": 100,
+      "durSlots": 9,
+      "startHHMM": "01:00",
+      "endHHMM": "03:15",
+      "durationMin": 135,
+      "departments": [
+        "SNT"
+      ],
+      "clubbed": false,
+      "detentionMinutes": 126,
+      "tasks": [
+        {
+          "id": "SNT-040",
+          "department": "SNT",
+          "activity": "Point machine overhaul",
+          "criticality": "A",
+          "km": 37.2
+        }
+      ]
+    },
+    {
+      "id": "W-SEC-04-1-0660-SECTION",
+      "section": "SEC-04",
+      "scope": "SECTION",
+      "roads": [
+        "UP",
+        "DN"
+      ],
+      "day": 1,
+      "startSlot": 140,
+      "durSlots": 15,
+      "startHHMM": "11:00",
+      "endHHMM": "14:45",
+      "durationMin": 225,
+      "departments": [
+        "ENGG",
+        "SNT",
+        "TRD"
+      ],
+      "clubbed": true,
+      "detentionMinutes": 803,
+      "tasks": [
+        {
+          "id": "SNT-041",
+          "department": "SNT",
+          "activity": "Point machine overhaul",
+          "criticality": "A",
+          "km": 45.5
+        },
+        {
+          "id": "SNT-055",
+          "department": "SNT",
+          "activity": "Point machine overhaul",
+          "criticality": "A",
+          "km": 49.2
+        },
+        {
+          "id": "ENGG-071",
+          "department": "ENGG",
+          "activity": "SEJ / weld defect attention",
+          "criticality": "A",
+          "km": 48.5
+        },
+        {
+          "id": "ENGG-073",
+          "department": "ENGG",
+          "activity": "Deep screening + tamping",
+          "criticality": "B",
+          "km": 49.7
+        },
+        {
+          "id": "ENGG-076",
+          "department": "ENGG",
+          "activity": "SEJ / weld defect attention",
+          "criticality": "A",
+          "km": 47.8
+        },
+        {
+          "id": "TRD-089",
+          "department": "TRD",
+          "activity": "Neutral section attention",
+          "criticality": "A",
+          "km": 40.9
+        }
+      ]
+    },
+    {
+      "id": "W-SEC-01-2-0060-UP",
+      "section": "SEC-01",
+      "scope": "UP",
+      "roads": [
+        "UP"
+      ],
+      "day": 2,
+      "startSlot": 196,
+      "durSlots": 9,
+      "startHHMM": "01:00",
+      "endHHMM": "03:15",
+      "durationMin": 135,
+      "departments": [
+        "SNT"
+      ],
+      "clubbed": false,
+      "detentionMinutes": 126,
+      "tasks": [
+        {
+          "id": "SNT-072",
+          "department": "SNT",
+          "activity": "Point machine overhaul",
+          "criticality": "A",
+          "km": 0.3
+        }
+      ]
+    },
+    {
+      "id": "W-SEC-02-2-0660-SECTION",
+      "section": "SEC-02",
+      "scope": "SECTION",
+      "roads": [
+        "UP",
+        "DN"
+      ],
+      "day": 2,
+      "startSlot": 236,
+      "durSlots": 12,
+      "startHHMM": "11:00",
+      "endHHMM": "14:00",
+      "durationMin": 180,
+      "departments": [
+        "ENGG",
+        "TRD"
+      ],
+      "clubbed": true,
+      "detentionMinutes": 576,
+      "tasks": [
+        {
+          "id": "ENGG-031",
+          "department": "ENGG",
+          "activity": "SEJ / weld defect attention",
+          "criticality": "A",
+          "km": 22.4
+        },
+        {
+          "id": "TRD-043",
+          "department": "TRD",
+          "activity": "Contact wire wear replacement",
+          "criticality": "A",
+          "km": 26.8
+        },
+        {
+          "id": "ENGG-URG-01",
+          "department": "ENGG",
+          "activity": "USFD flaw removal / rail renewal",
+          "criticality": "A",
+          "km": 25.0
+        }
+      ]
+    },
+    {
+      "id": "W-SEC-03-2-0660-UP",
+      "section": "SEC-03",
+      "scope": "UP",
+      "roads": [
+        "UP"
+      ],
+      "day": 2,
+      "startSlot": 236,
+      "durSlots": 11,
+      "startHHMM": "11:00",
+      "endHHMM": "13:45",
+      "durationMin": 165,
+      "departments": [
+        "ENGG",
+        "SNT"
+      ],
+      "clubbed": true,
+      "detentionMinutes": 256,
+      "tasks": [
+        {
+          "id": "ENGG-050",
+          "department": "ENGG",
+          "activity": "SEJ / weld defect attention",
+          "criticality": "A",
+          "km": 29.2
+        },
+        {
+          "id": "SNT-075",
+          "department": "SNT",
+          "activity": "Point machine overhaul",
+          "criticality": "A",
+          "km": 31.3
+        },
+        {
+          "id": "SNT-087",
+          "department": "SNT",
+          "activity": "Track circuit / axle counter fault",
+          "criticality": "A",
+          "km": 30.2
+        }
+      ]
+    },
+    {
+      "id": "W-SEC-02-4-0660-SECTION",
+      "section": "SEC-02",
+      "scope": "SECTION",
+      "roads": [
+        "UP",
+        "DN"
+      ],
+      "day": 4,
+      "startSlot": 428,
+      "durSlots": 14,
+      "startHHMM": "11:00",
+      "endHHMM": "14:30",
+      "durationMin": 210,
+      "departments": [
+        "ENGG",
+        "TRD"
+      ],
+      "clubbed": true,
+      "detentionMinutes": 734,
+      "tasks": [
+        {
+          "id": "TRD-032",
+          "department": "TRD",
+          "activity": "Neutral section attention",
+          "criticality": "A",
+          "km": 25.3
+        },
+        {
+          "id": "ENGG-067",
+          "department": "ENGG",
+          "activity": "Deep screening + tamping",
+          "criticality": "B",
+          "km": 27.4
+        }
+      ]
+    },
+    {
+      "id": "W-SEC-03-4-0660-DN",
+      "section": "SEC-03",
+      "scope": "DN",
+      "roads": [
+        "DN"
+      ],
+      "day": 4,
+      "startSlot": 428,
+      "durSlots": 13,
+      "startHHMM": "11:00",
+      "endHHMM": "14:15",
+      "durationMin": 195,
+      "departments": [
+        "ENGG",
+        "SNT"
+      ],
+      "clubbed": true,
+      "detentionMinutes": 298,
+      "tasks": [
+        {
+          "id": "SNT-027",
+          "department": "SNT",
+          "activity": "Point machine overhaul",
+          "criticality": "A",
+          "km": 29.3
+        },
+        {
+          "id": "ENGG-046",
+          "department": "ENGG",
+          "activity": "USFD flaw removal / rail renewal",
+          "criticality": "A",
+          "km": 33.4
+        }
+      ]
+    },
+    {
+      "id": "W-SEC-04-4-0660-UP",
+      "section": "SEC-04",
+      "scope": "UP",
+      "roads": [
+        "UP"
+      ],
+      "day": 4,
+      "startSlot": 428,
+      "durSlots": 12,
+      "startHHMM": "11:00",
+      "endHHMM": "14:00",
+      "durationMin": 180,
+      "departments": [
+        "ENGG",
+        "SNT"
+      ],
+      "clubbed": true,
+      "detentionMinutes": 252,
+      "tasks": [
+        {
+          "id": "SNT-038",
+          "department": "SNT",
+          "activity": "Interlocking relay testing",
+          "criticality": "B",
+          "km": 42.6
+        },
+        {
+          "id": "ENGG-063",
+          "department": "ENGG",
+          "activity": "Level crossing surface renewal",
+          "criticality": "C",
+          "km": 43.0
+        }
+      ]
+    },
+    {
+      "id": "W-SEC-01-5-0660-SECTION",
+      "section": "SEC-01",
+      "scope": "SECTION",
+      "roads": [
+        "UP",
+        "DN"
+      ],
+      "day": 5,
+      "startSlot": 524,
+      "durSlots": 14,
+      "startHHMM": "11:00",
+      "endHHMM": "14:30",
+      "durationMin": 210,
+      "departments": [
+        "ENGG",
+        "SNT",
+        "TRD"
+      ],
+      "clubbed": true,
+      "detentionMinutes": 614,
+      "tasks": [
+        {
+          "id": "ENGG-005",
+          "department": "ENGG",
+          "activity": "SEJ / weld defect attention",
+          "criticality": "A",
+          "km": 16.6
+        },
+        {
+          "id": "TRD-018",
+          "department": "TRD",
+          "activity": "OHE dropper / jumper repair",
+          "criticality": "B",
+          "km": 7.2
+        },
+        {
+          "id": "ENGG-019",
+          "department": "ENGG",
+          "activity": "Deep screening + tamping",
+          "criticality": "B",
+          "km": 20.2
+        },
+        {
+          "id": "SNT-024",
+          "department": "SNT",
+          "activity": "Cable megger / earth fault",
+          "criticality": "B",
+          "km": 16.4
+        },
+        {
+          "id": "ENGG-069",
+          "department": "ENGG",
+          "activity": "SEJ / weld defect attention",
+          "criticality": "A",
+          "km": 17.2
+        }
+      ]
+    },
+    {
+      "id": "W-SEC-03-5-0660-UP",
+      "section": "SEC-03",
+      "scope": "UP",
+      "roads": [
+        "UP"
+      ],
+      "day": 5,
+      "startSlot": 524,
+      "durSlots": 11,
+      "startHHMM": "11:00",
+      "endHHMM": "13:45",
+      "durationMin": 165,
+      "departments": [
+        "SNT"
+      ],
+      "clubbed": false,
+      "detentionMinutes": 216,
+      "tasks": [
+        {
+          "id": "SNT-053",
+          "department": "SNT",
+          "activity": "Point machine overhaul",
+          "criticality": "A",
+          "km": 31.3
+        }
+      ]
+    },
+    {
+      "id": "W-SEC-03-6-0660-SECTION",
+      "section": "SEC-03",
+      "scope": "SECTION",
+      "roads": [
+        "UP",
+        "DN"
+      ],
+      "day": 6,
+      "startSlot": 620,
+      "durSlots": 11,
+      "startHHMM": "11:00",
+      "endHHMM": "13:45",
+      "durationMin": 165,
+      "departments": [
+        "ENGG",
+        "SNT",
+        "TRD"
+      ],
+      "clubbed": true,
+      "detentionMinutes": 412,
+      "tasks": [
+        {
+          "id": "TRD-045",
+          "department": "TRD",
+          "activity": "OHE dropper / jumper repair",
+          "criticality": "B",
+          "km": 35.3
+        },
+        {
+          "id": "SNT-060",
+          "department": "SNT",
+          "activity": "Signal lamp + LED replacement",
+          "criticality": "C",
+          "km": 37.6
+        },
+        {
+          "id": "ENGG-077",
+          "department": "ENGG",
+          "activity": "Level crossing surface renewal",
+          "criticality": "C",
+          "km": 36.8
+        },
+        {
+          "id": "SNT-081",
+          "department": "SNT",
+          "activity": "Cable megger / earth fault",
+          "criticality": "B",
+          "km": 37.9
+        }
+      ]
+    },
+    {
+      "id": "W-SEC-04-6-0660-DN",
+      "section": "SEC-04",
+      "scope": "DN",
+      "roads": [
+        "DN"
+      ],
+      "day": 6,
+      "startSlot": 620,
+      "durSlots": 16,
+      "startHHMM": "11:00",
+      "endHHMM": "15:00",
+      "durationMin": 240,
+      "departments": [
+        "ENGG",
+        "SNT"
+      ],
+      "clubbed": true,
+      "detentionMinutes": 400,
+      "tasks": [
+        {
+          "id": "ENGG-017",
+          "department": "ENGG",
+          "activity": "Deep screening + tamping",
+          "criticality": "B",
+          "km": 44.7
+        },
+        {
+          "id": "ENGG-030",
+          "department": "ENGG",
+          "activity": "Bridge girder inspection",
+          "criticality": "B",
+          "km": 45.8
+        },
+        {
+          "id": "SNT-058",
+          "department": "SNT",
+          "activity": "Signal lamp + LED replacement",
+          "criticality": "C",
+          "km": 48.1
+        }
+      ]
+    }
+  ]
+}

@@ -120,19 +120,42 @@ claimed from reading the code.
 | 3a | Corridor map / digital twin | 3–4 h | rail-bloc has one. Real coordinates, coloured by detention pressure. SVG, no new dependency |
 | 3b | Master Gantt by department | 3–4 h | Blocks already carry departments |
 
-## Phase 4 — the Replanner · 1.5–2 days
+## Phase 4 — the Replanner · DONE
 
-Monitor → Simulate → Replan → Recover.
+`/replan`. A USFD flaw is found on SEC-02 at Wednesday 06:00 and must be
+removed within 24 hours; Thursday is a blackout day.
 
-**Cheaper for us than for anyone else:** `build(instance, pinned_schedule=…)`
-already exists — pinning completed work and re-solving the rest is machinery
-shipped for the optimality bound.
+**What the replan does.** Blocks already executed are frozen exactly as they
+ran. The flaw is required, not priced. Then, lexicographically: keep as many
+statutory jobs as can be kept; holding that, change the fewest approved jobs;
+holding both, be cheapest. Every stage starts from a hint - the approved plan,
+then the previous stage's answer.
 
-Scope: **one** re-optimised plan with its cost delta, not Recovery A/B/C.
-Precompute the demo scenario so it cannot fail live.
+**Measured on the shipped week.** The flaw is absorbed into Wednesday's
+SEC-02 block, already granted, with no new block. 7 of 10 approved future
+blocks are unchanged. One approved job changes - proven the fewest possible -
+and it is statutory: ENGG-047 cannot be kept, and that is proven too, because
+the statutory count is a proven maximum.
 
-**Clear-eyed:** 18 of 28 rivals already replan. This removes a weakness; it
-does not create an advantage.
+**The counterfactual is computed, not claimed.** The builder re-solves with one
+more unit of each resource the flaw needs. One more gang: nothing lost and ZERO
+approved jobs changed. One more USFD unit: no help. So the answer to a DRM is
+specific and checkable: arrange one more gang for Wednesday.
+
+**What the first design got wrong, recorded.** A weighted cost on change, with
+no hint, kept 0 of 10 approved blocks, deferred 8 tasks and lost two statutory
+jobs - one of which could have stayed in its approved block at no cost. The
+search never got near the approved plan. Then, with the hint and disruption
+minimised FIRST, it traded a statutory job for fewer changes; statutory now
+ranks first. The tests include one that fails on each of these.
+
+**What it is not.** One disruption, re-solved offline in about three minutes
+and precomputed so it cannot fail on stage. It is not live monitoring;
+continuous replanning stays designed, not built.
+
+**Clear-eyed:** 18 of 28 rivals replan. What none of them do is prove the
+disruption minimal, prove the statutory loss forced, or name the resource that
+would have avoided it.
 
 ## Phase 5 — the pitch · no code
 

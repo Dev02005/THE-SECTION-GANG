@@ -251,6 +251,13 @@ Named here rather than implied by omission.
   section backs traffic into its neighbours — but an unjustified GNN is worse
   than a justified GBM, so we ship the GBM and say so.
 - **Monthly horizon.** The same model at 60-minute slots over 30 days.
+- **Continuous replanning.** The replanner is built and works on one
+  disruption at a time: `/replan` re-solves a mid-week USFD flaw with the past
+  frozen, statutory work kept first and the fewest approved jobs changed, and
+  names the resource that would have avoided the cost. It runs offline and the
+  scenario is precomputed. What is NOT built is the loop around it - watching
+  a defect feed and re-solving on its own as things happen. That needs the
+  feeds this project does not have.
 - **Enforcement of the static artefact.** The credential check and the scoping
   are **not** in the browser: `sign_in` compares a bcrypt hash in Postgres, and
   `my_plan` returns a plan only to a post of that division or that zone, so an

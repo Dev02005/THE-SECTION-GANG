@@ -113,6 +113,17 @@ recorded as it was approved. The planner recomputes it from the plan on screen
 and says plainly if the two ever disagree. Status and approver fields are
 outside the hash, so moving through the approval chain does not change it.
 
+**When the week does not go to plan** — `/replan`. A USFD flaw found on
+Wednesday morning must be removed within 24 hours, and Thursday is a blackout
+day. The replan freezes what has already run, then, in order: keeps every
+statutory job it can, changes the fewest approved jobs, and is cheapest. On the
+shipped week the flaw goes into a block already granted, 7 of 10 approved
+blocks are untouched, and one statutory job is deferred — proven unavoidable.
+It then re-solves with one more of each resource the flaw needs: **one more
+gang and nothing is lost, with no approved job changed at all**; one more USFD
+unit does not help. One disruption, precomputed offline; live replanning is not
+built.
+
 `web/scripts/check-auth.cjs` proves it by attacking it — **52 checks**,
 including a DRM of a *different* division trying to approve this one's plan.
 
@@ -154,8 +165,9 @@ needs step 2.
 
 ```bash
 pip install -r requirements.txt
-python -m pytest tests -q                              # 151 tests
+python -m pytest tests -q                              # 166 tests
 python -m engine.build_plan --tasks 90 --time 90       # writes web/public/data/plan.json
+python -m engine.build_replan                           # writes web/public/data/replan.json
 cd web && npx tsx scripts/build-seed.ts                # refreshes the plan seed SQL
 ```
 
@@ -200,15 +212,16 @@ engine/
   export/       plan_json — the artefact the web app loads
   explain.py    per-block explanations
   pareto.py     the policy-dial sweep
+  replan.py     mid-week disruption: freeze the past, statutory first, least change
   benchmark.py  the scale ladder
   build_plan.py the CLI
 tools/          extract_traffic.py — published timetable → engine/core/traffic.py
 model_store/    the three promoted models and their cards
-tests/          151 tests — one per constraint, plus a doc-drift guard
+tests/          166 tests — one per constraint, plus a doc-drift guard
 supabase/
   migrations/   schema · row-level security · seed · credentials · approval chain
 web/
-  app/          /  /login  /dashboard  /planner  /plan  /audit  /method  /limits  /scale  /network
+  app/          /  /login  /dashboard  /planner  /plan  /replan  /audit  /method  /limits  /scale  /network
   components/   charts · heat canvas · panels · account menu · approval
   lib/          db · session · plan · railways · roles
   scripts/      build-seed · build-stations-csv · check-db · check-auth · check-fingerprint

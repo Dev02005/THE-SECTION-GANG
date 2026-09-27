@@ -202,3 +202,37 @@ def test_the_stated_test_count_matches_the_suite(request: pytest.FixtureRequest)
         assert int(m.group(1)) == n, (
             f"{name} says {m.group(1)} tests; pytest collected {n}"
         )
+
+
+REPLAN = ROOT / "web" / "public" / "data" / "replan.json"
+
+
+def test_readme_replan_claims_match_the_artefact(readme: str) -> None:
+    """
+    The README states the replan's outcome in prose - "7 of 10 approved blocks
+    are untouched", "one more gang and nothing is lost", "one more USFD unit
+    does not help". Each of those is a measurement of one scenario, and the
+    scenario can be rebuilt. Prose that outlives the numbers under it is the
+    drift this file exists to stop, so the claims are read against replan.json.
+    """
+    if not REPLAN.exists():
+        pytest.skip("replan.json not built - run python -m engine.build_replan")
+    r = json.loads(REPLAN.read_text(encoding="utf-8"))
+    d = r["diff"]
+    total = len(d["kept"]) + len(d["changed"]) + len(d["dropped"])
+    assert f"{len(d['kept'])} of {total} approved" in readme, (
+        f"README does not state {len(d['kept'])} of {total} approved blocks untouched"
+    )
+    by_res = {c["resource"]: c for c in r["counterfactuals"]}
+    gang, usfd = by_res.get("GANG"), by_res.get("USFD")
+    assert gang is not None and gang["avoidsTheLoss"], (
+        "README claims one more gang avoids the loss"
+    )
+    assert gang["minChanges"] == 0, (
+        "README claims no approved job changes with one more gang"
+    )
+    assert usfd is not None and not usfd["avoidsTheLoss"], (
+        "README claims one more USFD unit does not help"
+    )
+    assert len(r["lost"]) == 1, "README says ONE statutory job is deferred"
+    assert r["result"]["statutoryProven"], "README says the loss is proven unavoidable"

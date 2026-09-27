@@ -32,7 +32,8 @@ def add_objective(
     w: PolicyWeights,
     hard_statutory: bool = True,
     include_deferral: bool = True,
-) -> None:
+    extra_terms: list[Any] | None = None,
+) -> Any:
     """
     Price the model. Mutates `mv.model` and fills `mv.det_cost`.
 
@@ -40,6 +41,17 @@ def add_objective(
     the schedule is pinned, where that term is a constant - it is what turns the
     objective into pure placement cost so the reported gap means something a
     planner would recognise.
+
+    `extra_terms` appends further priced terms, in the same scaled
+    detention-minute units, before the model is minimised. The replanner uses it
+    for the cost of moving work that was already approved; nothing else passes
+    it, so every existing solve is unchanged.
+
+    Not called `extra`: the clubbing loop below already binds a local of that
+    name, and a parameter called `extra` was overwritten by the last window's
+    IntVar. It failed loudly only because CP-SAT refuses to evaluate a Literal
+    as a boolean - had it not, the objective would have silently gained one
+    window's clubbing count and nothing would have reported it.
     """
     m = mv.model
     tasks = instance["tasks"]
@@ -108,5 +120,12 @@ def add_objective(
     for e in club_terms:
         obj.append(-int(w.alpha_club * CLUB_BONUS) * e)
 
-    m.Minimize(sum(obj))
+    if extra_terms is not None:
+        obj.extend(extra_terms)
+    expr = sum(obj)
+    m.Minimize(expr)
+    #  Returned so a caller can re-minimise it after optimising something else
+    #  first - the replanner minimises disruption, then this, lexicographically.
+    #  Every existing caller ignores the return value, so nothing else changes.
+    return expr
 

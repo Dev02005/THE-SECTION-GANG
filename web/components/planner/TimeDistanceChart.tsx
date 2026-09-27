@@ -33,6 +33,7 @@ export function TimeDistanceChart({
   subtitle,
   onSelect,
   selectedId,
+  marker,
 }: {
   plan: PlanPayload;
   blocks: PlanBlock[];
@@ -41,6 +42,12 @@ export function TimeDistanceChart({
   subtitle: string;
   onSelect?: (block: PlanBlock | null) => void;
   selectedId?: string | null;
+  /**
+   * A moment to mark across every row - the replan uses it for when the
+   * disruption happened, so what was already executed reads as the left of a
+   * line rather than something to be worked out from the block times.
+   */
+  marker?: { slot: number; label: string };
 }) {
   const [hover, setHover] = useState<string | null>(null);
   //  Roving tabindex: the chart is ONE tab stop and arrow keys move between
@@ -141,6 +148,25 @@ export function TimeDistanceChart({
               />
             ))}
           </div>
+
+          {marker && (
+            <div
+              className="pointer-events-none absolute inset-y-0 z-10"
+              style={{ left: GUTTER, right: 0 }}
+              aria-hidden="true"
+            >
+              <span
+                className="absolute inset-y-0 w-0.5 bg-caution"
+                style={{ left: `${pct(marker.slot)}%` }}
+              />
+              <span
+                className="absolute top-0.5 whitespace-nowrap rounded-sm bg-caution px-1 font-mono text-[9.5px] text-surface"
+                style={{ left: `calc(${pct(marker.slot)}% + 4px)` }}
+              >
+                {marker.label}
+              </span>
+            </div>
+          )}
 
           {/* blocks */}
           <svg

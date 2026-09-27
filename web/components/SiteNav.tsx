@@ -20,6 +20,7 @@ const WORK = [
   { href: "/dashboard", label: "Dashboard" },
   { href: "/planner", label: "Planner" },
   { href: "/plan", label: "Block plan" },
+  { href: "/replan", label: "Replan" },
   { href: "/audit", label: "Audit" },
 ];
 
