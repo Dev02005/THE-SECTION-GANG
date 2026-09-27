@@ -50,8 +50,8 @@ QUANTILES = (0.5, 0.9)
 #  Keeping a private copy here is how the model and the task register drifted
 #  apart the first time: the model booked 179-minute P90s into a corridor that
 #  allows 150 minutes of work, and the optimiser deferred two thirds of the
-#  backlog.  Nothing was wrong in either file; they simply disagreed.
-ACTIVITY_CODES = tuple(a.code for a in CORE_ACTIVITIES)
+#  backlog.  Nothing was wrong in either file; they simply disagreed. The
+#  generator below draws from CORE_ACTIVITIES directly for that reason.
 
 GANGS = tuple(f"GANG-{i:02d}" for i in range(1, 13))
 SECTIONS = ("SEC-01", "SEC-02", "SEC-03", "SEC-04")

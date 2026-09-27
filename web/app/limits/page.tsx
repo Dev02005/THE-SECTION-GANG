@@ -77,7 +77,7 @@ export default async function LimitsPage() {
                 "Protected paths measured from the timetable: four real premium services, never overlapped",
                 "Activity durations from RDSO Track Machine Manual working norms",
                 "One tower wagon, one tamper, two USFD units, three gangs — a realistic divisional establishment",
-                "Train traffic measured from the published passenger timetable, not assumed",
+                "Passenger timetable ingested: 480 section traversals by 114 trains",
               ],
             }}
             right={{
@@ -86,6 +86,7 @@ export default async function LimitsPage() {
                 "The specific defects and their chainages",
                 "Their due dates",
                 "The condition history behind each hazard estimate",
+                "The daily shape of detention cost the plan is priced with. The timetable is measured and contradicts it; the detention model does not use it yet",
               ],
             }}
           />
@@ -163,8 +164,8 @@ export default async function LimitsPage() {
               {num((placement?.bound ?? 0))} detention-minute
               equivalents
             </em>
-            . That is a proof, and five competing submissions run solvers
-            capable of producing one while none surface it.
+            . That is a proof. Of the 28 competing repositories, one computes
+            a bound and none displays it.
           </p>
         </DocSection>
 
@@ -220,7 +221,28 @@ export default async function LimitsPage() {
           </ul>
         </DocSection>
 
-        <DocSection n="06" title="Scale, and this is not a safety system">
+        <DocSection n="06" title="What the approval record proves, and what it does not">
+          <p>
+            Every plan carries a fingerprint: a SHA-256 of the blocks and tasks
+            it grants, printed on the document and written into the append-only
+            audit log at submission and at decision.
+          </p>
+          <ul className="my-3 flex flex-col gap-2">
+            {[
+              ["Integrity, not correctness", "A matching fingerprint says this is the plan that was approved. It says nothing about whether the plan is good."],
+              ["A hash, not a signature", "Who approved comes from the audit row. In this demonstration every post shares one password, printed on the sign-in page, so “approved by the DRM” means approved by someone signed in as the DRM."],
+              ["Against users, not the database owner", "Row-level security stops every client from editing the audit log. The project owner and the service-role key bypass it entirely and could rewrite the plan, its hash and the log together. The printed copy is the one outside our control, which is why the fingerprint is printed."],
+            ].map(([h, p]) => (
+              <li key={h} className="border-l-2 border-rule pl-3">
+                <strong className="text-ink">{h}</strong>
+                <br />
+                <span className="text-[13.5px] text-ink-mid">{p}</span>
+              </li>
+            ))}
+          </ul>
+        </DocSection>
+
+        <DocSection n="07" title="Scale, and this is not a safety system">
           <p>
             The reference instance is {plan.sections.length} sections,{" "}
             {nTasks} tasks

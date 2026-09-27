@@ -37,10 +37,11 @@ boundaries are **computed** from their published coordinates (DataMeet
 duplicated across two files, and wrong: the line is 55 km, not the 78 km we
 asserted.
 
-**The traffic, and therefore the detention cost surface** — from the published
-passenger timetable. **The protected paths** — four real premium services with
-their real transit times, replacing two invented slots. Both are set out in
-§1b, including what they exclude.
+**The traffic** — from the published passenger timetable. It is measured, but
+the detention surface the shipped plan is priced with does **not** use it yet;
+§1b says exactly what does. **The protected paths** — four real premium
+services with their real transit times, replacing two invented slots. These do
+reach the plan. Both are set out in §1b, including what they exclude.
 
 **Zones, divisions and the station master** — from the Ministry list and the
 CC0 geodata. These are reference: they name things, and they do not reach the
@@ -48,8 +49,9 @@ optimiser.
 
 ### What is invented
 
-The specific defects, their chainages within a section, their due dates, and
-the condition history behind each hazard estimate. The generator, its seed and its target
+The specific defects, their chainages within a section, their due dates, the
+condition history behind each hazard estimate - and the daily shape of
+detention cost that the shipped plan is priced with (§1b). The generator, its seed and its target
 distributions are in `engine/core/synthetic.py` and
 `engine/core/activities.py` so they can be argued with.
 
@@ -62,21 +64,45 @@ good as the generator. A different backlog would give different percentages.
 
 ---
 
-## 1b. Traffic is measured, and it is passenger only
+## 1b. Traffic is measured - and the priced plan does not use it yet
 
-The detention cost surface is no longer a shape we invented. It is built from
-the published passenger timetable: **480 directional section traversals by 114
-trains** that stop at two or more of this corridor's stations, weighted by
-train class and spread across the weekdays each service actually runs.
+The published passenger timetable is ingested: **480 directional section
+traversals by 114 trains** that stop at two or more of this corridor's
+stations, weighted by train class and spread across the weekdays each service
+actually runs (`tools/extract_traffic.py` -> `engine/core/traffic.py`).
 
-**The data contradicted our assumption, and the correction is worth stating.**
-We had priced 06:00-10:00 and 17:00-22:00 as the two expensive passenger peaks
-and the mid-day window as the cheapest of the day. On this corridor those
+**The data contradicts our assumption, and that is worth stating.** We assumed
+06:00-10:00 and 17:00-22:00 were the two expensive passenger peaks and the
+mid-day window the cheapest of the day - and the pricing still does (next
+subsection). On this corridor those
 peaks are among the *quietest* hours, and midnight is the busiest - long
 distance trains on the Howrah-Chennai route pass Waltair overnight. Only the
 night-corridor assumption survived: 02:00 really is quiet. Nationally the
 distribution is flatter still, every hour carrying 3.5% to 4.4% of all stops,
 because Indian Railways runs around the clock.
+
+### What the shipped plan is actually priced with
+
+**Not the measurement.** The shipped plan is model-priced, and the detention
+model builds its surface from `path_density` in `engine/models/detention.py`:
+a hand-set daily curve that prices 06:00-10:00 and 17:00-22:00 as the peaks
+and mid-day as the cheapest, multiplied by a random per-section "busyness".
+That is exactly the assumed shape the timetable contradicts. The measured
+traffic reaches the instance's own surface, which the scale benchmark and the
+tests solve against, but pricing replaces that surface before the shipped
+plan is solved.
+
+So the heat strip on the planner, every detention figure and where each block
+sits all rest on the assumed shape. In the shipped plan, the timetable decides
+two things: the four protected paths, and the 03:30 end of the night window
+(both below).
+
+Found on 28 Sep, while rewriting the implementation document against the code.
+Until then this section, the `/limits` page and the notice on every page said
+the detention surface came from the timetable. It did not, and the correction
+is made here rather than quietly. Making it true means retraining the
+detention model on the measured densities and re-solving, which moves every
+headline number. Until that is done, the claim is withdrawn.
 
 ### Three exclusions, so the figure is a floor rather than a census
 
@@ -90,10 +116,10 @@ The freight gap is the material one, and it has a name. The **East Coast
 Dedicated Freight Corridor** (Kharagpur to Vijayawada, 1,100 km, *proposed*)
 would run down this very route and take that traffic off the mixed line. Until
 it exists, freight shares these sections with the passenger services we can
-see, and our surface does not price it. A block planned on our numbers is
-therefore priced against a floor, not the full load.
+see, and a surface built from this timetable cannot price it. Any such
+surface is a floor, not the full load.
 
-### Protected paths are measured too
+### Protected paths are measured, and they do reach the plan
 
 Four premium services cross this corridor, taken from the same timetable with
 their real transit times. They replaced two invented paths that sat at 07:00
@@ -200,9 +226,10 @@ the primal does. We verified this at two work budgets; the floor was identical
 both times.
 
 We report the floor rather than headline a percentage: *no plan of this work
-costs less than 30,093,381 detention-minute equivalents.* That is a proof, and
-it is a sentence no competing submission can produce — five of them run solvers
-capable of a bound and none surface it.
+costs less than 30,093,381 detention-minute equivalents.* That is a proof. Of
+the 28 competing repositories, one computes a bound and none displays it -
+searched for every common bound API across all 28, and through that one's web
+application.
 
 ---
 
@@ -234,21 +261,22 @@ suspiciously perfect result.
 
 ## 6. What is designed but not built
 
-Named here rather than implied by omission.
+Named here rather than implied by omission. The `/limits` page carries the
+same eight names, and a test fails if the two lists disagree.
 
-- **Block return capture — the closed loop.** The duration model trains on
+- **Reading the Train Signal Register.** The duration model trains on
   generated durations and never improves without field data. The route in is
   the **Station Master**, not a new field app: the SM at each end of the
   section already records block taken and block returned in the Train Signal
   Register, by rule, tonight. Reading those two timestamps back would make the
   duration model the one model grounded in observation, and it asks nobody to
-  do anything they are not already doing. Designed, not built.
-- **Historical replay harness** — stage 1 of the rollout, where data-quality
+  do anything they are not already doing.
+- **Historical replay harness.** Stage 1 of the rollout, where data-quality
   problems surface.
 - **BDMS write-back.** The planner proposes; BDMS grants. We never write to the
   block register.
-- **ST-GNN for the detention surface.** A graph is justified — blocking one
-  section backs traffic into its neighbours — but an unjustified GNN is worse
+- **ST-GNN detention surface.** A graph is justified, because blocking one
+  section backs traffic into its neighbours. But an unjustified GNN is worse
   than a justified GBM, so we ship the GBM and say so.
 - **Monthly horizon.** The same model at 60-minute slots over 30 days.
 - **Continuous replanning.** The replanner is built and works on one
@@ -258,75 +286,109 @@ Named here rather than implied by omission.
   scenario is precomputed. What is NOT built is the loop around it - watching
   a defect feed and re-solving on its own as things happen. That needs the
   feeds this project does not have.
-- **Enforcement of the static artefact.** The credential check and the scoping
-  are **not** in the browser: `sign_in` compares a bcrypt hash in Postgres, and
-  `my_plan` returns a plan only to a post of that division or that zone, so an
-  officer of Northern Railway gets null rather than Waltair's numbers. That
-  much is real, and it is applied inside the query where the client cannot opt
-  out of it.
+- **Serving the plan only from the database.** The credential check and the
+  scoping are **not** in the browser: `sign_in` compares a bcrypt hash in
+  Postgres, and `my_plan` returns a plan only to a post of that division or
+  that zone, so an officer of Northern Railway gets null rather than Waltair's
+  numbers. That much is real, and it is applied inside the query where the
+  client cannot opt out of it.
 
   What remains open is the **fallback file**. `plan.json` is still served
   publicly at `/data/plan.json`, because the application has to run for anyone
   who clones it without a database. Requesting that URL directly still yields
   the artefact. So the scoping is enforced and the artefact is not, and those
-  are two different claims — a deployment would serve the plan only through the
+  are two different claims. A deployment would serve the plan only through the
   database and delete the fallback.
 
   A deployment would also carry no user table. Every officer already has an
   **HRMS employee ID**, and an internal application on RailNet authenticates
   against that directory. A block plan is an auditable document, so "approved
   by Sr.DEN" must resolve to an establishment record rather than a row in our
-  database — and local accounts go stale on the next transfer.
-- **Superseding a plan properly.** The chain is built and driven from the
-  planner: draft → submitted → approved, or sent back with a reason and brought
-  again. `submit_plan` accepts only Sr.DEN, Sr.DSTE or Sr.DEE of that division,
-  `decide_plan` only its DRM, a rejection without a reason is refused, and every
-  step writes to an append-only audit log. All of it is tested by walking the
-  cycle end to end.
+  database - and local accounts go stale on the next transfer.
+- **Un-approving a plan.** No railway un-approves a programme; it supersedes
+  it, and supersession is built (§6b). `reset_plan` has no real counterpart: it
+  returns the *same* plan to draft, because this instance is shared by
+  everyone who opens the site, and without it the approval chain could be
+  exercised exactly once. The button says so, and the reset is itself written
+  to the audit log.
 
-  **Supersession is built** for a new solve: re-seeding marks the division's
-  previous plans `superseded` rather than deleting them, so a decided plan stays
-  as the record of what was granted and the audit log keeps pointing at a row
-  that exists. (Until 27 Sep the seed deleted only rows carrying its own
-  reference; because the reference contains the generation date, a re-solve on
-  another day left two current plans side by side.)
+---
 
-  `reset_plan` is a different thing and stays a **demonstration affordance**:
-  it returns the *same* plan to draft, because this instance is shared by
-  everyone who opens the site, and without it the chain could be exercised
-  exactly once. No railway un-approves a programme. The button says so, and the
-  reset is itself written to the audit log.
+## 6b. The approval chain and the fingerprint - what they prove
+
+**The chain is built** and driven from the planner: draft -> submitted ->
+approved, or sent back with a reason and brought again. `submit_plan` accepts
+only Sr.DEN, Sr.DSTE or Sr.DEE of that division, `decide_plan` only its DRM, a
+rejection without a reason is refused, the officer who submits can never be
+the one who decides, and every step writes to an append-only audit log. All of
+it is tested by walking the cycle end to end (`check-auth.cjs`).
+
+**Supersession is built** for a new solve: re-seeding marks the division's
+previous plans `superseded` rather than deleting them, so a decided plan stays
+as the record of what was granted and the audit log keeps pointing at a row
+that exists. (Until 27 Sep the seed deleted only rows carrying its own
+reference; because the reference contains the generation date, a re-solve on
+another day left two current plans side by side.)
+
+**The fingerprint** is a SHA-256 over what the plan grants - every block, the
+tasks in it and their slots, and the horizon. It is on the plan row, on the
+printed document, and written into the audit log at submission and at
+decision. Status and approver are outside it, so moving through the chain does
+not change it. What it does and does not establish:
+
+- It proves **integrity, not correctness.** A fingerprint that matches says
+  this is the plan that was approved. It says nothing about whether the plan
+  is good.
+- It is **a hash, not a signature.** Who approved comes from the audit row's
+  officer id, and in this demonstration every post shares one password,
+  printed on the sign-in page. "Approved by the DRM" here means "approved by
+  someone signed in as the DRM".
+- It is tamper-evident **against the application's users, not against the
+  database owner.** Row-level security stops every client from editing the
+  audit log; the project's owner and its service-role key bypass row-level
+  security entirely, and could rewrite the plan, its hash and the log
+  together. The copy outside our control is the printed one, which is why the
+  fingerprint is printed.
 
 ---
 
 ## 7. Scale
 
-The reference instance is 4 sections, 90 tasks, 576 candidate windows over a
-7-day horizon at 15-minute slots. Solve time is roughly 100 seconds under a
-fixed deterministic work budget.
+The reference instance is 4 sections, 90 tasks, 432 candidate windows over a
+7-day horizon at 15-minute slots. The shipped plan solves in about
+92 seconds under a fixed deterministic work budget.
 
-Measured across a ladder of instance sizes, each given 120
-seconds of free search — the failing rungs included, because a scale claim
-without them is a marketing number:
+Measured on 28 Sep across a ladder of instance sizes, each given
+120 seconds of free search — the failing rungs included, because a
+scale claim without them is a marketing number:
 
 | tasks | sections | assign vars | build | solve | status |
 |---|---|---|---|---|---|
-| 90 | 4 | 3,940 | 0.3s | 121s | FEASIBLE |
-| 500 | 12 | 16,840 | 6.0s | 125s | FEASIBLE |
-| 1,000 | 20 | 36,072 | 4.8s | 128s | FEASIBLE |
-| 2,500 | 40 | 95,610 | 24.1s | 147s | UNKNOWN |
-| 5,000 | 60 | 189,142 | 51.8s | 190s | UNKNOWN |
-| 10,000 | 100 | 372,236 | 483.1s | 758s | UNKNOWN |
+| 90 | 4 | 2,728 | 0.2s | 121s | FEASIBLE |
+| 500 | 12 | 12,690 | 2.0s | 122s | FEASIBLE |
+| 1,000 | 20 | 27,070 | 4.1s | 126s | FEASIBLE |
+| 2,500 | 40 | 71,691 | 23.1s | 143s | UNKNOWN |
+| 5,000 | 60 | 141,643 | 45.9s | 168s | UNKNOWN |
+| 10,000 | 100 | 278,736 | 291.6s | 363s | UNKNOWN |
 
-**Feasible to about 1,000 tasks across 20 sections in two minutes; it breaks at
-2,500.** At 10,000 — the size the fastest competing entry quotes — the model
-still builds (483 s, 372,236 variables) and the solver finds nothing in twelve
-minutes. That entry reaches 10,000 in milliseconds because its task struct
-carries no department field and it does no clubbing at all, which is a fast
-solution to a smaller problem rather than a faster solution to this one.
+**Good at the reference size, degrading fast beyond it, feasible to 1,000
+tasks, and nothing found from 2,500.** "Feasible" flatters the
+1,000-task rung: in two minutes it placed 46 of 1,000 tasks and closed
+25 of 385 statutory items. At 10,000 — the size the fastest competing
+entry quotes — the model still builds (292 s, 278,736 variables) and
+the solver finds nothing in about 6 minutes. That entry reaches 10,000 in
+milliseconds because its task struct carries no department field and it does
+no clubbing at all, which is a fast solution to a smaller problem rather than
+a faster solution to this one.
 
-Quality degrades well before feasibility does: clubbing falls from 92% to 11%
-across the ladder, because the search has less time per decision.
+Quality gives out well before feasibility does: across the rungs that solve,
+the share of work placed falls from 86% to 5% and the share of shared blocks
+from 77% to 2%, because the search has less time per decision.
+
+The table was first measured on 4 Sep, on an engine the real geometry and
+timetable have since changed (576 candidate windows at 90 tasks then,
+432 now). It went on being quoted after that. It was re-run on 28 Sep,
+and a test now fails if this table and the benchmark file disagree.
 
 Two exact reductions make it fit, neither of which deletes a solution:
 assignments that cannot fit a window's cap or finish by their due date are

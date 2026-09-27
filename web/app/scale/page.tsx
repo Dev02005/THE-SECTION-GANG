@@ -30,6 +30,14 @@ export const metadata = {
 export default async function ScalePage() {
   const [plan, bench] = await Promise.all([loadPlan(), loadBenchmark()]);
 
+  //  Feasible is not the same as useful. The largest rung that solves is read
+  //  from the data, with how much of its work it actually placed - the "Status"
+  //  column alone called a plan feasible that placed 46 jobs out of 1,000.
+  const solved = (bench?.rows ?? []).filter(
+    (r) => r.status === "OPTIMAL" || r.status === "FEASIBLE",
+  );
+  const largest = solved.length ? solved[solved.length - 1] : null;
+
   return (
     <>
       <SiteHeader />
@@ -62,7 +70,7 @@ export default async function ScalePage() {
                     {[
                       "Tasks", "Sections", "Days", "Grid", "Windows",
                       "Assign vars", "Build", "Solve", "Status", "Blocks",
-                      "Done", "Clubbed",
+                      "Done", "Statutory", "Clubbed",
                     ].map((h, i) => (
                       <th
                         key={h}
@@ -123,6 +131,9 @@ export default async function ScalePage() {
                           {ok ? num(r.scheduled) : "—"}
                         </td>
                         <td className="tnum px-3 py-2 text-right font-mono text-ink-mid">
+                          {ok ? `${num(r.statutory_done)}/${num(r.statutory_total)}` : "—"}
+                        </td>
+                        <td className="tnum px-3 py-2 text-right font-mono text-ink-mid">
                           {ok ? `${r.multidept_pct}%` : "—"}
                         </td>
                       </tr>
@@ -135,6 +146,18 @@ export default async function ScalePage() {
             <p className="mt-3 max-w-[74ch] text-[12px] leading-relaxed text-ink-mut">
               {bench.note} Each rung had {bench.secondsPerRung} seconds.
             </p>
+            {largest && largest.tasks !== solved[0].tasks && (
+              <p className="mt-3 max-w-[80ch] rounded border border-caution bg-caution-soft px-3 py-2 text-[13px] leading-relaxed text-ink">
+                <strong>Feasible is not the same as useful.</strong> The largest
+                rung that solves, {num(largest.tasks)} tasks, placed{" "}
+                {num(largest.scheduled)} of them and closed{" "}
+                {num(largest.statutory_done)} of{" "}
+                {num(largest.statutory_total)} statutory items, with{" "}
+                {largest.multidept_pct}% of blocks shared. Read the Done and
+                Statutory columns, not only Status: quality gives out well
+                before feasibility does.
+              </p>
+            )}
           </>
         )}
 
@@ -151,7 +174,9 @@ export default async function ScalePage() {
               by its due date even starting the instant protection completes, is
               never given a variable. Both are already constraints, so this is
               exact — and it removes <strong>91% of the variables</strong> at
-              division scale: 3,991,232 down to 371,058.
+              division scale: 2,994,132 compatible pairs down to 278,736 on the
+              10,000-task rung, and 51% on the reference instance (measured 28
+              Sep).
             </li>
             <li className="border-l-2 border-rule pl-3">
               <strong className="text-ink">Coarser start grid.</strong> Corridor

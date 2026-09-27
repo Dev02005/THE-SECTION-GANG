@@ -1,9 +1,9 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-09-26T21:03:03.248564+00:00",
+  "generatedAt": "2026-09-27T19:20:45.884858+00:00",
   "provenance": {
     "synthetic": true,
-    "notice": "TMS, SMMS, TDMS, COA and BDMS are internal Indian Railways systems with no external access. The maintenance backlog shown here is generated, not observed. Corridor geometry, train traffic and protected paths are measured from published data.",
+    "notice": "TMS, SMMS, TDMS, COA and BDMS are internal Indian Railways systems with no external access. The maintenance backlog shown here is generated, not observed. Corridor geometry and protected paths are measured from published data; the daily shape of detention cost is assumed.",
     "seed": 7,
     "pricedBy": [
       "duration",
@@ -5585,7 +5585,7 @@
     "objective": 36639101,
     "bound": 23942400,
     "gapPct": 34.65,
-    "wallTimeS": 92.365,
+    "wallTimeS": 89.989,
     "deterministic": true,
     "statutoryProven": false
   },
@@ -5594,7 +5594,7 @@
     "objective": 31883629,
     "bound": 30093381,
     "gapPct": 5.61,
-    "wallTimeS": 128.879,
+    "wallTimeS": 123.097,
     "tasksPinned": 48,
     "restriction": "Optimality of the placement, with the set of scheduled work held fixed at what the full solve chose. Does not bound the choice of which work to defer."
   },

@@ -78,9 +78,10 @@ export function NoPlanPanel({
       <p className="max-w-[70ch] text-[14px] leading-relaxed text-ink-mid">
         <strong className="text-ink">Waltair is solved</strong> because those
         gaps could be closed from public sources for that one corridor: five
-        real stations with published coordinates, the real passenger timetable,
-        and four real premium services the plan is drawn around. Its defect
-        register is still generated, and every page says so.
+        real stations with published coordinates, and the real passenger
+        timetable, which gives the four premium services the plan is drawn
+        around. Its defect register is still generated, and every page says
+        so.
         {held.length > 0 && zone !== null && (
           <>
             {" "}

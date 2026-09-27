@@ -248,8 +248,9 @@ function PlanDocument({ plan }: { plan: PlanPayload }) {
         Maintenance backlog is synthetic.
       </strong>{" "}
       TMS, SMMS, TDMS, COA and BDMS have no external access; the defect
-      register shown here is generated, not observed. Corridor geometry, train
-      traffic and protected paths are measured from published data.
+      register shown here is generated, not observed. Corridor geometry and
+      protected paths are measured from published data; the daily shape of
+      detention cost is assumed.
     </footer>
     </>
   );

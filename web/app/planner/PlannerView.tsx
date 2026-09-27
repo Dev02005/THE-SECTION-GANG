@@ -159,6 +159,10 @@ function BlockDetail({
         </p>
       )}
 
+      {/* The clubbed headline states the saving and not the placement, so the
+          second half of the explanation - what this slot cost over the
+          cheapest window of the same length - is given here. It was computed
+          and shipped for every block and, until 28 Sep, drawn for none. */}
       {explanation?.clubbing && (
         <dl className="mt-2 flex flex-col gap-1 rounded border border-rule-soft px-3 py-2">
           {[
@@ -171,6 +175,19 @@ function BlockDetail({
               "Overheads avoided",
               `${explanation.clubbing.overheads_saved} min-equiv`,
             ],
+            ...(explanation.placement.cheapest_alternative !== null &&
+            explanation.placement.penalty_vs_cheapest > 0
+              ? [
+                  [
+                    `Cheapest window this long (${explanation.placement.cheapest_slot_hhmm})`,
+                    `${explanation.placement.cheapest_alternative} min`,
+                  ],
+                  [
+                    "Paid for this slot",
+                    `+${explanation.placement.penalty_vs_cheapest} min`,
+                  ],
+                ]
+              : []),
           ].map(([k, v]) => (
             <div key={k} className="flex items-baseline justify-between gap-3">
               <dt className="text-[11.5px] text-ink-mut">{k}</dt>

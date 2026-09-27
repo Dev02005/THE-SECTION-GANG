@@ -56,7 +56,6 @@ export function TimeDistanceChart({
   //  and practically unusable.
   const [focusIdx, setFocusIdx] = useState(0);
   const slots = plan.horizon.slots;
-  const slotsPerDay = plan.horizon.slotsPerDay;
   const days = plan.horizon.days;
   const height = rows.length * ROW_HEIGHT;
 

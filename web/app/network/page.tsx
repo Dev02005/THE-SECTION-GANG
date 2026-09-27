@@ -4,7 +4,7 @@ import { DocSection } from "@/components/DocSection";
 import { RequireSignIn } from "@/components/RequireSignIn";
 import { SiteHeader } from "@/components/SiteHeader";
 import { loadPlan } from "@/lib/loadPlan";
-import { TOTAL_DIVISIONS, TOTAL_ZONES, ZONES } from "@/lib/railways";
+import { TOTAL_DIVISIONS, TOTAL_ZONES } from "@/lib/railways";
 import { corridorChain, loadStations, loadVandeBharat } from "@/lib/stations";
 import { NetworkTables } from "./NetworkTables";
 

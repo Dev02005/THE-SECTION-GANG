@@ -1,7 +1,7 @@
 import { num } from "@/lib/plan";
 import type { Station, StationData, PremiumData } from "@/lib/stations";
 import { DocSection } from "@/components/DocSection";
-import { TOTAL_DIVISIONS, TOTAL_ZONES, ZONES } from "@/lib/railways";
+import { ZONES } from "@/lib/railways";
 
 interface Props {
   chain: { station: Station; km: number }[];

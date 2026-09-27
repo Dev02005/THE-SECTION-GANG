@@ -1,6 +1,3 @@
-"use client";
-
-import { useState } from "react";
 import type { PlanPayload } from "@/lib/plan";
 
 const DIALS = [
@@ -10,56 +7,50 @@ const DIALS = [
   { key: "alpha_club", label: "Clubbing", hint: "Reward per extra department" },
 ] as const;
 
+/** The top of the drawn scale. Every shipped weight sits well inside it. */
+const SCALE_MAX = 3;
+
 /**
- * The four policy weights, as a Sr.DEN would turn them.
+ * The four policy weights the displayed plan was solved with.
  *
- * These are shown at the values the displayed plan was actually solved with -
- * moving them without re-solving would show a plan that does not correspond to
- * the dials, which is worse than not having dials. The live re-solve lands in
- * T7; until then they are read-only and say so.
+ * READ-ONLY, deliberately. These used to be sliders that moved and re-solved
+ * nothing, and once moved they promised that "live re-planning lands in the
+ * next stage" - a stage that was never going to exist, because there is no
+ * server to re-solve on. A dial that changes and a plan that does not is worse
+ * than no dial.
+ *
+ * What turning the risk dial actually does is measured, one panel down: the
+ * trade-off curve is seven real re-solves across that weight. That is the
+ * honest version of a slider, and it is where this panel points.
  */
 export function PolicyDials({ weights }: { weights: PlanPayload["weights"] }) {
-  const [values, setValues] = useState(weights);
-  const dirty = DIALS.some((d) => values[d.key] !== weights[d.key]);
-
   return (
     <section className="rounded-lg border border-rule bg-surface p-4">
-      <h3 className="eyebrow mb-3">Policy dials</h3>
-      <div className="flex flex-col gap-3">
+      <h3 className="eyebrow mb-3">Policy weights</h3>
+      <dl className="flex flex-col gap-3">
         {DIALS.map((d) => (
-          <label key={d.key} className="block">
-            <span className="mb-1 flex items-baseline justify-between">
-              <span className="text-[12.5px] text-ink-mid">{d.label}</span>
-              <span className="tnum font-mono text-[12px] text-ink">
-                {values[d.key].toFixed(1)}
-              </span>
-            </span>
-            <input
-              type="range"
-              min={0}
-              max={3}
-              step={0.1}
-              value={values[d.key]}
-              aria-label={`${d.label} weight`}
-              onChange={(e) =>
-                setValues({ ...values, [d.key]: Number(e.target.value) })
-              }
-              className="w-full accent-[var(--accent)]"
-            />
-            <span className="text-[11px] text-ink-mut">{d.hint}</span>
-          </label>
+          <div key={d.key}>
+            <div className="mb-1 flex items-baseline justify-between">
+              <dt className="text-[12.5px] text-ink-mid">{d.label}</dt>
+              <dd className="tnum font-mono text-[12px] text-ink">
+                {weights[d.key].toFixed(1)}
+              </dd>
+            </div>
+            <div aria-hidden="true" className="h-1.5 w-full rounded-full bg-surface-sunk">
+              <div
+                className="h-full rounded-full bg-accent"
+                style={{ width: `${Math.min(100, (weights[d.key] / SCALE_MAX) * 100)}%` }}
+              />
+            </div>
+            <p className="mt-1 text-[11px] text-ink-mut">{d.hint}</p>
+          </div>
         ))}
-      </div>
+      </dl>
 
       <p className="mt-3 border-t border-rule-soft pt-3 text-[11.5px] leading-relaxed text-ink-mut">
-        {dirty ? (
-          <span className="text-caution">
-            Moved from the values this plan was solved with. The chart still
-            shows the original solve — live re-planning lands in the next stage.
-          </span>
-        ) : (
-          "These are the weights the displayed plan was solved with. Every plan records them."
-        )}
+        The weights this plan was solved with; every plan records them. Nothing
+        re-solves in the browser. What turning the risk weight does is measured
+        in the trade-off curve below, from seven real re-solves.
       </p>
     </section>
   );

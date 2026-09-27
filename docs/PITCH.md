@@ -3,8 +3,8 @@
 A running order, and the questions we want asked.
 
 Our position is unusual: we are the only entrant who gets **stronger** under a
-technical probe. Four of the seven rivals publish headline numbers their own
-code manufactures. The pitch should therefore invite the hard question rather
+technical probe. Of the seven rival repositories we read line by line, four
+publish headline numbers their own code manufactures. The pitch should therefore invite the hard question rather
 than hope nobody asks it.
 
 ---
@@ -46,16 +46,16 @@ Open `/planner`. Do not narrate the UI — let the picture do it.
 **Point at the two charts.** Same axes. Same corridor. Above: 43 blocks,
 one department each. Below: 18 blocks, most carrying two or three.
 
-**Point at the red.** That is the detention cost surface — what blocking that
-road at that moment actually costs in train delay. The plan threads through
-the gaps. *No rival can draw this: it requires a cost surface and none of the
-seven computes one.*
+**Point at the red.** That is the detention cost surface — what the model
+prices blocking that road at that moment. The plan threads through the gaps. *No rival we read in full can draw this: it needs a cost surface, and
+none of those seven computes one.*
 
 **Then the numbers**, which are on screen and computed by one function scoring
 both plans on one instance:
 
 > 43 blocks to 18. Packing 0.82 to 2.06 — two and a half times the work per
-> hour of line occupation, and 48 jobs done against 43. Statutory arrears 20 of 35 closed, to 34 of 35.
+> hour of line occupation, and 48 jobs done against 43. Statutory items closed:
+> 21 of 35 under current practice, 30 of 35 under the joint plan.
 
 ---
 
@@ -63,23 +63,25 @@ both plans on one instance:
 
 This is the moment. Let them pick it.
 
-> Three jobs from three departments share this block. Done separately they
-> would cost 750 detention-minutes against 464 here — 286 saved, plus 30 in
-> avoided block overheads.
+The strongest is Monday's SEC-01 section block, 11:00–15:00:
 
-Then click one where sharing **cost** more, and read that out too. Two of the
-fourteen shared blocks are like this — both are two jobs from the *same*
-department, so it is a sharing cost rather than a clubbing cost. Reading it
-aloud is worth more than the saving:
+> 6 jobs from 3 departments share this block. Done separately they would cost
+> 1950 detention-minutes against 864 here — 1086 saved, plus 75 in avoided
+> block overheads.
 
-> Sharing avoids 15 detention-minute equivalents of block overhead but costs 33
-> more in detention — 319 here against 286 apart — because a section block pays
-> both roads. The optimiser still chose it, which means the binding reason is
-> elsewhere: a statutory date, a committed resource, a precedence.
+Then read the line under it, which is the bad half and worth more than the
+saving: the cheapest window of the same length would have cost **736**, so
+this slot costs **128 more** than it had to. Eleven of the fourteen shared
+blocks carry a line like that. The cheapest window takes no account of due
+dates or of the tower wagon, and the optimiser still chose to pay the 128, so
+the reason is one of those.
 
-The first version of that sentence reported only the 15 saved and stayed silent
-on the 33 it cost. A test caught it. That is the arithmetic we criticise in the
-field, and we had to be caught doing it ourselves before it was fixed.
+The explainer is built to report a cost as readily as a saving. On an earlier
+build of the corridor, two shared blocks cost more detention together than
+apart, and the first version of the explainer reported only the overhead they
+saved. A test caught it and now holds the explainer to stating both. On this
+week no shared block costs more than the same jobs done apart; the smallest
+saving is 35 minutes (Friday, SEC-02).
 
 ---
 
@@ -101,7 +103,7 @@ the bad half — it is the strongest thirty seconds in the pitch.
 That is the structural problem in one screen. Current practice hands the
 corridor to whoever reaches it first; Engineering has the largest register, so
 it takes most of the capacity and Traction carries the arrears. Division
-statutory goes **21/35 → 30/35** once the corridor is shared — and the nine
+statutory goes **21/35 → 30/35** once the corridor is shared, and the five
 that remain are a machine problem, not a planning one.
 
 **Then say the part that is still missing.** Traction closes four of nine, not
@@ -115,17 +117,41 @@ headline — and the aggregate KPIs above genuinely do hide it.
 ## 5:00 — The three things no rival has
 
 **The bound.** *No plan of this work costs less than 30,093,381 detention-minute
-equivalents. Ours costs 31,883,629 — within 5.6%.* That is a proof, not an estimate. Five
-rivals run solvers capable of producing a bound; none surfaces it.
+equivalents. Ours costs 31,883,629 — within 5.6%.* That is a proof, not an
+estimate. Of the 28 competing repositories, one computes a bound and none
+displays it.
 
 **The shortfall list.** Five statutory tasks cannot be placed, and every one is
 behind the single tower wagon. *We could have tuned them away. Five statutory
 items stuck behind one machine is exactly the paper a DRM takes to the zonal
 allocation meeting.*
 
-**The trade-off curve.** Seven re-solves across the risk weight. Buying risk
-down costs roughly 1,000 detention-minutes per 900 of risk cleared. The dials
-are not a gimmick; this is the price list.
+**The trade-off curve.** Seven re-solves across the risk weight. Current
+policy sits at the knee. Getting there is cheap: between half weight and
+parity, 237 detention-minutes clear 1,221 of risk. Going past it is dear:
+the next 332 of risk costs 1,032 minutes, and the 220 after that costs 3,304.
+The dials are not a gimmick; this is the price list.
+
+---
+
+## 6:00 — When the week does not go to plan
+
+Open `/replan`. A USFD flaw is found on SEC-02 on Wednesday morning, it must
+be removed within 24 hours, and Thursday is a blackout day.
+
+> Blocks already worked are frozen as they ran. Then, in order: keep every
+> statutory job that can be kept, change as few approved jobs as possible, and
+> be as cheap as possible. The flaw goes into a block already granted, with no
+> new block, and 7 of the 10 approved blocks ahead are untouched.
+>
+> One statutory job has to give way. That is **proven**, not estimated: the
+> statutory count is a proven maximum. Then it re-solves with one more of each
+> resource the flaw needs. One more gang and nothing is lost, with no approved
+> job changed at all. One more USFD unit does not help.
+
+That last line is the answer a DRM can act on: arrange one more gang for
+Wednesday. Say what it is not, too. It is one disruption, solved offline and
+precomputed so it cannot fail on stage. Live replanning is not built.
 
 ---
 
@@ -139,6 +165,11 @@ Open `/plan`. Print preview it.
 > It says on its face that it is a proposal, not a grant. BDMS remains the
 > system of record.
 
+Point at the fingerprint in the footer: a SHA-256 of every block and task the
+plan grants. Submission and approval each write it into the audit log, which
+nothing can revise, so the plan that was approved is on record exactly as it
+was approved. Open `/audit` to show the entries.
+
 ---
 
 ## 8:00 — Say the limitation before you are asked
@@ -150,8 +181,10 @@ Do not wait for this question. Take it.
 > that we say so: there is a banner on every page, a limitations page, and it
 > is printed on the document itself.
 >
-> The corridor policy, the protected paths and the traffic shape follow
-> published practice. The specific defects are ours.
+> The corridor policy follows published practice, and the protected paths
+> come from the published timetable. The daily shape of detention cost is
+> assumed: we measured the timetable, it disagrees with that shape, and the
+> limits page says so. The specific defects are ours.
 
 ---
 
@@ -168,10 +201,11 @@ division, so a section-by-section solve double-books it. Resolve that coupling
 one level up and the divisions genuinely separate.
 
 **"Does this scale?"**
-Feasible to about a thousand tasks across twenty sections in two minutes.
-It breaks at two and a half thousand — that is on the `/scale` page with the
-failing rungs shown. At ten thousand the model builds and the solver finds
-nothing in twelve minutes.
+Not yet, and `/scale` shows exactly where it stops. Given two minutes, the
+plan is good at this size and degrades fast: at a thousand tasks it is still
+feasible but places only 46 of them. From two and a half thousand it
+finds nothing, and at ten thousand the model builds and the solver finds
+nothing in about 6 minutes. Say the 46 before they find it.
 *The C++ entry does ten thousand in milliseconds because its task struct has no
 department field. It does no clubbing at all. That is not a faster solution to
 this problem; it is a fast solution to a smaller one.*
@@ -207,6 +241,8 @@ artefact across two runs and asserts they match.
   limits page says so.
 - Do not quote the placement gap without its restriction. The restriction
   travels with the number and a test enforces that.
+- Do not say the heat strip comes from the timetable. The timetable sets the
+  protected paths and the night window; the detention shape is still assumed.
 - Do not say "100% statutory". It is 30 of 35, and the five that are missing —
   all behind one tower wagon — are the better story.
 - Do not out-feature anyone. One screen done exceptionally. A rival with

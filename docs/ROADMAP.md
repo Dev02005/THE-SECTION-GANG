@@ -4,8 +4,9 @@ Written 27 Sep 2026, after re-auditing the field. The rival set grew from seven
 repositories to **28**, and three claims this project used to make are no longer
 true. This is what we do about it.
 
-*(`PLAN.md` at the root is the original 48-hour build plan and is history. This
-file is the forward plan.)*
+*(The original 48-hour build plan, `PLAN.md`, was retired on 28 Sep: it still
+stated an XGBoost hazard model and a C-index of 0.809 as fact, neither of which
+was ever built. Git history keeps it. This file is the plan and the record.)*
 
 ---
 
@@ -49,11 +50,8 @@ offline demonstration with a sign-in page that rejected every credential. It
 is safe now, and it is still the right step - but only against a project that
 answers.
 
-Remaining, in order:
-
-1. Vercel → Settings → Environment Variables → both keys (Production +
-   Preview).
-2. Push. `Corridor/` already carries the GitHub remote, so no drag-and-drop.
+Both remaining steps are done: the two keys are set in Vercel for Production
+and Preview, and the repository is pushed to GitHub and deployed.
 
 **The application no longer depends on the database being up.** Configured and
 reachable are distinguished: an unreachable host degrades to offline mode
@@ -95,8 +93,8 @@ state it - and fails, separately, if one of those statements disappears.
 |---|---|---|---|
 | 2a | Audit log page | **DONE** | `my_audit` existed and nothing read it. `/audit`, zone-scoped, append-only stated on the page |
 | 2b | Plan fingerprint / tamper-evidence | **DONE** | SHA-256 of what the plan grants, on the row, on the printed document, and written into the append-only audit log at submission and approval |
-| 2c | Premium-class detention (Vande Bharat / Rajdhani) | 2 h | We hold the data and the protected paths. Likely unique, unmistakably railway |
-| 2d | Dashboard | 2–3 h | Every number already computed |
+| 2c | Premium-class detention (Vande Bharat / Rajdhani) | **Superseded** | Premium paths are hard constraints, so a premium train is never detained by a block at all - a separate premium KPI would always read zero. The rest of the surface is already weighted by class (superfast 1.5, express 1.0, passenger 0.7) |
+| 2d | Dashboard | **DONE** | Every number already computed |
 
 **2a as built.** `/audit` is a third nav link rather than a Docs entry,
 because it is this zone's own record and not documentation. It states its own
@@ -117,8 +115,18 @@ claimed from reading the code.
 
 | | Feature | Time | Why |
 |---|---|---|---|
-| 3a | Corridor map / digital twin | 3–4 h | rail-bloc has one. Real coordinates, coloured by detention pressure. SVG, no new dependency |
-| 3b | Master Gantt by department | 3–4 h | Blocks already carry departments |
+| 3a | Corridor map | **DONE** | rail-bloc has one. Real coordinates, SVG, no new dependency |
+| 3b | Master Gantt by department | **DONE** | Blocks already carry departments |
+
+**As built.** The map is rotated onto the corridor's own axis, with a north
+arrow, and each section is shaded by the blocks placed on it - not by
+detention pressure. The four sections' mean detention differs by 2 minutes
+per slot against a 69-minute spread across the day: in the surface the plan
+is priced with, cost is a matter of hour, not place, and the planner's heat
+strip already shows that.
+Stretching a two-minute difference across the colour range would have drawn a
+dramatic map of nothing. The Gantt draws departments against time and ties
+the bars of a clubbed block together, so a shared block reads as one decision.
 
 ## Phase 4 — the Replanner · DONE
 
@@ -157,11 +165,12 @@ continuous replanning stays designed, not built.
 disruption minimal, prove the statutory loss forced, or name the resource that
 would have avoided it.
 
-## Phase 5 — the pitch · no code
+## Phase 5 — the pitch · DONE
 
 Lead with the two things that are 0-of-28 and already built: the **displayed
 proven floor** and **conformal calibration**. Drop the three dead claims before
-a judge who has read rail-bloc drops them for us.
+a judge who has read rail-bloc drops them for us. `docs/PITCH.md` carries the
+running order, now with the replan and the fingerprint.
 
 ---
 
@@ -176,7 +185,31 @@ a judge who has read rail-bloc drops them for us.
 
 ---
 
-## Order of value
+## 28 Sep — the cleanup pass
 
-Phases 0–2 are the best return: about five hours for a correct live site plus
-three features, one of which no rival appears to have.
+Asked for dead code and stale docs. What mattered more were four claims the
+code did not support, each now corrected and each now guarded by a test:
+
+- **The priced detention surface is not from the timetable.** The timetable is
+  ingested and sets the protected paths and the night window, but the model
+  that prices the plan still uses a hand-set daily curve. The notice on every
+  page said otherwise. Corrected, not yet fixed - fixing it moves every
+  headline number (LIMITATIONS §1b).
+- **The scale ladder was measured on a superseded engine.** Re-run: same
+  verdict, but "feasible at 1,000 tasks" means 46 of 1,000 placed, and
+  `/scale` now shows that.
+- **The pitch quoted numbers the artefact no longer holds**, including a whole
+  stage moment built on a block that no longer costs more.
+- **`IMPLEMENTATION.md` described a codebase that was never built**, down to a
+  passing-test claim for a test file that does not exist. Rewritten.
+
+Also: sliders that re-solved nothing are now a read-out; the per-block
+"cheapest window" figure, computed and never drawn, is drawn; `PLAN.md` is
+retired; dead code removed, and unused locals now fail the TypeScript build.
+
+## Where it stands
+
+Everything in Phases 0-5 is built, deployed and checked: 171 engine tests,
+52 database checks, 11 fingerprint checks. The one open item that changes
+numbers is the detention surface above; it is a decision, not a defect in
+hiding.

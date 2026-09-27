@@ -225,6 +225,12 @@ def test_unknown_asset_type_falls_back_to_schedule_and_is_flagged() -> None:
 
 
 def test_surface_is_cheaper_at_night_than_at_the_morning_peak() -> None:
+    """
+    Tests the ASSUMED curve in `detention.path_density`, which prices 08:00 as a
+    peak. The measured timetable says 08:00 is quiet on this corridor
+    (LIMITATIONS §1b). When the model moves to measured densities this test
+    has to move with it - not be kept passing by keeping the old curve.
+    """
     rows, y = detention.synth_traffic(20, seed=3)
     model, _ = detention.train(rows, y)
     surf = model.surface(96, datetime(2026, 3, 2, tzinfo=UTC))

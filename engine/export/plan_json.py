@@ -151,8 +151,9 @@ def build_payload(
             "notice": (
                 "TMS, SMMS, TDMS, COA and BDMS are internal Indian Railways "
                 "systems with no external access. The maintenance backlog shown "
-                "here is generated, not observed. Corridor geometry, train "
-                "traffic and protected paths are measured from published data."
+                "here is generated, not observed. Corridor geometry and "
+                "protected paths are measured from published data; the daily "
+                "shape of detention cost is assumed."
             ),
             "seed": instance.get("seed"),
             "pricedBy": instance.get("priced_by", []),

@@ -1,374 +1,416 @@
-# AI-Powered Automatic Block Planning
-## Implementation and Working Document
+# Corridor — how it is built
 
-**Problem statement** — Ministry of Railways, SIH 2026: maximise fixed-asset availability for train operations by replacing decentralised, manual maintenance block planning with a coordinated, data-driven system.
+How the system works, where each part lives, and why it is built that way.
+Every path below is a file in this repository. Anything designed but not built
+is marked **(designed, not built)** where it appears, not gathered at the end
+where it is easy to miss.
+
+> **Rewritten 28 Sep.** The previous version was the design document written
+> before the build. It named files that were never created (`adapters/`,
+> `cpsat_model.py`, `api/auth.py`, `fieldapp/`), models that were never trained
+> (LightGBM, an ST-GNN), HTTP endpoints with no server behind them, and one
+> test result - "`tests/test_adapters.py` 9/9 pass" - for a test file that does
+> not exist. That is the failure this project exists to avoid, sitting in its
+> own documentation. The design reasoning was sound and is kept; the claims
+> are now checked against the code.
 
 ---
 
 ## 1. Scope
 
-### 1.1 What the system does
+**What it does.** Takes the maintenance backlog of three departments —
+Engineering (P.Way), S&T and Traction Distribution — with the corridor policy
+and the train service, and produces one coordinated weekly block plan: for
+every block, which section and road, when it starts, how long it runs, and
+which tasks from which departments go inside it. One reference corridor is
+solved: Waltair division, Duvvada to Vizianagram, four sections, 55 km.
 
-Takes the maintenance arrears and defect registers of three departments — Engineering (P.Way), Signal & Telecommunication, and Traction Distribution — together with the train timetable, goods forecast and corridor policy, and produces a single coordinated block plan over weekly and monthly horizons. The plan says, for every block it proposes: which section and which road, when it starts, how long it runs, and which tasks from which departments are performed inside it.
+**What it does not do.** It does not replace the divisional block meeting; it
+produces the proposal the meeting amends. It does not grant blocks; BDMS
+remains the system of record. It does not touch signalling or interlocking,
+and no output of it is safety-critical in the interlocking sense. It does not
+plan rolling stock.
 
-### 1.2 What it explicitly does not do
-
-- It does not replace the divisional block meeting. It produces the proposal that the meeting reviews and amends.
-- It does not grant blocks. BDMS remains the system of record; the planner writes proposals into it.
-- It does not touch signalling or interlocking. It is a planning system, not a safety system. No output of this system is safety-critical in the interlocking sense.
-- It does not do rolling-stock or coaching maintenance. Fixed infrastructure only.
-
-Stating the second and third points early matters. A judge or a railway officer will ask whether an AI is being put in the safety loop. It is not.
-
-### 1.3 The governing idea
-
-Every maintenance block is a purchase. It spends line capacity — train detention — and buys risk reduction, an asset that will not fail. The three departments currently make that purchase independently, blind to each other and blind to what the capacity costs at that hour on that section.
-
-The system's job is to buy the maximum risk reduction per minute of line occupation, jointly across the three departments, subject to the physical, statutory and resource constraints of the division. Both sides of the trade-off are expressed in one unit: **detention-minute equivalents**.
+**The governing idea.** Every block is a purchase. It spends line capacity -
+train detention - and buys risk reduction. Both sides are priced in one unit,
+**detention-minute equivalents**, so one model can trade them against each
+other across all three departments. We do not rank tasks; we price them.
 
 ---
 
-## 2. System overview
+## 2. The layers, as built
 
-Five layers, each independently testable.
-
-| Layer | Responsibility | Where it lives |
+| Layer | What stands in it | Where |
 |---|---|---|
-| 1. Source | TMS, SMMS, TDMS, COA/WTT, BDMS | External, read-mostly |
-| 2. Integration | Adapters, canonical schema, event bus, feature store | `adapters/`, `models/common/features.py` |
-| 3. Prediction | Hazard model, duration model, detention surface | `models/hazard/`, `models/duration/`, `models/detention/` |
-| 4. Optimisation | Candidate generation, CP-SAT model, solve orchestration | `cpsat_model.py`, `data_gen.py` |
-| 5. Application | Planner UI, controller view, service, field app | `api/`, `ui/`, `fieldapp/` |
+| Source systems | TMS, SMMS, TDMS, COA, BDMS have no external access. A generator stands in for the backlog; the passenger timetable and station geometry are real | `engine/core/synthetic.py` · `tools/extract_traffic.py` → `engine/core/traffic.py` · `engine/core/stations.py` |
+| Canonical model | Pydantic types the optimiser sees, and one activity table | `engine/core/schema.py` · `engine/core/activities.py` |
+| Prediction | Three scikit-learn models, gated and versioned | `engine/models/` |
+| Optimisation | Candidate windows, one CP-SAT model, the bound, explanations, the trade-off sweep, the replanner | `engine/core/candidates.py` · `engine/solver/` · `engine/explain.py` · `engine/pareto.py` · `engine/replan.py` |
+| Artefact | Everything the screen needs, written once | `engine/export/plan_json.py` → `web/public/data/plan.json` |
+| Record | Plans, posts, approvals and the audit log, behind row-level security | `supabase/migrations/0001`–`0011` |
+| Application | Static Next.js pages | `web/` |
 
-Data flows down layers 1→4 and results flow to layer 5. A single feedback path returns from the field app in layer 5 to the feature store in layer 2, which retrains the layer 3 models.
-
-`architecture.svg` and the process flowchart show this visually and should accompany this document.
+The engine runs offline and writes artefacts. A seed script loads the plan
+into Postgres. The web app reads it through scoped database functions and
+falls back to the artefact when no database is configured. There is no
+application server.
 
 ---
 
-## 3. Layer 2 — Integration and the canonical model
+## 3. The canonical model
 
-### 3.1 Why this layer exists
+**The optimiser never sees a department-specific field.** The three source
+systems differ in schema, asset identifiers, what a "task" is, and how often
+they update. If any of that leaks into the optimiser it cannot be extended to
+a fourth department or a second division.
 
-The three maintenance systems have different schemas, different asset identifiers, different notions of what a "task" is, and different update cadences. If any of that leaks into the optimiser, the optimiser becomes unmaintainable and cannot be extended to a fourth department or a second division.
-
-The rule, enforced by `adapters/canonical.py`: **the optimiser never sees a department-specific field.**
-
-### 3.2 Canonical task schema
-
-Defined as `CanonicalTask`. The fields that matter most downstream:
+`engine/core/schema.py:Task` is what every department's work becomes:
 
 ```
-task_id            namespaced by source system
-department         ENGG | SNT | TRD
-asset_id           canonical asset key (see 3.3)
-asset_type         drives which hazard model prices it
-section_id, line, km
-activity_code      controlled vocabulary, mapped per source
-criticality        A (statutory) | B | C
-due_on             statutory or schedule due date
-resources          {resource_code: quantity}
-scope_required     LINE | SECTION
+tid, dept, section, line, km        where
+activity, criticality, due_slot     what, how binding, by when
+hazard, consequence                 what it risks, priced in section 4
+resources                           {resource: quantity}
 needs_power_block, needs_disconnection
-predecessors       technological precedence
-condition_history  observations feeding the hazard model
+predecessors                        technological sequence
+schedule_driven                     no failure history: priced from its schedule
 ```
 
-`activity_code` is the hardest field. Each source system has its own activity vocabulary; `ACTIVITY_VOCABULARY` holds the canonical set and each adapter holds its own mapping table. These are version-controlled, not buried in code. Budget a day for this alone on a real deployment.
+**One activity table.** `engine/core/activities.py` holds each activity's
+duration, resources, hazard, consequence and asset type. It exists because
+there used to be three copies - the task generator, the duration model and the
+pricing module each carried their own - and they drifted until the model was
+booking 179-minute jobs into a corridor that allows 150. Nothing was wrong in
+any one file; they disagreed. An unknown activity now raises instead of
+defaulting.
 
-The vocabulary also carries the physical implications of each activity — whether it needs a power block, whether it needs a disconnection memo, what scope it requires. `apply_vocabulary_defaults()` fills these in so that a source system which simply does not record "needs a power block" still produces a correct canonical record. `validate()` then rejects any record whose flags contradict the vocabulary.
+**Adapters (designed, not built).** One per source system, transport chosen
+per site: REST where the source has an API, change-data-capture on a replica
+where it does not, and a CSV drop with a manifest and a SHA-256 per file as
+the fallback - a half-written CSV looks exactly like a complete one, so a
+checksum mismatch is quarantined, never ingested. The canonical asset key
+would round chainage to 10 m, because TMS records km 47.213 where TDMS records
+47.21 for the same place.
 
-### 3.3 Canonical asset key
-
-Assets must be identified consistently across systems or the hazard model cannot join condition history to a task. `canonical_asset_key()` keys on `(section_id, line, km rounded to 10 m, asset_type)`, with a manual reconciliation table for exceptions. The rounding is what makes the join work: TMS may record km 47.213 and TDMS km 47.21 for the same location. Report the unmatched rate as a data-quality KPI.
-
-### 3.4 Adapters
-
-One adapter per source, each implementing `to_canonical()`. Transport is a per-site choice, not a per-source one — the same TMS adapter runs over REST at one division and over a CSV drop at another:
-
-- **`RestTransport`** where the source exposes an API. Preferred.
-- **`CdcTransport`** where it does not, reading a replica's transaction log. Never the primary.
-- **`CsvDropTransport`** as the fallback, with a manifest and SHA-256 per file. A file whose checksum does not match is quarantined rather than ingested, because a half-written CSV looks exactly like a complete one.
-
-Records that fail validation go to quarantine with the reason attached rather than being silently dropped. `IngestResult.unmatched_rate` is the metric to watch.
-
-For the prototype, `data_gen.py` stands in for all four sources and emits the canonical shape directly. Be honest about this in the demo: the adapters are the integration design, and the synthetic generator is calibrated to plausible field distributions.
-
-### 3.5 Feature store and the point-in-time rule
-
-`models/common/features.py:PointInTimeStore` enforces the rule that matters most: when training on an event that happened on date D, every feature must be the value **known on date D**. Training on values known only afterwards produces excellent offline metrics and useless field performance. It is the most common way this kind of pipeline fails silently, and it fails without any error message.
-
-`as_of()` is the only sanctioned way to read features for training. Do not bypass it.
+**Point-in-time features.** Training on an event of date D must use only what
+was known on D; training on values known later gives excellent offline metrics
+and useless field performance, silently. `engine/models/features.py:PointInTimeStore`
+enforces it - every read carries an as-of date and never returns a later
+value, and a test holds that. Nothing trains through it yet, because nothing
+here trains on field history; it is the store a real pipeline has to use.
 
 ---
 
-## 4. Layer 3 — The prediction models
+## 4. The three models — the whole role of ML here
 
-Three models. All three exist to convert something heterogeneous into a number the optimiser can compare. That is the whole role of ML in this system, and it should be stated that plainly.
+All three exist to turn something heterogeneous into a number the optimiser
+can compare. All three are scikit-learn; each has a promotion gate that can
+fail, and a failed model is kept for inspection but never promoted. Live
+metrics travel in `plan.json` under `provenance.modelMetrics`.
 
-### 4.1 Failure hazard model — prices asset risk
+### 4.1 Hazard — prices risk (`engine/models/hazard.py`)
 
-**Purpose.** Give every open task a per-slot cost of deferral, so a rail flaw, a sticky point machine and a worn contact wire become directly comparable.
-
-**Method.** Survival analysis per asset type. What ships is a **scikit-learn discrete-time hazard** — person-period expansion with a logistic link, which is a legitimate survival model rather than an approximation. This paragraph previously named lifelines Cox and XGBoost `survival:cox` ahead of it; neither branch was ever written, and there is no `import xgboost` in the engine.
-
-**From hazard to cost.** With C the consequence of failure in detention-minutes:
+Discrete-time survival: person-period expansion with a logistic link, which
+is a legitimate survival formulation rather than an approximation of one. The
+per-slot cost of leaving a task undone is
 
 ```
-E[loss over d days] = C · (1 − e^(−λd)) ≈ C · λ · d
-per-slot cost   ρ = ceil(C · λ / 96 × 1000)
+ρ = ⌈ C · λ ÷ slots-per-day × scale ⌉
 ```
 
-**The consequence table C is a policy input, not a learned parameter.** It lives in `models/hazard/train.py:CONSEQUENCE_MINUTES`, agreed with the division from historical incident records, and it is published so it can be argued with. This is where railway judgment enters the system, and burying it inside a model would be wrong.
+where λ is the model's daily hazard and **C, the consequence of a failure in
+detention-minutes, is a published policy input, not a learned parameter**
+(`CONSEQUENCE_MINUTES`). It is where railway judgment enters, and hiding it in
+model weights would make the plan's priorities unauditable. An asset with no
+failure history is priced from its schedule and flagged `schedule_driven`, so
+the screen can say so.
 
-**Validation.** Concordance (Harrell's C) and Brier skill over the base rate. Measured locally on synthetic data: **C-index 0.690**, positive Brier skill. A C-index of 0.65–0.75 is realistic and useful; the gate rejects anything above 0.95 as probable leakage.
+Gate: concordance in [0.60, 0.95] - above 0.95 is treated as leakage - and
+positive Brier skill over the base rate. Shipped: concordance **0.690**.
 
-**Cold start.** Asset types with no failure history fall back to a hazard derived from the schedule interval. `HazardService.risk_rates()` returns a `schedule_driven` flag per task so the UI can show these as schedule-driven rather than condition-driven. Hiding that distinction from the planner would be dishonest.
+### 4.2 Duration — prices time (`engine/models/duration.py`)
 
-### 4.2 Block duration model — prices time
+Quantile regression (`GradientBoostingRegressor`, loss `quantile`) at P50 and
+P90, then **split-conformal calibration**. The raw P90 covered only **0.870** -
+blocks would return late about one time in eight. Adding the held-out residual
+quantile brought coverage to **0.921** at a padding ratio of 1.23, with no
+tuning. A block returned late holds trains; one returned early costs a few
+idle minutes, so the asymmetry is the right one.
 
-**Purpose.** Predict how long work actually takes, so blocks are booked realistically instead of padded.
+Features: activity, quantity, department, section, distance from the nearest
+station (access dominates short jobs), gang, machine involvement, and **whether
+the block is clubbed** - the optimiser's objective rewards clubbing, so a
+duration model blind to it would misjudge exactly the plans the optimiser
+prefers.
 
-**Method.** Quantile regression at α = 0.5 and 0.9. LightGBM where available, `GradientBoostingRegressor(loss='quantile')` otherwise. Pinball loss penalises under-prediction α/(1−α) times harder than over-prediction, matching the real asymmetry: a block returned late holds trains, a block returned early costs a few idle minutes.
+Gate: P90 coverage in [0.86, 0.94], P50 in [0.44, 0.56], padding under 1.60.
+Validated on coverage, not MAE: a model accurate on average but late one time
+in eight is not admissible.
 
-**Conformal calibration — the part that matters.** A gradient-boosted quantile fit is a good conditional estimate but its marginal coverage is not guaranteed. Measured on the shipped models: the raw P90 covered only **0.870**, meaning blocks would still return late roughly one time in eight. Split-conformal calibration (`conformal_delta`, following Romano et al.) adds the α-quantile of held-out calibration residuals and restores the guarantee — coverage rose to **0.921**, inside the gate band, with no hyperparameter tuning, at a padding ratio of 1.23.
+*Data hazard for a real deployment:* BDMS records the block, not the work, so
+a two-hour block holding one 40-minute job labels that job two hours. Train
+on task-level returns or on single-task blocks, and state the bias.
 
-This matters operationally. "90% of blocks return on time" has to be a property you can defend, not a number tuned until it looked right. Adding model capacity made coverage *worse* rather than better; the conformal step is the correct fix and it is a distinguishing piece of engineering. (These figures are the ones in `plan.json` under `provenance.modelMetrics`, which is where the site reads them too - the pair quoted here was from an earlier training run and had drifted.)
+### 4.3 Detention — prices capacity (`engine/models/detention.py`)
 
-**Features.** Activity and quantity, section, distance from nearest station (access time dominates short jobs), gang identity, machine involvement, season, time of day, and **whether the block is clubbed**. That last one is not optional: clubbing is what the optimiser's objective rewards, so if the duration model does not know clubbed blocks run differently, the optimiser estimates its own preferred solutions worst.
+`HistGradientBoostingRegressor` on own-section and **neighbour-section** path
+density, a goods forecast, road and time. Shipped: MAE **5.00** against a
+naive **26.06**, skill 0.808; gate skill ≥ 0.30.
 
-**Validation.** Not MAE — **coverage**. The gate requires P90 coverage in [0.86, 0.94], P50 in [0.44, 0.56], and a padding ratio under 1.60. A model that is merely accurate on average is not admissible.
+**Its input density is assumed, not measured.** The model builds the surface
+from `path_density`, a hand-set daily curve. The published timetable is
+ingested and contradicts that curve on this corridor, but the model does not
+read it yet, so the shipped plan is priced on the assumed shape. Declared in
+LIMITATIONS §1b, and the fix - train and serve on the measured densities - is
+recorded there.
 
-**Data hazards to disclose.** BDMS records the block, not the work: a two-hour block holding one 40-minute job labels that job as two hours. Either use task-level logs from the field app, or restrict training to single-task blocks and accept the bias toward small jobs. Blocks curtailed by the controller are right-censored — drop them or use a censored objective, but never train on them silently.
+**ST-GNN (designed, not built).** Blocking SEC-02 backs traffic into SEC-01
+and starves SEC-03; message passing over the section graph can see that and a
+per-section regression cannot. The GBM is given neighbour features precisely
+so that a future GNN would have to beat a fair baseline. An unjustified GNN is
+worse than a justified GBM.
 
-### 4.3 Detention cost surface — prices capacity
+### 4.4 Registry (`engine/models/registry.py`)
 
-**Purpose.** Give the marginal detention-minutes per slot of occupation of a given road of a given section at a given time.
-
-**Method.** ST-GNN in `models/detention/stgnn.py` — spatial message passing over the section adjacency graph feeding a temporal GRU — with a `HistGradientBoostingRegressor` as both fallback and mandatory baseline.
-
-**Why a graph.** Blocking SEC-02 does not only detain trains in SEC-02. It backs traffic into SEC-01 and starves SEC-03. A per-section regression cannot see that; message passing over the adjacency graph can. That is the honest justification and the one to give if challenged.
-
-**The baseline gate.** The ST-GNN is promoted only if it beats the GBM on held-out data. The synthetic generator deliberately gives the baseline neighbour features too, so the comparison is fair — a GNN that wins only because the baseline was starved of features has proven nothing. Measured locally with the GBM: **MAE 5.03 vs naive 26.20, skill 0.808**. If the pilot section is short enough that spillover is negligible, say so and ship the GBM.
-
-### 4.4 Registry and retraining
-
-`models/common/registry.py` versions every model, records a `ModelCard` with metrics and backend, and promotes only on passing the gate. A failed gate keeps the previous model and records why. `current_versions()` is stamped onto every plan, so any plan can be reproduced months later.
-
-Weekly retrain of the duration model — it moves fastest and benefits most. Monthly for hazard and detention.
+Every model is versioned under `model_store/<name>/<timestamp>/` with a
+`card.json`, and the promoted version is named in a plain-text `current.txt` -
+not a symlink, which fails on Windows. The versions in use are stamped into
+every plan.
 
 ---
 
-## 5. Layer 4 — The optimiser
+## 5. The optimiser (`engine/solver/`)
 
-The mathematics is in `FORMULATION.md`. This section covers implementation.
+### 5.1 Candidate windows (`engine/core/candidates.py`)
 
-### 5.1 Candidate window generation
+Corridor policy gives each section a mid-day and a night window. Candidates
+start on a 60-minute grid (`Corridor.START_STEP_MIN`) in three scopes: UP, DN
+and SECTION. Two filters at generation, the cheapest place to enforce them:
 
-Corridor policy defines permitted windows per section — typically a mid-day and a night corridor. The generator enumerates candidates on a coarse start grid (`START_STEP_MIN`, default 60 min) across three scopes: UP, DN, SECTION.
+- **Protected paths** - four real premium services, measured from the
+  timetable. A window is **clipped** to end before one, not dropped: a
+  01:00-05:00 night window with a Duronto at 03:30 becomes 01:00-03:30, which
+  is what a division does. (It used to be dropped, which silently deleted every
+  night window once the paths were real.)
+- **Blackout days** - no windows at all.
 
-Two filters applied at generation, the cheapest possible enforcement:
+Fixing start times makes detention an exact array lookup on duration rather
+than a nonlinear term. `feasible_pair` then drops (task, window) pairs that
+cannot fit the window's cap or finish by the due date - an exact reduction,
+91% of variables at division scale, with a test that solves without it and
+checks nothing the solver used was dropped. The reference instance: 4
+sections, 90 tasks, **432 candidate windows, 2,728 assignment variables**.
 
-- Windows overlapping a **protected path** (Vande Bharat, Rajdhani, Shatabdi) are never created.
-- Windows on a **blackout day** (festival traffic ban, monsoon patrolling) are never created.
+### 5.2 The eleven constraints
 
-Fixing the start time is the key modelling decision. It makes the detention cost an exact `AddElement` array lookup on duration rather than a nonlinear term, at no loss of fidelity, because corridor policy only permits coarse starts anyway.
+Named in `engine/solver/constraints.py`, one source for the shortfall list,
+the artefact, `/method` and the README, and each with a test that fails
+without it. They are described the way a division speaks, and deliberately
+**not** labelled as General and Subsidiary Rules citations - we have not
+checked them against that book. Three carry the most domain weight:
 
-### 5.2 The three constraints that carry the most domain weight
+- **C7, line occupation.** No overlap per road, with SECTION windows entering
+  both roads' sets - one line of code that encodes the power block: OHE work
+  takes the section down, pays detention on both roads, and forbids any other
+  block on either.
+- **C8, machines and gangs.** Cumulative over the tower wagon, tamper, USFD
+  units, gangs and crews. The single tower wagon is the binding constraint,
+  and the model finds that without being told.
+- **C6, protection and clearance.** Work starts after protection is complete
+  and ends before clearance begins. A block does not begin when the gang does.
 
-- **C7, line occupation.** `NoOverlap` per road, with SECTION-scope windows inserted into *both* roads' sets. One line of code encodes the power-block coupling: OHE work takes the section down, pays double detention, and forbids any other block on either road at that time.
-- **C8, resources.** `Cumulative` over tower wagon, tamper, USFD units, gangs and crews. The single tower wagon is usually the binding constraint and the model finds it without being told.
-- **C6, containment.** Tasks start after protection is complete and finish before clearance begins. A block does not begin when the gang begins.
-
-### 5.3 Objective and policy dials
+### 5.3 Objective (`engine/solver/objective.py`)
 
 ```
-minimise  α_R · Σ ρ_t · τ_t                    risk carried in-horizon
-        + α_R · Σ ρ_t · (T+Δ) · (1−z_t)        risk of deferring out of horizon
+minimise  α_R · Σ ρ_t · τ_t                    risk carried in the horizon
+        + α_R · Σ ρ_t · (T+Δ) · (1−z_t)        risk of deferring past it
         + α_D · Σ tbl_w[δ_w]                   train detention
         + α_F · K · Σ G_w                      fixed overhead of any block
         − α_C · B · Σ e_w                      clubbing reward
 ```
 
-`e_w` is the number of *extra* departments inside block w. This term is the entire point of the system: it is the only quantity in the objective that no single department can see or express when it bids for its own block through BDMS.
+`e_w` counts the *extra* departments in block w. It is the one quantity no
+single department can see or bid for through BDMS, and the point of the
+system. The four weights are recorded in every plan and shown on the planner;
+they are **not** live sliders, because nothing re-solves in the browser. What
+moving the risk weight does is measured instead - `engine/pareto.py` re-solves
+at seven values and the planner draws the resulting curve, dominated points
+included.
 
-The four α values are policy dials exposed as sliders in the planner UI, not constants. Raise α_D before a festival rush; raise α_R after the monsoon. Every plan records the values used.
-
-### 5.4 Solve orchestration
+### 5.4 Solve, and when it cannot all fit
 
 ```
-solve(instance, hard_statutory=True)
-  → if INFEASIBLE: solve(instance, hard_statutory=False)
-      → returns plan + shortfall list
+solve(hard_statutory=True)   -> a feasible plan PROVES every obligation is met
+  if INFEASIBLE:
+solve(hard_statutory=False)  -> a plan plus a shortfall list
 ```
 
-Running the statutory constraint hard first means that when a plan is feasible you have a **proof** that every statutory obligation is met, not a claim that the penalty was large enough. Those are different guarantees and an auditor will care which one you have.
+The shortfall names each statutory item that could not be placed, its priced
+risk and the binding constraint. The shipped plan is on the second branch: 30
+of 35 statutory items, and all five misses behind the tower wagon. That list
+is the paper a DRM takes to the zonal meeting; an optimiser that only says
+"infeasible" is useless in an operating railway.
 
-When the backlog genuinely exceeds the corridor budget, the soft re-solve returns the plan plus an explicit shortfall list: which statutory items could not be placed, their priced risk, what constraint was binding, and how much extra corridor would clear them. That list is the artefact the DRM needs to argue for more block time with evidence. An optimiser that just says "INFEASIBLE" is useless in an operating railway.
+### 5.5 Determinism (`engine/solver/model.py`)
 
-### 5.5 Performance
+A wall-clock limit is not deterministic even with `interleave_search`: the
+clock truncates the search wherever the machine happens to be. The shipped
+solve uses `max_deterministic_time` - a work budget - with a fixed seed, so
+the same input gives the same plan and only the wall time varies. A test
+hashes the whole artefact across two runs.
 
-The reference instance — 4 sections, 90 tasks, 576 candidate windows, 7-day horizon at 15-minute slots — builds to roughly **12,000 booleans and 17,400 constraints**. Target a good feasible solution inside 60 seconds on 8 workers.
+### 5.6 The bound (`engine/solver/placement.py`)
 
-Tuning levers if it does not scale to a full division:
+The full objective is ~99% deferral penalty, so its gap (34.65%) measures how
+many deferrals are provably necessary. Pinning the scheduled set and
+re-solving answers the question a planner asks - is this work placed well? -
+with a gap of **5.61%** and a floor of **30,093,381**. Both are root-LP bounds
+that do not improve with time; the floor, not a percentage, is what the screen
+leads with.
 
-- Raise `START_STEP_MIN` to 60 or 120. Halves or quarters the model; costs a few percent of objective.
-- Restrict candidate windows to those with at least one compatible task.
-- Decompose by section where sections share no resources — but check first, because the shared tower wagon usually couples them, and decomposing across a shared resource produces a plan that cannot be executed.
-- Warm-start from last week's plan. Also improves plan stability, which matters more than runtime.
+### 5.7 Scale
 
-Always report the solver's bound alongside the plan. Telling a division that a plan is within 3% of optimal is worth more than a marginally better plan with no bound. This is the argument for CP-SAT over a genetic algorithm and it should be made explicitly.
+Measured, including the rungs where it fails, in `engine/benchmark.py`; the
+table is in LIMITATIONS §7 and on `/scale`. Decomposition by section is
+refused on purpose: the tower wagon couples the sections, and a
+section-by-section solve double-books it.
 
-### 5.6 Multi-horizon operation
-
-The same model at three granularities, each warm-started from the level above.
-
-| Horizon | Slot | Span | Decides | Cadence |
-|---|---|---|---|---|
-| Monthly | 60 min | 30 days | Corridor capacity per section; arrears in scope | Before the divisional meeting |
-| Weekly | 15 min | 7 days | Task-to-block assignment; the plan issued to BDMS | Weekly |
-| Daily | 15 min | 24–48 h | Re-optimisation on firmed forecast, cancelled block, fresh defect | Daily and on trigger |
-
-The previous level's decisions enter as **hints, not constraints**. Controllers will not trust a system whose plan changes completely every run.
-
----
-
-## 6. Explainability
-
-CP-SAT gives counterfactuals directly: pin one decision, re-solve, report the delta. Every plan line carries a generated explanation:
-
-> Task ENGG-041 (USFD flaw, km 47.2) was deferred to week 3 because placing it Tuesday 10:00 would displace two goods paths worth 84 detention-minutes, while its failure hazard rises only 0.7% over that delay. Placing it in the Thursday 01:00 section block instead costs 11 detention-minutes because it shares protection with the OHE contact-wire job already there.
-
-Two tools built on the same mechanism:
-
-- **Capacity slider** (`POST /capacity`). Raise the corridor cap and show how many arrears clear. This is how the division argues for more block time with evidence rather than assertion.
-- **Priced override** (`POST /plan/{id}/override`). A planner moves a block; the system re-solves with that decision pinned and shows what the override costs. It does not refuse. It prices.
-
-The override tool matters for adoption. A system that argues with the Sr.DEN gets switched off. A system that says "you can do that, and here is what it costs" gets used.
+**Monthly horizon (designed, not built).** The same model at 60-minute slots
+over 30 days, feeding the weekly solve as hints rather than constraints.
 
 ---
 
-## 7. Layer 5 — Application
+## 6. Explanations (`engine/explain.py`)
 
-### 7.1 Planner UI (`ui/planner.html`)
+A true counterfactual re-solves with one decision pinned. That was measured,
+on an earlier build of the reference instance: forbidding any single block
+was **infeasible** under hard statutory rules - every block load-bearing - and
+each re-solve took about 25 seconds. Too slow to run while a judge waits, so explanations are
+exact accounting over the solved plan, precomputed:
 
-Blocks on a time–distance chart with the detention cost surface as a heat strip behind them, so a planner sees immediately whether a block sits in genuinely cheap capacity. Policy dials as sliders. Shortfall panel when statutory work could not be placed.
+- **What did sharing save?** The same jobs, each in the cheapest window it
+  could have used alone, against their cost together. The alternative gets its
+  best case, so a saving is a floor. When sharing costs more - a section block
+  pays both roads - the headline says so and states the net; a test holds it
+  to that.
+- **What did this slot cost?** The block against the cheapest window of the
+  same length. Often unflattering, and shown anyway.
 
-The time–distance chart is not a design flourish. Controllers read control charts every day; presenting the plan in their native visual language is worth more than any accuracy metric on a slide.
-
-### 7.2 Controller view (`ui/controller.html`)
-
-Read-only. Granted blocks overlaid on the train graph, with protected paths in amber. A block drawn across a protected path would be a planning error — and cannot happen, because those candidate windows are removed before the optimiser sees them.
-
-### 7.3 Field app (`fieldapp/`)
-
-The closed loop. Offline-first PWA, four inputs: block start, block returned, work completed, reason for overrun. Reports are written to IndexedDB first and synced opportunistically; the app never blocks on the network, because mid-section sites have no reliable data. Server-side reconciliation is on `(block_id, task_id)`, so a duplicate sync is harmless.
-
-Without this app the duration model never improves and the whole system is a one-shot demo. It is the least glamorous component and the most important one. Build it early, not last.
-
-### 7.4 BDMS write-back
-
-The planner proposes; BDMS grants. Write-back posts proposed blocks as demands with a plan reference and reads back the granted status. Never write directly to the block register. The division's existing approval workflow stays exactly where it is.
+**Capacity slider and priced override (designed, not built).** Raise the
+corridor cap and show which arrears clear; let a planner move a block and
+show what the move costs rather than refusing it. Both need a live re-solve.
 
 ---
 
-## 8. Deployment and operations
+## 7. Replanning (`engine/replan.py`)
 
-### 8.1 On-premises, not cloud
+One mid-week disruption, re-solved from the approved plan:
 
-Railway operational data does not leave railway infrastructure. Assume an on-premises deployment inside the divisional network, containerised, with no external calls at inference time. Models train and serve locally. Say this before you are asked; it is the first question an IT security reviewer raises.
+1. Blocks already worked are **frozen** exactly as they ran; freezing fails
+   loudly if an executed assignment has no variable to pin.
+2. The new defect is **required**, not priced: dealt with by its deadline, or
+   the replan returns infeasible and says so.
+3. Then three solves, each holding the one before: keep the most statutory
+   jobs; change the fewest approved jobs; be cheapest. Each starts from a
+   hint - the approved plan, then the previous stage's answer.
+4. Re-solve with one more of each resource the defect needs, and report which
+   would have avoided the loss.
 
-### 8.2 Access control and audit
-
-Roles in `api/auth.py`: approver (Sr.DEN / Sr.DSTE / Sr.DEE), section engineer, controller, field. Every mutating call is attributed.
-
-Plans are versioned and **immutable once issued**, recording: input snapshot hash, model versions, α values, solver status and bound, and every manual override with author, timestamp and priced cost. An override does not edit a plan; it creates a new version.
-
-This is a requirement, not a nicety. The first time a block plan is questioned after an incident, the audit trail is what the system is judged on.
-
----
-
-## 9. Rollout
-
-Five stages. Do not skip stage 2.
-
-**Stage 1 — Historical replay (4 weeks).** `tests/replay/replay.py` over six months of past data for one division. No live use. This is where the data quality problems are found.
-
-**Stage 2 — Shadow mode (8 weeks).** The system generates a plan every week alongside the real process. Nobody acts on it. This builds the evidence base and, more importantly, builds trust — officers watch it be right, or watch it be wrong in ways they can explain, before anything is at stake.
-
-**Stage 3 — Advisory pilot (12 weeks).** One division. The plan goes to the block meeting as the starting proposal. Every override is logged with its reason; the override log is the richest feedback the system will ever get, and reviewing it monthly is how the constraint set gets corrected.
-
-**Stage 4 — Adoption (6 months).** The plan becomes the default. Overrides still logged. KPIs reported to the divisional meeting.
-
-**Stage 5 — Scale.** Additional divisions, retrained per division. Do not assume a model transfers, particularly the detention surface.
+A weighted single-objective version was built first and kept none of the
+approved blocks; the tests include one that fails on that. `engine/build_replan.py`
+refuses to write its artefact unless the plan it rebuilds reproduces the
+shipped objective and block count exactly. **Continuous replanning (designed,
+not built)** - watching a defect feed and re-solving on its own - needs feeds
+this project does not have.
 
 ---
 
-## 10. Testing
+## 8. The record and the application
 
-| Layer | Test | Status |
+**Postgres is the system of record** (`supabase/migrations/`). Every table has
+row-level security and the client can read none directly; the API is 16
+`SECURITY DEFINER` functions that resolve the caller's post and return only
+what it may see. Posts, not people: 425 of them, five per division and five
+per zone, from the Ministry list of 17 zones and 68 divisions.
+
+**The approval chain.** Sr.DEN, Sr.DSTE or Sr.DEE submits; only that
+division's DRM approves or rejects, and a rejection needs a reason. Every
+transition is written to `audit_log`, which has no update or delete policy. A
+re-solve supersedes earlier plans rather than deleting them. Each plan carries
+a SHA-256 **fingerprint** of what it grants (`web/lib/fingerprint.ts`, one
+implementation for the seed and the browser), written into the audit log at
+submission and decision and printed on the document.
+
+**The web app** (`web/`) is static Next.js: `/dashboard`, `/planner` (the
+comparison - current practice above, the joint plan below, detention heat
+strip behind both), `/plan` (the issuable A4 document), `/replan`, `/audit`,
+and `/method`, `/limits`, `/scale`, `/network`. Charts are hand-built: Canvas
+for the heat strip, SVG for blocks, with a roving tabindex so the chart is one
+tab stop and arrow keys move between blocks.
+
+**Designed, not built:** a read-only controller view with blocks over the
+train graph; reading block-taken and block-returned times back from the
+Station Master's Train Signal Register, which would give the duration model
+real labels; BDMS write-back as demands, never writes to the block register;
+on-premises deployment inside RailNet with sign-in against HRMS rather than a
+user table of our own.
+
+---
+
+## 9. Testing (`tests/`)
+
+| File | What it holds |
+|---|---|
+| `test_constraints.py` | One test per constraint C1–C11, each built so that constraint alone prevents an obviously better answer |
+| `test_core.py` · `test_geometry.py` | Schema, candidate generation, protected-path clipping, and chainages recomputed independently |
+| `test_models.py` | The gates pass on good data and fail on plausibly bad data; the point-in-time store never looks ahead; pricing is identical across separate interpreters |
+| `test_baseline.py` | The baseline books the same durations and obeys the same limits as the optimiser; the artefact is reproducible |
+| `test_placement.py` · `test_explain.py` · `test_pareto.py` | The bound's restriction travels with it; explanations quote only real numbers; dominated points are kept |
+| `test_replan.py` | Properties of any replan: the past frozen, the defect required, disruption minimal and reported as found |
+| `test_benchmark.py` | The variable filter is exact; larger instances keep contiguous, named sections |
+| `test_docs.py` | Numbers stated in the docs match the artefacts, including the test count itself |
+
+The web side is checked against the live database by
+`web/scripts/check-auth.cjs` (scoping, writes, the approval cycle) and
+`web/scripts/check-fingerprint.ts`.
+
+---
+
+## 10. Acceptance criteria, against what was measured
+
+Both plans scored by one function on one instance.
+
+| Criterion | Target | Measured |
 |---|---|---|
-| Adapters | Golden-file: raw payload in, canonical record out | `tests/test_adapters.py` — 9/9 pass |
-| Canonical model | Schema validation, vocabulary coverage, asset-key join | covered above |
-| Hazard | Concordance and Brier skill, per asset type | gate in `models/hazard/train.py` |
-| Duration | Coverage at P90, pinball loss, padding ratio | gate in `models/duration/train.py` |
-| Detention | Held-out MAE, beat-the-GBM-baseline gate | gate in `models/detention/train.py` |
-| Optimiser | One test per constraint C1–C11 | `tests/constraints/test_constraints.py` |
-| End-to-end | Historical replay | `tests/replay/replay.py` |
-
-The constraint tests deserve emphasis. For each constraint, construct a small instance where that constraint is the only thing preventing an obviously better solution, and assert the model does not take it. A constraint that is written but not tested is a constraint that silently is not enforced, and here that means shipping a plan nobody can execute.
+| Work-hours per block-hour | > 1.5× baseline | **2.51×** (0.82 → 2.06) |
+| Detention per task completed | > 30% lower | **−56.5%** |
+| Statutory items closed | all where feasible, shortfall where not | **30 of 35**, five named behind the tower wagon |
+| P90 duration coverage | 88–92% | **92.1%** - inside the gate, 0.1 point over the target |
+| Weekly plan generation | < 60 s | **not met**: about 90 s under the deterministic budget |
+| Same input, same plan | always | **met**: artefact hashed across runs |
+| Blocks returned late | < 10% | **not measurable** without block-return data |
 
 ---
 
-## 11. Acceptance criteria
+## 11. Rollout (designed, not built)
 
-Measured against a simulation of current practice on the same backlog:
-
-| KPI | Direction | Target |
-|---|---|---|
-| Block utilisation (work-hours per block-hour) | Up | > 1.5× baseline |
-| Discrete blocks for the same work | Down | Falls sharply through clubbing |
-| Train detention per task completed | Down | > 30% reduction |
-| Statutory (criticality-A) arrears closed | Up | 100% where feasible; explicit shortfall where not |
-| Blocks returned late | Down | < 10% |
-| P90 duration coverage | Calibrated | 88–92% |
-| Plan generation time, weekly horizon | — | < 60 s |
-| Plan stability week to week | — | > 80% of blocks unchanged absent new information |
-
-The last two are adoption criteria rather than performance criteria, and they matter as much as the others.
-
----
+1. **Historical replay** - six months of one division's past data, no live
+   use. Where the data-quality problems surface.
+2. **Shadow mode** - a plan every week beside the real process, acted on by
+   nobody, so officers see it be right or be wrong in ways they can explain.
+3. **Advisory pilot** - one division; the plan is the meeting's starting
+   proposal, and every override is logged with its reason.
+4. **Adoption** - the default, overrides still logged.
+5. **Scale** - further divisions, retrained per division. The detention
+   surface in particular does not transfer.
 
 ## 12. Risks
 
-| Risk | Impact | Mitigation |
-|---|---|---|
-| BDMS actuals record blocks, not tasks | Duration model trains on wrong labels | Field app task-level logging; restrict to single-task blocks meanwhile and state the bias |
-| Source systems have no API | Integration stalls | CDC on replica, or CSV drop with manifest. Transport is a per-site choice |
-| Asset identity does not reconcile | Hazard model cannot join history | Canonical asset key plus maintained reconciliation table; report unmatched rate |
-| Optimiser does not scale to a division | Unusable | Coarser slots, window pre-filtering, warm start, careful decomposition |
-| Officers do not trust the plan | Non-adoption | Shadow mode, counterfactuals, priced overrides rather than refused overrides |
-| Detention surface poorly calibrated | Blocks placed in expensive capacity | GBM baseline gate; shadow-mode comparison against actual control charts |
-| Consequence table C is contested | Priorities disputed | C is a published policy input agreed with the division, not a learned parameter |
-
----
-
-## 13. Hackathon build plan
-
-**Scope.** One 60–80 km double-line electrified section pair, three departments, ~500 tasks, six months of synthetic history. Weekly plan in under 10 seconds. Two screens.
-
-**Hours 0–6.** Canonical schema and synthetic generator. Freeze the schema early; everything depends on it.
-
-**Hours 6–14.** CP-SAT model with C1–C11. Get a feasible plan out before touching any ML.
-
-**Hours 14–20.** The three models. Keep them simple; a well-validated LightGBM beats an unvalidated GNN in front of judges.
-
-**Hours 20–28.** Planner UI with the time–distance chart. This is the screen that wins the demo.
-
-**Hours 28–32.** Counterfactual explainer and capacity slider.
-
-**Hours 32–36.** Baseline comparison, KPI slide, rehearse.
-
-**Cut first if time runs short:** the ST-GNN, replaced by gradient boosting. The monthly horizon. The field app, replaced by a mocked actuals feed — but keep it on the architecture slide and say it is mocked.
-
-**Never cut:** the baseline comparison. A plan with no baseline is a screenshot. A plan with a baseline is a result.
+| Risk | Mitigation |
+|---|---|
+| BDMS records blocks, not tasks | Task-level returns from the Train Signal Register; single-task blocks meanwhile, with the bias stated |
+| Source systems have no API | CDC on a replica, or a CSV drop with a manifest - chosen per site |
+| Asset identity does not reconcile | Canonical asset key and a maintained reconciliation table; report the unmatched rate |
+| Does not scale to a division | Measured: feasibility fails before division scale. Coarser grid, rolling horizon, allocation at zone level |
+| Officers do not trust the plan | Shadow mode, per-block explanations, priced rather than refused overrides |
+| The consequence table is contested | It is a published policy input, meant to be argued with |

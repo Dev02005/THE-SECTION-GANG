@@ -104,6 +104,3 @@ ACTIVITIES: tuple[Activity, ...] = (
 
 BY_CODE: dict[str, Activity] = {a.code: a for a in ACTIVITIES}
 BY_LABEL: dict[str, Activity] = {a.label: a for a in ACTIVITIES}
-BY_DEPT: dict[Department, tuple[Activity, ...]] = {
-    d: tuple(a for a in ACTIVITIES if a.dept is d) for d in Department
-}

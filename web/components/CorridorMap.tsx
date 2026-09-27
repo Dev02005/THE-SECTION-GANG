@@ -23,8 +23,8 @@ import type { CorridorStop } from "@/lib/stations";
  * two-minute difference into a dramatic picture, which is the kind of chart
  * this project exists not to draw.
  *
- * The measurement is the point: on this corridor detention varies about 35x
- * more by HOUR than by SECTION (a 69-minute spread across the day against 2
+ * The measurement is the point: in the surface the plan is priced with,
+ * detention varies about 35x more by HOUR than by SECTION (a 69-minute spread across the day against 2
  * across the line). Cost here is a time phenomenon, not a geography one, and
  * the page says so - the heat strip on the planner is where that variation
  * belongs, and it already shows it.
@@ -272,7 +272,7 @@ export function CorridorMap({
       </p>
       <p className="mt-1.5 max-w-[80ch] text-[12px] leading-relaxed text-ink-mut">
         <strong className="font-semibold text-ink-mid">
-          Detention is not what varies along this line.
+          In the priced surface, detention barely varies along the line.
         </strong>{" "}
         Mean cost differs by only {spread.bySection} min/slot between sections,
         against {spread.byHour} across the day — so <em>when</em> a block is

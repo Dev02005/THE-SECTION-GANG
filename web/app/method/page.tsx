@@ -29,7 +29,9 @@ export default async function MethodPage() {
           </h1>
           <p className="mt-5 text-[16.5px] leading-relaxed text-ink-mid">
             Written for a railway officer rather than a mathematician. The
-            formulation is in the repository; this is what it means.
+            formulation itself is code, in{" "}
+            <code className="font-mono text-[14px]">engine/solver/</code>; this
+            is what it means.
           </p>
         </section>
 
@@ -141,6 +143,51 @@ export default async function MethodPage() {
           </p>
         </DocSection>
 
+        <DocSection n="06" title="Why each block is where it is">
+          <p>
+            Click any block on the planner and it answers two questions, by
+            exact accounting over the solved plan rather than by a second
+            model. <strong>What did sharing save?</strong> The same jobs, each
+            priced in the cheapest window it could have used on its own,
+            against what they cost together. The alternative is given its best
+            case, so a reported saving is a floor.{" "}
+            <strong>What did this slot cost?</strong> The block against the
+            cheapest window of the same length on its section.
+          </p>
+          <p>
+            The second answer is often not flattering, and it is shown anyway:
+            most shared blocks sit in a dearer slot than the cheapest one
+            available. The cheapest slot takes no account of due dates or of
+            the one tower wagon, and the optimiser chose to pay the
+            difference, so the reason is one of those.
+          </p>
+        </DocSection>
+
+        <DocSection n="07" title="When the week does not go to plan">
+          <p>
+            A defect found mid-week is not priced like the backlog. It is{" "}
+            <strong>required</strong>: either it is dealt with by its deadline
+            or the replan says it cannot be, in so many words. Blocks already
+            worked are frozen exactly as they ran.
+          </p>
+          <p>
+            Then three questions, answered strictly in order, each one holding
+            the answer to the one before: keep as many statutory jobs as can be
+            kept; change as few approved jobs as possible; be as cheap as
+            possible. Each is a separate solve, so the first two answers can be{" "}
+            <strong>proven</strong> rather than traded against cost with a
+            weight somebody chose, and on the scenario shipped here both are.
+            A weighted version was tried first and kept none of the approved
+            blocks: its search never got near the approved week. Every stage
+            now starts from the approved plan.
+          </p>
+          <p>
+            Finally it re-solves with one more of each resource the defect
+            needs, and reports which of them would have avoided the loss. That
+            is the sentence a DRM can act on.
+          </p>
+        </DocSection>
+
         <p className="mt-12 border-t border-rule pt-6 text-[14px] leading-relaxed text-ink-mut">
           What this method does <em>not</em> establish is set out on the{" "}
           <a href="/limits" className="text-accent underline underline-offset-2">
@@ -153,7 +200,6 @@ export default async function MethodPage() {
     </>
   );
 }
-
 
 function Formula({ children }: { children: React.ReactNode }) {
   return (

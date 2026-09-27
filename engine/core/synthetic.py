@@ -10,9 +10,12 @@ What is calibrated rather than invented:
   * activity durations and resource demands follow RDSO Track Machine Manual
     working norms and typical divisional gang strengths
   * failure hazards are anchored to published defect-rate ranges per asset class
-  * the detention surface is MEASURED from the published passenger timetable
-    (see engine/core/traffic.py), not assumed - the diurnal shape this module
-    used to carry was invented and the data contradicted it
+  * the instance's own detention surface is MEASURED from the published
+    passenger timetable (see engine/core/traffic.py) - the diurnal shape this
+    module used to carry was invented and the data contradicted it.
+    NOTE: a model-priced plan, which is what ships, replaces this surface with
+    the detention model's, and that one still carries the assumed shape.
+    See engine/models/detention.py `path_density` and LIMITATIONS §1b.
 
 What is invented: the specific defects, their chainages and their due dates.
 """

@@ -236,3 +236,175 @@ def test_readme_replan_claims_match_the_artefact(readme: str) -> None:
     )
     assert len(r["lost"]) == 1, "README says ONE statutory job is deferred"
     assert r["result"]["statutoryProven"], "README says the loss is proven unavoidable"
+
+
+PITCH = ROOT / "docs" / "PITCH.md"
+IMPLEMENTATION = ROOT / "docs" / "IMPLEMENTATION.md"
+LIMITS_PAGE = ROOT / "web" / "app" / "limits" / "page.tsx"
+
+
+def _flat(text: str) -> str:
+    """Markdown with blockquote markers and line breaks folded to single spaces."""
+    return re.sub(r"\s+", " ", re.sub(r"\n>\s?", " ", text))
+
+
+def test_every_statutory_count_in_the_docs_is_one_the_artefact_holds(
+    plan: dict,
+) -> None:
+    """
+    PITCH.md told the room statutory went "20 of 35 to 34 of 35" while the
+    artefact, the README and a later paragraph of the same file said 21 to 30.
+    It was the one doc nothing read. Every "N of 35" or "N/35" in any of them
+    must now be the baseline's figure or the plan's.
+    """
+    k = plan["kpis"]
+    total = k["optimised"]["statutory_total"]
+    held = {k["baseline"]["statutory_done"], k["optimised"]["statutory_done"]}
+    pat = re.compile(rf"\b(\d+)\s*(?:/|of)\s*{total}\b")
+    for doc in (README, LIMITATIONS, PITCH, IMPLEMENTATION):
+        for m in pat.finditer(doc.read_text(encoding="utf-8")):
+            assert int(m.group(1)) in held, (
+                f"{doc.name} states {m.group(0)!r}; the artefact holds "
+                f"{sorted(held)} of {total}"
+            )
+
+
+WORDS = {w: i for i, w in enumerate((
+    "zero", "one", "two", "three", "four", "five", "six", "seven", "eight",
+    "nine", "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen",
+    "sixteen", "seventeen", "eighteen",
+))}
+
+
+def test_pitch_quotes_explanations_the_artefact_contains(plan: dict) -> None:
+    """
+    The pitch reads block explanations aloud. Its quotes - "750 against 464",
+    and a block where sharing cost more, which was a whole stage moment - had
+    stopped being true when the corridor was re-priced, and nothing noticed.
+    Every figure it quotes from an explanation must be a block in the artefact.
+    """
+    text = _flat(PITCH.read_text(encoding="utf-8"))
+    ex = list(plan["explanations"].values())
+    shared = [e for e in ex if e["clubbing"]]
+
+    quotes = re.findall(r"would cost (\d+) detention-minutes against (\d+) here", text)
+    assert quotes, "PITCH.md no longer quotes a block explanation; update this test"
+    pairs = {(c["clubbing"]["separate_detention"], c["clubbing"]["actual_detention"])
+             for c in shared}
+    for sep, act in quotes:
+        assert (int(sep), int(act)) in pairs, (
+            f"PITCH quotes {sep} against {act}; no block in the artefact says that"
+        )
+
+    places = {
+        (e["placement"]["cheapest_alternative"], e["placement"]["penalty_vs_cheapest"])
+        for e in ex
+    }
+    for alt, pen in re.findall(
+        r"would have cost \*\*(\d+)\*\*, so this slot costs \*\*(\d+) more\*\*", text
+    ):
+        assert (int(alt), int(pen)) in places, (
+            f"PITCH says a cheapest window of {alt}, {pen} more; no block says that"
+        )
+
+    m = re.search(r"(\w+) of the (\w+) shared blocks carry a line like that", text)
+    if m:
+        paid = sum(1 for c in shared if c["placement"]["penalty_vs_cheapest"] > 0)
+        said = (WORDS[m.group(1).lower()], WORDS[m.group(2).lower()])
+        assert said == (paid, len(shared)), (
+            f"PITCH says {m.group(0)!r}; the artefact has {paid} of {len(shared)}"
+        )
+    m = re.search(r"the smallest saving is (\d+) minutes", text)
+    if m:
+        least = min(c["clubbing"]["detention_saved"] for c in shared)
+        assert int(m.group(1)) == least, (
+            f"PITCH says the smallest saving is {m.group(1)}; it is {least}"
+        )
+
+
+def test_the_priced_surface_is_described_as_it_is_built(plan: dict) -> None:
+    """
+    Until 28 Sep the notice on every page, LIMITATIONS §1b and /limits all said
+    the detention surface came from the published timetable. The shipped plan
+    is priced by the detention model, whose input is a hand-set daily curve
+    that never read the timetable. So the words now follow the code: while the
+    model does not read engine.core.traffic, the artefact must say the shape is
+    assumed and no doc may say it is measured. Wire the timetable in and this
+    test says to change the words back.
+    """
+    if "detention" not in plan["provenance"]["pricedBy"]:
+        pytest.skip("this artefact is not priced by the detention model")
+    src = (ROOT / "engine" / "models" / "detention.py").read_text(encoding="utf-8")
+    notice = plan["provenance"]["notice"]
+    if "engine.core.traffic" in src:
+        assert "assumed" not in notice, (
+            "the model reads the timetable now; update the notice"
+        )
+        return
+    assert "assumed" in notice, "the notice must say the detention shape is assumed"
+    for doc, claim in (
+        (LIMITATIONS, "no longer a shape we invented"),
+        (README, "traffic and protected paths are measured"),
+        (LIMITS_PAGE, "timetable, not assumed"),
+    ):
+        assert claim not in doc.read_text(encoding="utf-8"), (
+            f"{doc.name} still says the priced surface is measured ({claim!r})"
+        )
+
+
+def test_limits_page_and_limitations_name_the_same_unbuilt_things() -> None:
+    """
+    /limits carries a hand copy of LIMITATIONS §6. By 28 Sep four of its eight
+    headings no longer matched the markdown, and the markdown had filed the
+    approval chain and supersession - both built - under "not built". The two
+    lists must now name exactly the same things.
+    """
+    md = LIMITATIONS.read_text(encoding="utf-8")
+    sec = md[md.index("## 6. What is designed but not built"):md.index("## 6b.")]
+    in_md = re.findall(r"^- \*\*(.+?)\.\*\*", sec, re.M)
+
+    page = LIMITS_PAGE.read_text(encoding="utf-8")
+    blk = page[page.index('title="Designed but not built"'):]
+    blk = blk[:blk.index("</DocSection>")]
+    on_page = re.findall(r'^\s*\["([^"]+)", "', blk, re.M)
+
+    assert in_md and on_page, "one of the two lists could not be read"
+    assert sorted(in_md) == sorted(on_page), (
+        f"only in LIMITATIONS: {sorted(set(in_md) - set(on_page))}; "
+        f"only on /limits: {sorted(set(on_page) - set(in_md))}"
+    )
+
+
+BENCHMARK = ROOT / "web" / "public" / "data" / "benchmark.json"
+
+
+def test_the_scale_table_matches_the_benchmark() -> None:
+    """
+    LIMITATIONS §7 carried the 4 Sep ladder - 576 candidate windows and 3,940
+    variables at 90 tasks - long after the engine had changed under it. /scale
+    read the file and stayed current; the markdown was typed and did not. Every
+    row of the table must now be a row of benchmark.json, timings included,
+    and every rung must appear.
+    """
+    bench = json.loads(BENCHMARK.read_text(encoding="utf-8"))
+    rows = {r["tasks"]: r for r in bench["rows"]}
+    md = LIMITATIONS.read_text(encoding="utf-8")
+    sec = md[md.index("## 7. Scale"):md.index("## 8.")]
+    seen: set[int] = set()
+    for line in sec.splitlines():
+        cells = [
+            c.strip().replace("**", "").replace(",", "") for c in line.split("|")[1:-1]
+        ]
+        if len(cells) != 6 or not cells[0].isdigit():
+            continue
+        tasks, sections, nvars, build, solve, status = cells
+        r = rows.get(int(tasks))
+        assert r is not None, f"LIMITATIONS §7 has a {tasks}-task row the benchmark lacks"
+        assert (int(sections), int(nvars), status) == (
+            r["sections"], r["assignment_vars"], r["status"]
+        ), f"LIMITATIONS §7, {tasks} tasks, is stale against benchmark.json"
+        assert build == f"{r['build_time_s']:.1f}s", f"{tasks}-task build is stale"
+        assert solve == f"{round(r['solve_time_s'])}s", f"{tasks}-task solve is stale"
+        seen.add(int(tasks))
+    missing = sorted(set(rows) - seen)
+    assert not missing, f"LIMITATIONS §7 is missing rungs {missing}"

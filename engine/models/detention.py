@@ -44,8 +44,14 @@ ROADS = [ln.value for ln in (Line.UP, Line.DN)]
 
 def path_density(section: str, road: str, ts: datetime, busyness: float) -> float:
     """
-    Scheduled path density from the working timetable.  The diurnal shape is
-    the honest part and it is what the whole trade-off rests on.
+    ASSUMED path density - a hand-set daily curve, NOT the measured timetable.
+
+    It prices 06-10 and 17-22 as the peaks and mid-day as cheapest. The real
+    passenger timetable in engine/core/traffic.py contradicts that shape on
+    this corridor (midnight is busiest), and this function does not read it.
+    Every model-priced plan, the shipped one included, is priced on this curve.
+    Declared in docs/LIMITATIONS.md §1b; replacing it with the measured density
+    and retraining is the fix, and it moves every headline number.
     """
     h = ts.hour + ts.minute / 60.0
     if 2 <= h < 5:

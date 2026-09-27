@@ -69,11 +69,13 @@ proven by the solver rather than claimed.
 ```
  engine/  (Python, offline)                     web/  (Next.js, static)
  ─────────────────────────                      ───────────────────────
- synthetic backlog                              /planner   comparison screen
-   → 3 models price every task      plan.json   /plan      printable block plan
-   → current-practice baseline   ──────────────▶/login     zone → division → post
-   → CP-SAT joint solve                 │       /method /limits /scale /network
-   → explanations, Pareto, bound        │
+ synthetic backlog                              /dashboard the week at a glance
+   → 3 models price every task      plan.json   /planner   comparison screen
+   → current-practice baseline    replan.json   /plan      printable block plan
+   → CP-SAT joint solve          ──────────────▶/replan    one disruption, re-solved
+   → explanations, Pareto, bound        │       /audit     the append-only record
+   → replan of one disruption           │       /login     zone → division → post
+                                        │       /method /limits /scale /network
                                         ▼
                              supabase/  (PostgreSQL)
                              ─────────────────────
@@ -165,7 +167,7 @@ needs step 2.
 
 ```bash
 pip install -r requirements.txt
-python -m pytest tests -q                              # 166 tests
+python -m pytest tests -q                              # 171 tests
 python -m engine.build_plan --tasks 90 --time 90       # writes web/public/data/plan.json
 python -m engine.build_replan                           # writes web/public/data/replan.json
 cd web && npx tsx scripts/build-seed.ts                # refreshes the plan seed SQL
@@ -206,7 +208,7 @@ uses the demonstration password `block@2026`, printed on the sign-in page.
 ```
 engine/
   core/         schema · activities · stations · corridor · traffic · candidates · synthetic
-  solver/       build · constraints (the eleven, named) · objective · extract · placement · config
+  solver/       model · build · constraints (the eleven, named) · objective · extract · placement · config
   models/       hazard · duration · detention · features · registry · pricing
   baseline/     current-practice simulation · KPIs
   export/       plan_json — the artefact the web app loads
@@ -214,18 +216,19 @@ engine/
   pareto.py     the policy-dial sweep
   replan.py     mid-week disruption: freeze the past, statutory first, least change
   benchmark.py  the scale ladder
-  build_plan.py the CLI
+  build_plan.py   CLI: the plan artefact
+  build_replan.py CLI: the replan artefact
 tools/          extract_traffic.py — published timetable → engine/core/traffic.py
 model_store/    the three promoted models and their cards
-tests/          166 tests — one per constraint, plus a doc-drift guard
+tests/          171 tests — one per constraint, plus a doc-drift guard
 supabase/
   migrations/   schema · row-level security · seed · credentials · approval chain
 web/
   app/          /  /login  /dashboard  /planner  /plan  /replan  /audit  /method  /limits  /scale  /network
-  components/   charts · heat canvas · panels · account menu · approval
-  lib/          db · session · plan · railways · roles
+  components/   charts · heat canvas · Gantt · corridor map · panels · approval · fingerprint
+  lib/          db · session · plan · replan · fingerprint · railways · roles
   scripts/      build-seed · build-stations-csv · check-db · check-auth · check-fingerprint
-docs/           LIMITATIONS.md · IMPLEMENTATION.md
+docs/           LIMITATIONS · IMPLEMENTATION · PITCH · ROADMAP
 ```
 
 ---
@@ -294,12 +297,17 @@ is where railway judgment enters, and it is meant to be argued with.
   external access. Declared in the interface, the artefact and the printed plan.
 - **The models train on generated data**, which bounds what their validation is
   worth. Hazard concordance 0.690 is modest, and we say so.
+- **The detention cost shape is assumed.** The published timetable is ingested
+  and sets the protected paths and the night window, but the model that prices
+  the plan still uses a hand-set daily curve - one the timetable contradicts.
 - **One division is solved.** The other 67 resolve to real posts with no plan
   behind them, and the app says so rather than relabelling Waltair's numbers.
 - **Statutory is 30/35.** Five tasks cannot be placed, every one behind the
   single tower wagon, and the shortfall list names that constraint against each.
-- **Scale is measured, including where it fails:** feasible to ~1,000 tasks
-  across 20 sections in about two minutes; no solution found at 2,500.
+- **Scale is measured, including where it fails.** Given two minutes, the plan
+  is good at the 90-task reference size and degrades fast beyond it: at
+  1,000 tasks it is still feasible but places only 46 of them. From
+  2,500 tasks no solution is found.
 - **The optimality gap** is 5.6% on placement and 34.7% including the choice of
   what to defer. Both are root-LP bounds and do not improve with more time.
 
@@ -316,6 +324,11 @@ interlocking and it does not grant blocks — BDMS remains the system of record.
 | Passenger timetable, distilled to section traffic | DataMeet `railways` | CC0 |
 | Zones and divisions — 17 and 68, with HQ and year | Ministry of Railways, *List of Zones & Divisions* | public |
 | Maintenance backlog | **generated** — seed 7, distributions published in the code | — |
+
+The timetable sets the protected paths and the limit on the night window. It
+is **not** yet what the plan's detention costs are priced from: the detention
+model still carries an assumed daily shape, which the timetable contradicts.
+`docs/LIMITATIONS.md` §1b.
 
 ---
 
