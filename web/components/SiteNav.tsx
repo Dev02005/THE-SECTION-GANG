@@ -22,6 +22,7 @@ const WORK = [
   { href: "/monthly", label: "Monthly" },
   { href: "/plan", label: "Block plan" },
   { href: "/replan", label: "Replan" },
+  { href: "/execution", label: "Execution" },
   { href: "/audit", label: "Audit" },
 ];
 

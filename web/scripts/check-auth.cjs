@@ -302,6 +302,78 @@ function check(label, ok, detail = "") {
   }
 
 
+  console.log("\n=== 4d. the database checks the plan (migration 0012) ===");
+  //  Read-only on the live plan, plus the pure rule function handed a broken
+  //  copy. Breaking the STORED rows is check-sql.mjs's job, on a database of
+  //  its own - never this one, which visitors are using.
+  const chk = await rpc("check_plan", { p_officer_id: "SrDEN/ECoR/WAT", p_password: PW, p_plan_id: PLAN });
+  const has0012 = chk.body?.code !== "PGRST202";
+  check("migration 0012 is applied", has0012, has0012 ? "check_plan present" : "run 0012_plan_checks.sql");
+  if (has0012 && PLAN) {
+    const rules = chk.body?.rules ?? [];
+    check("**the database re-runs its rules and the plan passes them all**",
+          rules.length > 0 && rules.every((x) => x.passed),
+          rules.map((x) => `${x.id}${x.passed ? "" : "(FAIL)"}`).join(" "));
+    const e = chk.body?.engine ?? {};
+    check("the engine's record is stored, passing, and of this plan",
+          e.present && e.belongs && e.passed,
+          e.present ? `${e.checks} checks, belongs: ${e.belongs}`
+                    : "none stored - re-run 0004_seed_plan.sql after 0012");
+    const nrChk = await rpc("check_plan", { p_officer_id: "SrDEN/NR/LKO", p_password: PW, p_plan_id: PLAN });
+    check("**another zone cannot read this plan's checks**", nrChk.body === null,
+          nrChk.body === null ? "(null)" : "LEAK");
+    //  Two optimised blocks on one section, moved onto each other.
+    const bl = (ep.body.blocks ?? []).filter((b) => b.variant === "optimised");
+    const y = bl.find((b) => bl.some((x) => x.id < b.id && x.section_id === b.section_id));
+    const x = bl.find((b) => b.id < y.id && b.section_id === y.section_id);
+    const broken = bl.map((b) => (b.id === y.id
+      ? { ...b, start_slot: x.start_slot, dur_slots: x.dur_slots, scope: "SECTION" } : b));
+    const pure = await rpc("plan_rule_checks", {
+      p_blocks: broken, p_tasks: ep.body.tasks, p_paths: ep.body.protectedPaths,
+      p_shortfall: ep.body.payload?.shortfall ?? [], p_horizon_days: ep.body.plan.horizon_days,
+    });
+    const c7 = Array.isArray(pure.body) ? pure.body.find((r) => r.id === "C7") : null;
+    check("**handed two blocks on one road, the live database fails C7**", c7 && !c7.passed,
+          c7?.failures?.[0] ?? JSON.stringify(pure.body).slice(0, 60));
+  }
+
+  console.log("\n=== 4e. the block record (migration 0013) ===");
+  const act0 = await rpc("my_actuals", { p_officer_id: "SrDEN/ECoR/WAT", p_password: PW, p_plan_id: PLAN });
+  const has0013 = act0.body?.code !== "PGRST202";
+  check("migration 0013 is applied", has0013, has0013 ? "record_block present" : "run 0013_block_record.sql");
+  if (has0013 && has0012 && PLAN) {
+    const blk = (ep.body.blocks ?? []).find((b) => b.variant === "optimised");
+    const rec = (who, extra) => rpc("record_block", {
+      p_officer_id: who, p_password: PW, p_plan_id: PLAN, p_block_id: blk.id, ...extra });
+    try {
+      let r = await rec("SrDOM/ECoR/WAT", { p_state: "granted", p_granted_min: blk.start_slot * 15 });
+      check("**a draft cannot be worked**", r.status >= 400, (r.body?.message ?? "").slice(0, 50));
+      await rpc("submit_plan", { p_officer_id: "SrDEN/ECoR/WAT", p_password: PW, p_plan_id: PLAN });
+      r = await rpc("decide_plan", { p_officer_id: "DRM/ECoR/WAT", p_password: PW, p_plan_id: PLAN, p_approve: true });
+      check("approved through the database's checks", r.body?.status === "approved", `-> ${r.body?.status ?? r.body?.message}`);
+      r = await rec("SrDEN/ECoR/WAT", { p_state: "granted", p_granted_min: blk.start_slot * 15 });
+      check("**Sr.DEN may not record a block**", r.status >= 400, (r.body?.message ?? "").slice(0, 50));
+      r = await rec("SrDOM/ECoR/KUR", { p_state: "granted", p_granted_min: blk.start_slot * 15 });
+      check("**another division's Sr.DOM may not either**", r.status >= 400, (r.body?.message ?? "").slice(0, 50));
+      r = await rec("SrDOM/ECoR/WAT", { p_state: "completed", p_granted_min: blk.start_slot * 15 + 10,
+                                         p_returned_min: blk.start_slot * 15 + 5 });
+      check("**returned before granted is refused**", r.status >= 400, (r.body?.message ?? "").slice(0, 50));
+      r = await rec("SrDOM/ECoR/WAT", { p_state: "granted", p_granted_min: blk.start_slot * 15 + 10 });
+      check("Sr.DOM records the block granted", r.body?.state === "granted", `-> ${r.body?.state} at ${r.body?.granted_min}`);
+      const own = await rpc("my_actuals", { p_officer_id: "SrDEN/ECoR/WAT", p_password: PW, p_plan_id: PLAN });
+      const nrA = await rpc("my_actuals", { p_officer_id: "SrDEN/NR/LKO", p_password: PW, p_plan_id: PLAN });
+      check("the division reads it", Array.isArray(own.body) && own.body.length === 1, `${own.body?.length}`);
+      check("**another zone does not**", Array.isArray(nrA.body) && nrA.body.length === 0, `${nrA.body?.length}`);
+    } finally {
+      const back = await rpc("reset_plan", { p_officer_id: "DRM/ECoR/WAT", p_password: PW, p_plan_id: PLAN });
+      const left = await rpc("my_actuals", { p_officer_id: "SrDEN/ECoR/WAT", p_password: PW, p_plan_id: PLAN });
+      check("reset leaves a draft with no record",
+            back.body?.status === "draft" && Array.isArray(left.body) && left.body.length === 0,
+            back.body?.status === "draft" ? `(record: ${left.body?.length})` : "**LEFT MID-CHAIN**");
+    }
+  }
+
+
   console.log("\n=== 5. writes need authority ===");
   const planId = ep.body?.plan?.id;
   if (planId) {

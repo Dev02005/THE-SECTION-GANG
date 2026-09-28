@@ -270,7 +270,9 @@ same seven names, and a test fails if the two lists disagree.
   section already records block taken and block returned in the Train Signal
   Register, by rule, tonight. Reading those two timestamps back would make the
   duration model the one model grounded in observation, and it asks nobody to
-  do anything they are not already doing.
+  do anything they are not already doing. The block record (§6d) now keeps
+  those two times - typed in by hand. Reading them from the register, and
+  training on them, is what is still not built.
 - **Historical replay harness.** Stage 1 of the rollout, where data-quality
   problems surface.
 - **BDMS write-back.** The planner proposes; BDMS grants. We never write to the
@@ -356,12 +358,46 @@ and Approve. What they do and do not establish:
 - They check the plan against **this model's rules**. Those are named the way a
   division says them and have not been checked against the General and
   Subsidiary Rules, so they are not presented as G&SR citations.
-- They are enforced by the engine and by the application - **not yet by the
-  database**. `decide_plan` does not re-run them, so a post calling the database
-  directly could approve a plan the site would hold.
+- They are enforced by the engine, the application **and the database** -
+  but not all in the same way, and the difference matters. `submit_plan` and
+  `decide_plan` re-run 9 of those rules itself, in SQL over the rows it holds,
+  at submission and again at approval; three of them only in part, because the
+  rows carry no blackout days, no road or scope per job and no booked duration.
+  For what the rows do not hold at all - machine and gang counts, due dates,
+  booked durations, blackout days, predecessors - the database requires the
+  engine's record, which must pass and must be of this exact build (the same
+  objective, seed and build time). **For those rules the database trusts the
+  engine rather than checking it**; the 9 it re-runs, it checks. The limits the
+  SQL enforces are restated from the engine, and `tests/test_sql_rules.py`
+  fails if the two drift apart.
 - One check examines nothing on this plan: no job in the generated backlog has a
   predecessor, so "predecessors finish first" reports *none to check* rather
   than a pass it did not earn. It is still tested, on a plan with one.
+
+---
+
+## 6d. The block record - typed in, not read from the ground
+
+**Built:** once a plan is approved, the Sr.DOM records each block as it is
+worked - granted at, returned to traffic at, or not availed - and `/execution`
+sets each against its plan. The database takes a record only from that
+division's Sr.DOM and only on an approved plan, refuses times that contradict
+themselves (returned before granted, a partial block with no word on what was
+left, a block not availed with no reason), and writes every entry and every
+correction to the audit log with the value it replaced. What it does not do:
+
+- **It is typed in, after the fact.** Not read from the Train Signal Register
+  or the control chart (§6), and not written to BDMS.
+- **The Sr.DOM stands in** for the Station Masters and the section controller
+  who actually record a block. The 425 posts stop at the Sr.DOM.
+- **Times are minutes into the plan week**, the origin the plan's own slots
+  use. The plan carries no calendar dates, so neither does its record; a
+  deployment would stamp both.
+- **Nothing reads it back.** A block not availed does not return its work to
+  next week's backlog, and actual durations do not reach the duration model.
+- **It starts empty.** No record is seeded or simulated; every figure on the
+  page is computed from what has been recorded. A reset of the plan to draft
+  clears it, and logs how much.
 
 ---
 

@@ -3,6 +3,7 @@
 import type { DbAuditRow } from "@/lib/db";
 import { roleById } from "@/lib/roles";
 import { shortFingerprint } from "@/lib/fingerprint";
+import { stamp } from "@/lib/actuals";
 import { useAudit } from "@/lib/useAudit";
 import { asRole, useSession } from "@/lib/session";
 
@@ -183,10 +184,10 @@ function Entry({ row }: { row: DbAuditRow }) {
 /**
  * The `detail` column, rendered as what it is.
  *
- * Only two shapes are ever written - a rejection's `reason` and the reset's
- * `note` - but the column is free jsonb, so anything else is printed as
- * key/value rather than dropped. Dropping it would hide the one field a
- * rejection carries its meaning in.
+ * A rejection's `reason`, a reset's `note`, the fingerprint and the checks run
+ * when a plan moved, a recorded block and what it replaced - and the column
+ * is free jsonb, so anything else is printed as key/value rather than dropped.
+ * Dropping it would hide the one field a rejection carries its meaning in.
  */
 function Detail({ detail }: { detail: Record<string, unknown> | null }) {
   if (detail === null) return null;
@@ -206,12 +207,29 @@ function Detail({ detail }: { detail: Record<string, unknown> | null }) {
               {shortFingerprint(v)}
             </dd>
           ) : (
-            <dd className="text-ink-mid">{String(v)}</dd>
+            <dd className="text-ink-mid">{show(k, v)}</dd>
           )}
         </div>
       ))}
     </dl>
   );
+}
+
+/**
+ * One detail value as text. Block times are minutes into the plan week and
+ * read as "Mon 01:12"; a nested object - the checks run at approval, the
+ * record a correction replaced - is spelled out rather than printed as
+ * "[object Object]", which is what String() made of it.
+ */
+function show(k: string, v: unknown): string {
+  if (typeof v === "number" && k.endsWith("_min")) return stamp(v);
+  if (v !== null && typeof v === "object") {
+    return Object.entries(v as Record<string, unknown>)
+      .filter(([, x]) => x !== null && x !== "")
+      .map(([kk, x]) => `${kk.replace(/_min$/, "")} ${show(kk, x)}`)
+      .join(" · ");
+  }
+  return String(v);
 }
 
 interface Described {
@@ -233,6 +251,8 @@ function describe(action: string): Described {
       return { label: "Rejected", tone: "bg-surface-sunk text-caution", known: true };
     case "plan.reset":
       return { label: "Reset to draft", tone: plain, known: true };
+    case "block.recorded":
+      return { label: "Block recorded", tone: "bg-surface-sunk text-ink", known: true };
     case "officer.password_changed":
       return { label: "Password changed", tone: plain, known: true };
     case "officer.password_restored":

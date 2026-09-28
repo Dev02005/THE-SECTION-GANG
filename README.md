@@ -123,9 +123,13 @@ and clearance, every job by its due date, the per-day and night limits, every
 statutory job left out declared with its reason. They run on the artefact
 itself and share no code with the solver's model, so a bug in how a constraint
 was posted cannot hide from them. `build_plan` refuses to write a plan that
-fails one, and the site holds Submit and Approve unless a passing set belongs
-to the plan on screen. They are this model's rules, named the way a division
-says them - not General and Subsidiary Rules citations.
+fails one, and **the database refuses to move one**: `submit_plan` and
+`decide_plan` re-run 9 of those rules itself, in SQL over the rows it holds,
+at submission and again at approval (3 of the 9 only in part), and require the
+engine's passing record of this exact plan for what the rows cannot answer -
+machine counts, due dates, booked durations, blackout days. Sending a plan back
+is never gated. They are this model's rules, named the way a division says
+them - not General and Subsidiary Rules citations.
 
 **When the week does not go to plan** — `/replan`. A USFD flaw found on
 Wednesday morning must be removed within 24 hours, and Thursday is a blackout
@@ -148,7 +152,16 @@ itself: week 1 goes to the weekly solver unchanged, which fits **60 of
 re-planned with them. The month starts from the planner's own week of backlog,
 id for id.
 
-`web/scripts/check-auth.cjs` proves it by attacking it — **52 checks**,
+**Worked, not just approved** — `/execution`. Once the DRM approves a plan,
+the operating branch (Sr.DOM) records each block as it is worked: granted when,
+returned to traffic when, or not availed and why. The page sets each against
+its plan - granted late, returned late, block time used - computed only from
+what was recorded; a block with no record is "not recorded", never "on time".
+The database takes a record only from that division's Sr.DOM, only on an
+approved plan, and refuses times that contradict themselves; every entry and
+every correction goes into the audit log with the value it replaced.
+
+`web/scripts/check-auth.cjs` proves it by attacking it — **67 checks**,
 including a DRM of a *different* division trying to approve this one's plan.
 
 ---
@@ -173,23 +186,29 @@ needs step 2.
 
 1. Create a Supabase project.
 2. In its SQL editor, run every file in `supabase/migrations/` **in numeric
-   order**, `0001` through `0011`.
+   order**, `0001` through `0013`.
    `0003b_seed_stations.sql` is 1.8 MB and the editor will refuse it; instead
    run `cd web && npx tsx scripts/build-stations-csv.ts` and import the
    resulting `supabase/stations.csv` into the `stations` table.
 3. `cp web/.env.example web/.env.local` and fill in the project URL and the
    **publishable** key. Never the service-role key — it bypasses row-level
    security entirely.
-4. Verify: `cd web && node scripts/check-auth.cjs` should report 52 passed,
+4. Verify: `cd web && node scripts/check-auth.cjs` should report 67 passed,
    and `npx tsx scripts/check-fingerprint.ts` should report 11 passed — the
    fingerprint's properties, the seed agreeing with the library, and the
    database agreeing with both.
+
+`node scripts/check-sql.mjs` needs no database at all: it runs every migration
+on a Postgres inside the Node process (PGlite) and then breaks the stored plan
+on purpose - each of the database's 9 rules broken once, and the move
+refused; every bad block record refused - which the live suite cannot do to a
+database other people are using.
 
 ### 3 · The engine
 
 ```bash
 pip install -r requirements.txt
-python -m pytest tests -q                              # 204 tests
+python -m pytest tests -q                              # 219 tests
 python -m engine.build_plan --tasks 90 --time 90       # writes web/public/data/plan.json
 python -m engine.build_replan                           # writes web/public/data/replan.json
 python -m engine.build_monthly                          # writes web/public/data/monthly.json
@@ -248,14 +267,15 @@ engine/
   build_checks.py  CLI: the checks, run on the published plan
 tools/          extract_traffic.py — published timetable → engine/core/traffic.py
 model_store/    the three promoted models and their cards
-tests/          204 tests — one per constraint, plus a doc-drift guard
+tests/          219 tests — one per constraint, plus a doc-drift guard
 supabase/
-  migrations/   schema · row-level security · seed · credentials · approval chain
+  migrations/   schema · row-level security · seed · credentials · approval chain ·
+                pre-approval checks · block record
 web/
-  app/          /  /login  /dashboard  /planner  /monthly  /plan  /replan  /audit  /method  /limits  /scale  /network
+  app/          /  /login  /dashboard  /planner  /monthly  /plan  /replan  /execution  /audit  /method  /limits  /scale  /network
   components/   charts · heat canvas · Gantt · corridor map · panels · approval · fingerprint
   lib/          db · session · plan · replan · fingerprint · railways · roles
-  scripts/      build-seed · build-stations-csv · check-db · check-auth · check-fingerprint
+  scripts/      build-seed · build-stations-csv · check-db · check-auth · check-fingerprint · check-sql
 docs/           LIMITATIONS · IMPLEMENTATION · PITCH · ROADMAP
 ```
 

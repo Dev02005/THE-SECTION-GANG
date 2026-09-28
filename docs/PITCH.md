@@ -235,6 +235,18 @@ the published plan by code that never saw the solver's model. A plan that fails
 one is never written, and Submit and Approve stay held without a passing set.
 *They are our model's rules, not G&SR citations - and we say so on the card.*
 
+**"And if someone skips the website and calls the database?"**
+It refuses. Submission and approval re-run 9 of those rules in SQL over the
+stored rows, and require the engine's passing record of this exact plan for the
+rest. *Where the database has no rows to check - machines, due dates - it
+trusts the engine's record, and the limits page says exactly that.*
+
+**"What happens after it is approved?"**
+Open `/execution`. The Sr.DOM records each block as worked - granted, returned,
+not availed - against its plan time, and the database will not take a record
+for a draft. *It starts empty on purpose: every figure on it is one somebody
+recorded.*
+
 **"How do I know the numbers are real?"**
 One scoring function, one instance, both sides. There is a test asserting the
 detention comes from the instance surface rather than from a number the solver

@@ -463,3 +463,24 @@ def test_checks_and_disruption_claims_match_the_artefacts(readme: str) -> None:
     )
     costly = [s for s in scenarios if s["lost"]]
     assert f"{len(costly)} cost a statutory job" in text
+
+
+SQL_CHECKS = ROOT / "supabase" / "migrations" / "0012_plan_checks.sql"
+
+
+def test_the_database_rule_count_in_the_docs_is_the_migrations(readme: str) -> None:
+    """
+    README and LIMITATIONS say how many rules the database re-runs itself - the
+    line between what it checks and what it takes on the engine's word. Add a
+    rule to 0012 and forget the prose, and the docs understate the database;
+    remove one, and they claim a check that no longer runs. Counted from the
+    migration, not restated here.
+    """
+    n = len(re.findall(r"_rule\('", SQL_CHECKS.read_text(encoding="utf-8")))
+    assert n > 0, "no _rule( calls found in 0012 - the pattern or the file changed"
+    claim = f"re-run {n} of those rules"
+    for name, text in (("README.md", readme),
+                       ("LIMITATIONS.md", LIMITATIONS.read_text(encoding="utf-8"))):
+        assert claim in _flat(text).replace("**", ""), (
+            f"{name} no longer says the database re-runs {n} rules"
+        )

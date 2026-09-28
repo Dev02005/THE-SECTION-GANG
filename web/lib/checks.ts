@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { type DbChecks, checkPlan, isSupabaseConfigured } from "./db";
 import type { PlanPayload } from "./plan";
+import { useSession } from "./session";
 
 /**
  * The pre-approval checks, as `engine/build_checks.py` wrote them.
@@ -65,4 +67,55 @@ export function useChecks(): ChecksState {
 /** True only for a passing set that belongs to this plan. */
 export function checksClear(s: ChecksState, plan: PlanPayload): boolean {
   return s.state === "ready" && checksMatch(s.checks, plan) && s.checks.passed;
+}
+
+/**
+ * The same plan, as the DATABASE will check it when someone presses Submit or
+ * Approve (migration 0012).
+ *
+ *   none         no database, or no plan row - nothing enforces anything
+ *   unavailable  a database without 0012: it does not re-check, and the page
+ *                says so rather than implying it does
+ *   ready        what submit_plan and decide_plan will find
+ */
+export type DbChecksState =
+  | { state: "none" }
+  | { state: "loading" }
+  | { state: "unavailable" }
+  | { state: "ready"; checks: DbChecks };
+
+export function useDbChecks(planId: string | null): DbChecksState {
+  const { session } = useSession();
+  const [s, setS] = useState<DbChecksState>({ state: "none" });
+  useEffect(() => {
+    if (!isSupabaseConfigured || session === null || planId === null) {
+      setS({ state: "none" });
+      return;
+    }
+    let live = true;
+    setS({ state: "loading" });
+    checkPlan(session.credential, planId)
+      .then((c) => live && setS(c ? { state: "ready", checks: c } : { state: "none" }))
+      //  A missing function is the likeliest failure: a database not yet on
+      //  0012. That is a fact to state, not a failure of the plan.
+      .catch(() => live && setS({ state: "unavailable" }));
+    return () => {
+      live = false;
+    };
+  }, [session, planId]);
+  return s;
+}
+
+/**
+ * May Submit and Approve be offered? The engine's set must pass and belong to
+ * this plan; and if the database has re-checked it, the database must agree.
+ * The database refuses regardless - this only stops the page offering a
+ * button that would be refused.
+ */
+export function approvalClear(
+  s: ChecksState,
+  db: DbChecksState,
+  plan: PlanPayload,
+): boolean {
+  return checksClear(s, plan) && !(db.state === "ready" && !db.checks.passed);
 }

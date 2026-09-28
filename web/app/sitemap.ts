@@ -14,6 +14,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${SITE}/limits`, lastModified: now, priority: 0.6 },
     { url: `${SITE}/monthly`, lastModified: now, priority: 0.5 },
     { url: `${SITE}/replan`, lastModified: now, priority: 0.5 },
+    { url: `${SITE}/execution`, lastModified: now, priority: 0.4 },
     { url: `${SITE}/audit`, lastModified: now, priority: 0.4 },
     { url: `${SITE}/login`, lastModified: now, priority: 0.3 },
   ];

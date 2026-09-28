@@ -61,6 +61,8 @@ export interface DbTask {
   scheduled: boolean;
   block_id: string | null;
   start_slot: number | null;
+  /** Where the work ends. Absent before 0012, null on a deferred job. */
+  end_slot?: number | null;
   risk_rate: number;
 }
 
@@ -366,4 +368,95 @@ export async function myAudit(
   limit = 50,
 ): Promise<DbAuditRow[]> {
   return (await call<DbAuditRow[]>("my_audit", args(cred, { p_limit: limit }))) ?? [];
+}
+
+/**
+ * One pre-approval rule as the DATABASE re-ran it (0012). The same keys the
+ * engine writes into checks.json, so one component renders both.
+ */
+export interface DbRule {
+  id: string;
+  name: string;
+  passed: boolean;
+  examined: number;
+  failed: number;
+  failures: string[];
+}
+
+/**
+ * What `submit_plan` and `decide_plan` will look at: the rules the database
+ * re-runs over its own rows, and the engine's record it requires for the rest.
+ */
+export interface DbChecks {
+  passed: boolean;
+  rules: DbRule[];
+  engine: {
+    present: boolean;
+    belongs: boolean;
+    passed: boolean;
+    checks: number;
+    failing: string[];
+  };
+}
+
+/**
+ * The checks the database will apply to this plan, read without moving it.
+ *
+ * Null for a plan this post may not see - scoped like `my_plan`. A database
+ * before 0012 has no such function and throws, which the caller reports as
+ * "not re-checked by the database" rather than as a failure.
+ */
+export async function checkPlan(cred: Credential, planId: string): Promise<DbChecks | null> {
+  return call<DbChecks>("check_plan", args(cred, { p_plan_id: planId }));
+}
+
+/** Where a block stands on the ground. See 0013_block_record.sql. */
+export type BlockState = "granted" | "completed" | "partial" | "not_availed";
+
+/**
+ * One block as worked. Times are minutes from 00:00 on the Monday that begins
+ * the plan week - the origin the plan's own slots use - so planned and actual
+ * compare without a calendar the rest of the system does not have.
+ */
+export interface DbActual {
+  plan_id: string;
+  block_id: string;
+  state: BlockState;
+  granted_min: number | null;
+  returned_min: number | null;
+  note: string | null;
+  recorded_by: string;
+  recorded_at: string;
+}
+
+/** The record of an approved plan, for any post that may see the plan. */
+export async function myActuals(cred: Credential, planId: string): Promise<DbActual[]> {
+  return (await call<DbActual[]>("my_actuals", args(cred, { p_plan_id: planId }))) ?? [];
+}
+
+/**
+ * Record a block. The Sr.DOM of the plan's own division, on an APPROVED plan,
+ * and nobody else - enforced in `record_block`, which also refuses times that
+ * contradict the state and writes the value it replaces to the audit log.
+ */
+export async function recordBlock(
+  cred: Credential,
+  planId: string,
+  blockId: string,
+  state: BlockState,
+  grantedMin: number | null,
+  returnedMin: number | null,
+  note: string | null,
+): Promise<DbActual | null> {
+  return call<DbActual>(
+    "record_block",
+    args(cred, {
+      p_plan_id: planId,
+      p_block_id: blockId,
+      p_state: state,
+      p_granted_min: grantedMin,
+      p_returned_min: returnedMin,
+      p_note: note,
+    }),
+  );
 }

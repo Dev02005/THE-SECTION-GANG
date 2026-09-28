@@ -2,14 +2,14 @@
 
 import { type ReactNode, useState } from "react";
 import type { PlanPayload } from "@/lib/plan";
-import { usePlan } from "@/lib/usePlan";
+import { type PlanState, usePlan } from "@/lib/usePlan";
 import { useDivisions } from "@/lib/useDivisions";
 import { ZoneDivisions } from "@/components/ZoneDivisions";
 import { ApprovalPanel } from "@/components/ApprovalPanel";
 import { NoPlanPanel } from "@/components/NoPlanPanel";
 import { PlanFingerprint } from "@/components/PlanFingerprint";
 import { PlanChecks } from "@/components/PlanChecks";
-import { checksClear, useChecks } from "@/lib/checks";
+import { approvalClear, useChecks, useDbChecks } from "@/lib/checks";
 import { asRole, useSession } from "@/lib/session";
 
 /**
@@ -31,13 +31,22 @@ import { asRole, useSession } from "@/lib/session";
  * A render prop rather than a wrapper component because the two consumers draw
  * completely different things from the same payload - the comparison screen and
  * the issuable document - and neither should have to know how the other gets it.
+ *
+ * The second argument is the plan ROW - its id and status - for a page that
+ * acts on the plan rather than drawing it (the block record). Null on the
+ * artefact fallback, which belongs to no division and has no row.
  */
+export interface PlanContext {
+  record: PlanState["record"];
+  refresh: () => void;
+}
+
 export function ScopedPlan({
   fallback,
   children,
 }: {
   fallback: PlanPayload;
-  children: (plan: PlanPayload) => ReactNode;
+  children: (plan: PlanPayload, ctx: PlanContext) => ReactNode;
 }) {
   const { session } = useSession();
   //  Called before any early return, as every hook must be.
@@ -51,6 +60,8 @@ export function ScopedPlan({
     fallback,
     division,
   );
+  //  What the database itself will find when Submit or Approve is pressed.
+  const dbChecks = useDbChecks(record?.id ?? null);
 
   const zonal = role?.level === "zone";
   const picker =
@@ -107,7 +118,11 @@ export function ScopedPlan({
            take on it. Above the plan because the status changes what the plan
            below it means: a draft is a proposal, an approved plan is a
            programme.  */}
-      <ApprovalPanel record={record} refresh={refresh} checksOk={checksClear(checks, plan)} />
+      <ApprovalPanel
+        record={record}
+        refresh={refresh}
+        checksOk={approvalClear(checks, dbChecks, plan)}
+      />
       {/*  Recomputed from the plan being drawn and checked against the record.
            No record at all - offline, or the artefact fallback - is passed as
            undefined, which the component states rather than hides.  */}
@@ -118,7 +133,7 @@ export function ScopedPlan({
       />
       {/*  Re-run on the published plan, independently of the solver. Submit and
            approve above are held unless this set passes and belongs here.  */}
-      <PlanChecks plan={plan} s={checks} />
+      <PlanChecks plan={plan} s={checks} db={dbChecks} />
       {source !== "database" && (
         <p className="mb-4 rounded border border-caution bg-caution-soft px-3 py-2 text-[12.5px] leading-relaxed text-ink print:hidden">
           {source === "artefact" ? (
@@ -151,7 +166,7 @@ export function ScopedPlan({
           )}
         </p>
       )}
-      {children(plan)}
+      {children(plan, { record, refresh })}
     </>
   );
 }

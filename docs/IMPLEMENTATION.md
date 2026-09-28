@@ -370,9 +370,22 @@ no code with the solver's model. `build_plan` refuses to write a plan that fails
 one; `build_checks` writes the result beside the plan, and the site holds Submit
 and Approve unless a passing set belongs to the plan on screen.
 
+**The database checks too** (`0012_plan_checks.sql`). `plan_rule_checks` is a
+pure SQL function: 9 of the rules, re-computed over rows handed to it.
+`submit_plan` and `decide_plan` call it on the stored rows at submission and at
+approval, and also require the engine's record (`plans.checks`, written by the
+seed) to pass and to be of this build. Rejection is never gated. The rule
+limits are restated from the engine; `tests/test_sql_rules.py` guards them.
+
+**The block record** (`0013_block_record.sql`). `record_block` takes the
+Sr.DOM of the plan's division, on an approved plan only, and a state - granted,
+completed, partial, not availed - with times in minutes into the plan week;
+`my_actuals` reads it back, scoped like `my_plan`. One row per block, every
+version in the audit log. `/execution` renders it against the plan.
+
 **The web app** (`web/`) is static Next.js: `/dashboard`, `/planner` (the
 comparison - current practice above, the joint plan below, detention heat
-strip behind both), `/plan` (the issuable A4 document), `/replan`, `/audit`,
+strip behind both), `/plan` (the issuable A4 document), `/replan`, `/execution`, `/audit`,
 and `/method`, `/limits`, `/scale`, `/network`. Charts are hand-built: Canvas
 for the heat strip, SVG for blocks, with a roving tabindex so the chart is one
 tab stop and arrow keys move between blocks.
@@ -398,10 +411,14 @@ user table of our own.
 | `test_replan.py` | Properties of any replan: the past frozen, the defect required, disruption minimal and reported as found |
 | `test_benchmark.py` | The variable filter is exact; larger instances keep contiguous, named sections |
 | `test_validate.py` | The shipped plan passes all checks, and each check fails when its one rule is broken on a copy of it |
+| `test_sql_rules.py` | The limits the database enforces are the engine's limits, value for value |
 | `test_monthly.py` | Every job in a week it can be done; corridor, packing and resource limits held; one tower wagon never in two places; a job waits for its predecessor; deterministic |
 | `test_docs.py` | Numbers stated in the docs match the artefacts, including the test count itself |
 
-The web side is checked against the live database by
+The SQL is checked on a real Postgres with no network by
+`web/scripts/check-sql.mjs` (every migration, each database rule broken once and
+the move refused, every bad block record refused). The web side is checked
+against the live database by
 `web/scripts/check-auth.cjs` (scoping, writes, the approval cycle) and
 `web/scripts/check-fingerprint.ts`.
 

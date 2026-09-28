@@ -231,7 +231,8 @@ export default async function LimitsPage() {
             {[
               ["Integrity, not correctness", "A matching fingerprint says this is the plan that was approved. It says nothing about whether the plan is good."],
               ["A hash, not a signature", "Who approved comes from the audit row. In this demonstration every post shares one password, printed on the sign-in page, so “approved by the DRM” means approved by someone signed in as the DRM."],
-              ["Checked, but not yet by the database", "Pre-approval checks re-verify the published plan against every hard rule, independently of the solver, and the site holds Submit and Approve without a passing set. The database does not re-run them: a post calling it directly could approve what the site would hold."],
+              ["Checked by the database, partly on trust", "Submit and Approve re-run 9 of the pre-approval rules in SQL over the rows the database holds, three of them in part. For what the rows do not carry - machine counts, due dates, booked durations, blackout days - the database requires the engine's passing record of this exact build: there it trusts the engine rather than checking it."],
+              ["A block record typed in, not read", "The Sr.DOM records each block as granted, returned or not availed, standing in for the Station Masters and controller who really do. Nothing is read from the Train Signal Register, and nothing reads the record back: work not availed does not roll into next week's backlog."],
               ["Against users, not the database owner", "Row-level security stops every client from editing the audit log. The project owner and the service-role key bypass it entirely and could rewrite the plan, its hash and the log together. The printed copy is the one outside our control, which is why the fingerprint is printed."],
             ].map(([h, p]) => (
               <li key={h} className="border-l-2 border-rule pl-3">

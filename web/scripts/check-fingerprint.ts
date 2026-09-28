@@ -83,7 +83,12 @@ void (async () => {
     path.join(ROOT, "..", "supabase", "migrations", "0004_seed_plan.sql"),
     "utf-8",
   );
-  const inSeed = seedSql.match(/::jsonb, '([0-9a-f]{64})'\);/)?.[1] ?? null;
+  //  The hash follows the payload. It used to be the last value in the insert,
+  //  and this pattern required the `);` after it - so when 0012 put the
+  //  engine's check record after it, the seed still carried the right hash
+  //  and this said it carried none. Anchor on what precedes it, not what ends
+  //  the statement.
+  const inSeed = seedSql.match(/::jsonb, '([0-9a-f]{64})'[,)]/)?.[1] ?? null;
   check(
     "0004_seed_plan.sql carries this plan's fingerprint",
     inSeed === h,

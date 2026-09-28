@@ -201,6 +201,27 @@ block-hour, measured), week 1 gets 66 and 60 fit. A second bug was in the
 explanation, not the plan: every deferral read "no room" while weeks 3 and 4
 stood half empty - most were priced out, and now say so.
 
+## Phase 8 — the database checks, and the plan as worked · DONE 28 Sep
+
+The two gaps left after Phase 7, against Pashupatastra and RailSync (execution
+tracking) and against our own LIMITATIONS (checks not enforced by the database):
+
+- **The database refuses a failing plan.** `submit_plan` and `decide_plan`
+  re-run 9 rules in SQL over the stored rows, and require the engine's passing
+  record of this build for the rest. Verified on a real Postgres in-process
+  (`check-sql.mjs`): each rule broken once and the move refused; a failing plan
+  can still be sent back.
+- **Blocks as worked.** `/execution`: the Sr.DOM records each block of an
+  approved plan - granted, returned, not availed - against its plan time. The
+  database enforces who, when and consistency; every version is in the audit
+  log. Starts empty: nothing seeded, nothing simulated.
+
+Verified live after 0012, 0013 and a re-run 0004: `check-auth.cjs` **67 passed**
+(15 new), `check-fingerprint.ts` 11 passed, and in the browser Sr.DEN submitted,
+the DRM approved - the audit log recording "database 9 of 9, engine 12 of 12" -
+and the Sr.DOM recorded one block late and one not availed, the database
+refusing the second until a reason was given. Then reset to draft, record empty.
+
 ## Phase 7 — checked before approval, and a choice of disruptions · DONE 28 Sep
 
 Two of rail-bloc's visible advantages, closed without changing a number:

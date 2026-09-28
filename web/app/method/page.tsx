@@ -217,6 +217,28 @@ export default async function MethodPage() {
             plan on screen. A check with nothing to examine says so, rather than
             wearing a pass it did not earn.
           </p>
+          <p>
+            The panel is a courtesy; the database is the control. Submission and
+            approval each re-run 9 of those rules in SQL, over the rows the
+            database holds, and require the engine&rsquo;s passing record of
+            this exact plan for the rest. A plan that fails is refused whatever
+            the page shows &mdash; and sending it back is never held.
+          </p>
+        </DocSection>
+
+        <DocSection n="10" title="Worked, not just approved">
+          <p>
+            An approved programme is a promise about the week. Whether it was
+            workable is only known afterwards, so the operating branch records
+            each block as it happens: granted when, returned to traffic when, or
+            not availed and why.
+          </p>
+          <p>
+            Each is set against its plan &mdash; late granted, late returned,
+            block time used &mdash; from what was recorded and nothing else. A
+            correction replaces the figure on screen and keeps the old one in
+            the audit log.
+          </p>
         </DocSection>
 
         <p className="mt-12 border-t border-rule pt-6 text-[14px] leading-relaxed text-ink-mut">

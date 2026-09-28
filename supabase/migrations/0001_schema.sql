@@ -122,6 +122,9 @@ create table if not exists plans (
   --  here for the same reason as payload: 0004 writes it, and 0004 runs before
   --  0011 on a fresh database.
   plan_hash       text,
+  --  The engine's pre-approval checks, which submit_plan and decide_plan
+  --  require (0012). Declared here for the same reason again: 0004 writes it.
+  checks          jsonb,
   created_at      timestamptz not null default now()
 );
 
@@ -145,6 +148,9 @@ create table if not exists tasks (
   scheduled    boolean not null,
   block_id     text,
   start_slot   int,
+  --  Where the work ends, so the database can check it finishes inside the
+  --  block's clearance (0012). Written by 0004, hence declared here.
+  end_slot     int,
   risk_rate    int,
   primary key (plan_id, variant, id)
 );

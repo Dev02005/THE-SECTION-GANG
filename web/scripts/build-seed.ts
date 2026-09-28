@@ -10,6 +10,7 @@
  *   zones, divisions, officers   lib/railways.ts and lib/roles.ts
  *   stations                     public/data/stations.json
  *   sections, plan, blocks, kpis public/data/plan.json
+ *   the engine's checks          public/data/checks.json
  *
  * Restating any of them here would recreate the duplication bug that has bitten
  * this project three times - a table written twice and kept in step by hand.
@@ -159,12 +160,35 @@ interface PlanSide {
     scheduled: boolean;
     blockId: string | null;
     startSlot: number | null;
+    endSlot: number | null;
     riskRate: number;
   }[];
 }
 const plan = JSON.parse(
   readFileSync(path.join(ROOT, "public", "data", "plan.json"), "utf-8"),
 ) as Plan;
+
+//  The engine's pre-approval checks. submit_plan and decide_plan refuse a plan
+//  without a passing set that belongs to it (0012), so seeding checks of a
+//  different build would only make the plan unapprovable - refuse here, where
+//  the mistake is made, with the command that fixes it.
+interface Checks {
+  passed: boolean;
+  plan: { objective: number; seed: number; generatedAt: string };
+  checks: { id: string; passed: boolean }[];
+}
+const checks = JSON.parse(
+  readFileSync(path.join(ROOT, "public", "data", "checks.json"), "utf-8"),
+) as Checks;
+if (
+  checks.plan.objective !== plan.solver?.objective ||
+  checks.plan.seed !== plan.provenance.seed ||
+  checks.plan.generatedAt !== plan.generatedAt
+) {
+  throw new Error(
+    "checks.json is not of this plan.json - run `python -m engine.build_checks` first",
+  );
+}
 
 //  Built by the same function the browser uses, so a row and the artefact
 //  it carries cannot be given different names.
@@ -210,13 +234,13 @@ planOut.push(
   `    and status <> 'superseded';`,
   `delete from plans where reference = ${q(REF)};`,
   `insert into plans (reference, zone_code, division_code, horizon_days, seed, status,`,
-  `  solver_status, objective, bound, placement_objective, placement_bound, generated_at, payload, plan_hash)`,
+  `  solver_status, objective, bound, placement_objective, placement_bound, generated_at, payload, plan_hash, checks)`,
   `values (${q(REF)}, ${q(ZONE)}, ${q(DIV)}, ${plan.horizon.days}, ${n(plan.provenance.seed)}, 'draft',`,
   `  ${q(plan.solver?.status ?? null)}, ${n(plan.solver?.objective)}, ${n(plan.solver?.bound)},`,
   //  The artefact itself, so the tables and the screen cannot disagree: both
   //  are written here, in one transaction, from this one file.
   `  ${n(plan.placement?.objective)}, ${n(plan.placement?.bound)}, ${q(plan.generatedAt ?? new Date().toISOString())},`,
-  `  ${q(JSON.stringify(plan))}::jsonb, ${PLAN_HASH_TOKEN});`,
+  `  ${q(JSON.stringify(plan))}::jsonb, ${PLAN_HASH_TOKEN}, ${q(JSON.stringify(checks))}::jsonb);`,
   "",
   `create temporary table _p as select id from plans where reference = ${q(REF)};`,
 );
@@ -233,8 +257,8 @@ for (const variant of ["optimised", "baseline"] as Variant[]) {
   }
   for (const t of side.tasks) {
     planOut.push(
-      `insert into tasks (id, plan_id, variant, department, section_id, activity, criticality, scheduled, block_id, start_slot, risk_rate)` +
-        ` select ${q(t.id)}, id, ${q(variant)}, ${q(t.department)}::department, ${q(t.section)}, ${q(t.activity)}, ${q(t.criticality)}::criticality, ${t.scheduled}, ${q(t.blockId)}, ${n(t.startSlot)}, ${t.riskRate} from _p;`,
+      `insert into tasks (id, plan_id, variant, department, section_id, activity, criticality, scheduled, block_id, start_slot, end_slot, risk_rate)` +
+        ` select ${q(t.id)}, id, ${q(variant)}, ${q(t.department)}::department, ${q(t.section)}, ${q(t.activity)}, ${q(t.criticality)}::criticality, ${t.scheduled}, ${q(t.blockId)}, ${n(t.startSlot)}, ${n(t.endSlot)}, ${t.riskRate} from _p;`,
     );
   }
   const k = plan.kpis[variant];
