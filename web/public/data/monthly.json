@@ -1,0 +1,2285 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-28T00:26:51+00:00",
+  "seed": 7,
+  "provenance": {
+    "synthetic": true,
+    "notice": "TMS, SMMS, TDMS, COA and BDMS are internal Indian Railways systems with no external access. The maintenance backlog shown here is generated, not observed. Corridor geometry and protected paths are measured from published data; the daily shape of detention cost is assumed.",
+    "pricedBy": [
+      "duration",
+      "hazard",
+      "detention"
+    ]
+  },
+  "calibration": {
+    "packing": 1.2,
+    "note": "Work-hours per block-hour the monthly plan is held to, measured from the weekly solver on a full week (1.22). On the lighter shipped week it reaches 2.06; planned at that, week 1 was given 103 jobs and the weekly solver could place 66."
+  },
+  "horizon": {
+    "weeks": 4,
+    "days": 28
+  },
+  "sections": [
+    {
+      "id": "SEC-01",
+      "name": "Duvvada \u2013 Kottavalasa"
+    },
+    {
+      "id": "SEC-02",
+      "name": "Kottavalasa \u2013 Kantakapalle"
+    },
+    {
+      "id": "SEC-03",
+      "name": "Kantakapalle \u2013 Alamanda"
+    },
+    {
+      "id": "SEC-04",
+      "name": "Alamanda \u2013 Vizianagram Jn"
+    }
+  ],
+  "solver": {
+    "status": "FEASIBLE",
+    "objective": 90923345,
+    "bound": 90578134,
+    "gapPct": 0.38,
+    "wallTimeS": 64.0
+  },
+  "totals": {
+    "jobs": 360,
+    "placed": 163,
+    "deferred": 197,
+    "statutoryTotal": 139,
+    "statutoryPlaced": 139,
+    "shippedWeekBacklog": 90,
+    "shippedWeekInWeek1": 37
+  },
+  "weeks": [
+    {
+      "week": 1,
+      "jobs": 66,
+      "byDept": {
+        "ENGG": 20,
+        "SNT": 33,
+        "TRD": 13
+      },
+      "statutory": 62,
+      "blockHours": 135.5,
+      "corridorHours": 136.0,
+      "bothRoadsHours": 18.0,
+      "resources": {
+        "TAMPER": {
+          "usedHours": 6.5,
+          "capHours": 33.0,
+          "pct": 20
+        },
+        "USFD": {
+          "usedHours": 23.5,
+          "capHours": 66.0,
+          "pct": 36
+        },
+        "GANG": {
+          "usedHours": 50.2,
+          "capHours": 99.0,
+          "pct": 51
+        },
+        "SNT_CREW": {
+          "usedHours": 57.2,
+          "capHours": 66.0,
+          "pct": 87
+        },
+        "TRD_CREW": {
+          "usedHours": 33.0,
+          "capHours": 66.0,
+          "pct": 50
+        },
+        "TOWER_WAGON": {
+          "usedHours": 33.0,
+          "capHours": 33.0,
+          "pct": 100
+        }
+      }
+    },
+    {
+      "week": 2,
+      "jobs": 62,
+      "byDept": {
+        "ENGG": 37,
+        "SNT": 10,
+        "TRD": 15
+      },
+      "statutory": 54,
+      "blockHours": 146.5,
+      "corridorHours": 152.0,
+      "bothRoadsHours": 19.2,
+      "resources": {
+        "TAMPER": {
+          "usedHours": 25.8,
+          "capHours": 38.5,
+          "pct": 67
+        },
+        "USFD": {
+          "usedHours": 32.8,
+          "capHours": 77.0,
+          "pct": 43
+        },
+        "GANG": {
+          "usedHours": 93.2,
+          "capHours": 115.5,
+          "pct": 81
+        },
+        "SNT_CREW": {
+          "usedHours": 20.8,
+          "capHours": 77.0,
+          "pct": 27
+        },
+        "TRD_CREW": {
+          "usedHours": 38.2,
+          "capHours": 77.0,
+          "pct": 50
+        },
+        "TOWER_WAGON": {
+          "usedHours": 38.2,
+          "capHours": 38.5,
+          "pct": 99
+        }
+      }
+    },
+    {
+      "week": 3,
+      "jobs": 30,
+      "byDept": {
+        "ENGG": 13,
+        "SNT": 2,
+        "TRD": 15
+      },
+      "statutory": 19,
+      "blockHours": 75.0,
+      "corridorHours": 152.0,
+      "bothRoadsHours": 19.5,
+      "resources": {
+        "TAMPER": {
+          "usedHours": 25.0,
+          "capHours": 38.5,
+          "pct": 65
+        },
+        "USFD": {
+          "usedHours": 0.0,
+          "capHours": 77.0,
+          "pct": 0
+        },
+        "GANG": {
+          "usedHours": 35.5,
+          "capHours": 115.5,
+          "pct": 31
+        },
+        "SNT_CREW": {
+          "usedHours": 4.2,
+          "capHours": 77.0,
+          "pct": 6
+        },
+        "TRD_CREW": {
+          "usedHours": 38.5,
+          "capHours": 77.0,
+          "pct": 50
+        },
+        "TOWER_WAGON": {
+          "usedHours": 38.5,
+          "capHours": 38.5,
+          "pct": 100
+        }
+      }
+    },
+    {
+      "week": 4,
+      "jobs": 5,
+      "byDept": {
+        "ENGG": 0,
+        "SNT": 0,
+        "TRD": 5
+      },
+      "statutory": 4,
+      "blockHours": 13.2,
+      "corridorHours": 152.0,
+      "bothRoadsHours": 6.8,
+      "resources": {
+        "TAMPER": {
+          "usedHours": 0.0,
+          "capHours": 38.5,
+          "pct": 0
+        },
+        "USFD": {
+          "usedHours": 0.0,
+          "capHours": 77.0,
+          "pct": 0
+        },
+        "GANG": {
+          "usedHours": 0.0,
+          "capHours": 115.5,
+          "pct": 0
+        },
+        "SNT_CREW": {
+          "usedHours": 0.0,
+          "capHours": 77.0,
+          "pct": 0
+        },
+        "TRD_CREW": {
+          "usedHours": 13.2,
+          "capHours": 77.0,
+          "pct": 17
+        },
+        "TOWER_WAGON": {
+          "usedHours": 13.2,
+          "capHours": 38.5,
+          "pct": 34
+        }
+      }
+    }
+  ],
+  "cells": [
+    {
+      "section": "SEC-01",
+      "week": 1,
+      "jobs": 16,
+      "depts": [
+        "ENGG",
+        "SNT",
+        "TRD"
+      ],
+      "statutory": 15,
+      "blockHours": 34.0,
+      "corridorHours": 34.0
+    },
+    {
+      "section": "SEC-01",
+      "week": 2,
+      "jobs": 15,
+      "depts": [
+        "ENGG",
+        "TRD"
+      ],
+      "statutory": 13,
+      "blockHours": 37.5,
+      "corridorHours": 38.0
+    },
+    {
+      "section": "SEC-01",
+      "week": 3,
+      "jobs": 8,
+      "depts": [
+        "ENGG",
+        "SNT",
+        "TRD"
+      ],
+      "statutory": 6,
+      "blockHours": 19.5,
+      "corridorHours": 38.0
+    },
+    {
+      "section": "SEC-01",
+      "week": 4,
+      "jobs": 2,
+      "depts": [
+        "TRD"
+      ],
+      "statutory": 2,
+      "blockHours": 6.0,
+      "corridorHours": 38.0
+    },
+    {
+      "section": "SEC-02",
+      "week": 1,
+      "jobs": 18,
+      "depts": [
+        "ENGG",
+        "SNT",
+        "TRD"
+      ],
+      "statutory": 17,
+      "blockHours": 34.0,
+      "corridorHours": 34.0
+    },
+    {
+      "section": "SEC-02",
+      "week": 2,
+      "jobs": 17,
+      "depts": [
+        "ENGG",
+        "SNT",
+        "TRD"
+      ],
+      "statutory": 16,
+      "blockHours": 36.8,
+      "corridorHours": 38.0
+    },
+    {
+      "section": "SEC-02",
+      "week": 3,
+      "jobs": 8,
+      "depts": [
+        "ENGG",
+        "TRD"
+      ],
+      "statutory": 5,
+      "blockHours": 19.8,
+      "corridorHours": 38.0
+    },
+    {
+      "section": "SEC-02",
+      "week": 4,
+      "jobs": 0,
+      "depts": [],
+      "statutory": 0,
+      "blockHours": 0.0,
+      "corridorHours": 38.0
+    },
+    {
+      "section": "SEC-03",
+      "week": 1,
+      "jobs": 18,
+      "depts": [
+        "ENGG",
+        "SNT",
+        "TRD"
+      ],
+      "statutory": 18,
+      "blockHours": 33.8,
+      "corridorHours": 34.0
+    },
+    {
+      "section": "SEC-03",
+      "week": 2,
+      "jobs": 17,
+      "depts": [
+        "ENGG",
+        "SNT",
+        "TRD"
+      ],
+      "statutory": 16,
+      "blockHours": 37.5,
+      "corridorHours": 38.0
+    },
+    {
+      "section": "SEC-03",
+      "week": 3,
+      "jobs": 14,
+      "depts": [
+        "ENGG",
+        "SNT",
+        "TRD"
+      ],
+      "statutory": 8,
+      "blockHours": 35.8,
+      "corridorHours": 38.0
+    },
+    {
+      "section": "SEC-03",
+      "week": 4,
+      "jobs": 3,
+      "depts": [
+        "TRD"
+      ],
+      "statutory": 2,
+      "blockHours": 7.2,
+      "corridorHours": 38.0
+    },
+    {
+      "section": "SEC-04",
+      "week": 1,
+      "jobs": 14,
+      "depts": [
+        "ENGG",
+        "SNT",
+        "TRD"
+      ],
+      "statutory": 12,
+      "blockHours": 33.8,
+      "corridorHours": 34.0
+    },
+    {
+      "section": "SEC-04",
+      "week": 2,
+      "jobs": 13,
+      "depts": [
+        "ENGG",
+        "SNT",
+        "TRD"
+      ],
+      "statutory": 9,
+      "blockHours": 34.8,
+      "corridorHours": 38.0
+    },
+    {
+      "section": "SEC-04",
+      "week": 3,
+      "jobs": 0,
+      "depts": [],
+      "statutory": 0,
+      "blockHours": 0.0,
+      "corridorHours": 38.0
+    },
+    {
+      "section": "SEC-04",
+      "week": 4,
+      "jobs": 0,
+      "depts": [],
+      "statutory": 0,
+      "blockHours": 0.0,
+      "corridorHours": 38.0
+    }
+  ],
+  "deferred": [
+    {
+      "id": "SNT-000",
+      "dept": "SNT",
+      "section": "SEC-02",
+      "activity": "Interlocking relay testing",
+      "criticality": "B",
+      "dueDay": 6,
+      "reason": "no room: SEC-02 corridor full in every week it could go"
+    },
+    {
+      "id": "TRD-002",
+      "dept": "TRD",
+      "section": "SEC-01",
+      "activity": "Insulator cleaning / replacement",
+      "criticality": "B",
+      "dueDay": 11,
+      "reason": "no room: SEC-01 corridor, tower wagon full in every week it could go"
+    },
+    {
+      "id": "TRD-003",
+      "dept": "TRD",
+      "section": "SEC-01",
+      "activity": "OHE dropper / jumper repair",
+      "criticality": "B",
+      "dueDay": 6,
+      "reason": "no room: SEC-01 corridor, tower wagon full in every week it could go"
+    },
+    {
+      "id": "ENGG-004",
+      "dept": "ENGG",
+      "section": "SEC-01",
+      "activity": "Level crossing surface renewal",
+      "criticality": "C",
+      "dueDay": 11,
+      "reason": "no room: SEC-01 corridor full in every week it could go"
+    },
+    {
+      "id": "TRD-007",
+      "dept": "TRD",
+      "section": "SEC-03",
+      "activity": "Overhead mast / cantilever setting",
+      "criticality": "C",
+      "dueDay": 14,
+      "reason": "no room: SEC-03 corridor, tower wagon full in every week it could go"
+    },
+    {
+      "id": "TRD-008",
+      "dept": "TRD",
+      "section": "SEC-02",
+      "activity": "Insulator cleaning / replacement",
+      "criticality": "B",
+      "dueDay": 6,
+      "reason": "no room: SEC-02 corridor, tower wagon full in every week it could go"
+    },
+    {
+      "id": "SNT-009",
+      "dept": "SNT",
+      "section": "SEC-03",
+      "activity": "Interlocking relay testing",
+      "criticality": "B",
+      "dueDay": 10,
+      "reason": "no room: SEC-03 corridor full in every week it could go"
+    },
+    {
+      "id": "ENGG-012",
+      "dept": "ENGG",
+      "section": "SEC-01",
+      "activity": "Bridge girder inspection",
+      "criticality": "B",
+      "dueDay": 11,
+      "reason": "no room: SEC-01 corridor full in every week it could go"
+    },
+    {
+      "id": "TRD-013",
+      "dept": "TRD",
+      "section": "SEC-01",
+      "activity": "Overhead mast / cantilever setting",
+      "criticality": "C",
+      "dueDay": 16,
+      "reason": "no room: SEC-01 corridor, tower wagon full in every week it could go"
+    },
+    {
+      "id": "SNT-014",
+      "dept": "SNT",
+      "section": "SEC-04",
+      "activity": "Signal lamp + LED replacement",
+      "criticality": "C",
+      "dueDay": 13,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "ENGG-015",
+      "dept": "ENGG",
+      "section": "SEC-02",
+      "activity": "Level crossing surface renewal",
+      "criticality": "C",
+      "dueDay": 10,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "ENGG-016",
+      "dept": "ENGG",
+      "section": "SEC-03",
+      "activity": "Bridge girder inspection",
+      "criticality": "B",
+      "dueDay": 10,
+      "reason": "no room: SEC-03 corridor full in every week it could go"
+    },
+    {
+      "id": "TRD-018",
+      "dept": "TRD",
+      "section": "SEC-01",
+      "activity": "OHE dropper / jumper repair",
+      "criticality": "B",
+      "dueDay": 7,
+      "reason": "no room: SEC-01 corridor, tower wagon full in every week it could go"
+    },
+    {
+      "id": "TRD-021",
+      "dept": "TRD",
+      "section": "SEC-01",
+      "activity": "Overhead mast / cantilever setting",
+      "criticality": "C",
+      "dueDay": 17,
+      "reason": "no room: SEC-01 corridor, tower wagon full in every week it could go"
+    },
+    {
+      "id": "SNT-022",
+      "dept": "SNT",
+      "section": "SEC-01",
+      "activity": "Cable megger / earth fault",
+      "criticality": "B",
+      "dueDay": 9,
+      "reason": "no room: SEC-01 corridor full in every week it could go"
+    },
+    {
+      "id": "SNT-024",
+      "dept": "SNT",
+      "section": "SEC-01",
+      "activity": "Cable megger / earth fault",
+      "criticality": "B",
+      "dueDay": 7,
+      "reason": "no room: SEC-01 corridor full in every week it could go"
+    },
+    {
+      "id": "SNT-025",
+      "dept": "SNT",
+      "section": "SEC-02",
+      "activity": "Interlocking relay testing",
+      "criticality": "B",
+      "dueDay": 7,
+      "reason": "no room: SEC-02 corridor full in every week it could go"
+    },
+    {
+      "id": "ENGG-028",
+      "dept": "ENGG",
+      "section": "SEC-02",
+      "activity": "Turnout overhaul",
+      "criticality": "B",
+      "dueDay": 10,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "ENGG-030",
+      "dept": "ENGG",
+      "section": "SEC-04",
+      "activity": "Bridge girder inspection",
+      "criticality": "B",
+      "dueDay": 11,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "TRD-035",
+      "dept": "TRD",
+      "section": "SEC-02",
+      "activity": "Insulator cleaning / replacement",
+      "criticality": "B",
+      "dueDay": 11,
+      "reason": "no room: SEC-02 corridor, tower wagon full in every week it could go"
+    },
+    {
+      "id": "TRD-036",
+      "dept": "TRD",
+      "section": "SEC-02",
+      "activity": "Insulator cleaning / replacement",
+      "criticality": "B",
+      "dueDay": 9,
+      "reason": "no room: SEC-02 corridor, tower wagon full in every week it could go"
+    },
+    {
+      "id": "ENGG-037",
+      "dept": "ENGG",
+      "section": "SEC-02",
+      "activity": "Level crossing surface renewal",
+      "criticality": "C",
+      "dueDay": 19,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "SNT-038",
+      "dept": "SNT",
+      "section": "SEC-04",
+      "activity": "Interlocking relay testing",
+      "criticality": "B",
+      "dueDay": 7,
+      "reason": "no room: SEC-04 corridor full in every week it could go"
+    },
+    {
+      "id": "ENGG-039",
+      "dept": "ENGG",
+      "section": "SEC-04",
+      "activity": "Turnout overhaul",
+      "criticality": "B",
+      "dueDay": 6,
+      "reason": "no room: SEC-04 corridor full in every week it could go"
+    },
+    {
+      "id": "ENGG-044",
+      "dept": "ENGG",
+      "section": "SEC-04",
+      "activity": "Turnout overhaul",
+      "criticality": "B",
+      "dueDay": 7,
+      "reason": "no room: SEC-04 corridor full in every week it could go"
+    },
+    {
+      "id": "TRD-045",
+      "dept": "TRD",
+      "section": "SEC-03",
+      "activity": "OHE dropper / jumper repair",
+      "criticality": "B",
+      "dueDay": 8,
+      "reason": "no room: SEC-03 corridor, tower wagon full in every week it could go"
+    },
+    {
+      "id": "SNT-048",
+      "dept": "SNT",
+      "section": "SEC-01",
+      "activity": "Signal lamp + LED replacement",
+      "criticality": "C",
+      "dueDay": 16,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "TRD-049",
+      "dept": "TRD",
+      "section": "SEC-03",
+      "activity": "Overhead mast / cantilever setting",
+      "criticality": "C",
+      "dueDay": 10,
+      "reason": "no room: SEC-03 corridor, tower wagon full in every week it could go"
+    },
+    {
+      "id": "ENGG-051",
+      "dept": "ENGG",
+      "section": "SEC-04",
+      "activity": "Turnout overhaul",
+      "criticality": "B",
+      "dueDay": 10,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "SNT-052",
+      "dept": "SNT",
+      "section": "SEC-02",
+      "activity": "Signal lamp + LED replacement",
+      "criticality": "C",
+      "dueDay": 12,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "ENGG-054",
+      "dept": "ENGG",
+      "section": "SEC-03",
+      "activity": "Bridge girder inspection",
+      "criticality": "B",
+      "dueDay": 6,
+      "reason": "no room: SEC-03 corridor full in every week it could go"
+    },
+    {
+      "id": "TRD-056",
+      "dept": "TRD",
+      "section": "SEC-04",
+      "activity": "Insulator cleaning / replacement",
+      "criticality": "B",
+      "dueDay": 8,
+      "reason": "no room: SEC-04 corridor, tower wagon full in every week it could go"
+    },
+    {
+      "id": "ENGG-057",
+      "dept": "ENGG",
+      "section": "SEC-04",
+      "activity": "Level crossing surface renewal",
+      "criticality": "C",
+      "dueDay": 10,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "SNT-058",
+      "dept": "SNT",
+      "section": "SEC-04",
+      "activity": "Signal lamp + LED replacement",
+      "criticality": "C",
+      "dueDay": 18,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "SNT-059",
+      "dept": "SNT",
+      "section": "SEC-01",
+      "activity": "Cable megger / earth fault",
+      "criticality": "B",
+      "dueDay": 7,
+      "reason": "no room: SEC-01 corridor full in every week it could go"
+    },
+    {
+      "id": "SNT-060",
+      "dept": "SNT",
+      "section": "SEC-03",
+      "activity": "Signal lamp + LED replacement",
+      "criticality": "C",
+      "dueDay": 13,
+      "reason": "no room: SEC-03 corridor full in every week it could go"
+    },
+    {
+      "id": "SNT-061",
+      "dept": "SNT",
+      "section": "SEC-02",
+      "activity": "Cable megger / earth fault",
+      "criticality": "B",
+      "dueDay": 6,
+      "reason": "no room: SEC-02 corridor full in every week it could go"
+    },
+    {
+      "id": "TRD-062",
+      "dept": "TRD",
+      "section": "SEC-03",
+      "activity": "Overhead mast / cantilever setting",
+      "criticality": "C",
+      "dueDay": 10,
+      "reason": "no room: SEC-03 corridor, tower wagon full in every week it could go"
+    },
+    {
+      "id": "ENGG-063",
+      "dept": "ENGG",
+      "section": "SEC-04",
+      "activity": "Level crossing surface renewal",
+      "criticality": "C",
+      "dueDay": 16,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "TRD-065",
+      "dept": "TRD",
+      "section": "SEC-02",
+      "activity": "Overhead mast / cantilever setting",
+      "criticality": "C",
+      "dueDay": 19,
+      "reason": "no room: SEC-02 corridor, tower wagon full in every week it could go"
+    },
+    {
+      "id": "TRD-066",
+      "dept": "TRD",
+      "section": "SEC-02",
+      "activity": "Insulator cleaning / replacement",
+      "criticality": "B",
+      "dueDay": 6,
+      "reason": "no room: SEC-02 corridor, tower wagon full in every week it could go"
+    },
+    {
+      "id": "ENGG-067",
+      "dept": "ENGG",
+      "section": "SEC-02",
+      "activity": "Deep screening + tamping",
+      "criticality": "B",
+      "dueDay": 6,
+      "reason": "no room: SEC-02 corridor full in every week it could go"
+    },
+    {
+      "id": "ENGG-068",
+      "dept": "ENGG",
+      "section": "SEC-01",
+      "activity": "Deep screening + tamping",
+      "criticality": "B",
+      "dueDay": 6,
+      "reason": "no room: SEC-01 corridor full in every week it could go"
+    },
+    {
+      "id": "SNT-070",
+      "dept": "SNT",
+      "section": "SEC-02",
+      "activity": "Signal lamp + LED replacement",
+      "criticality": "C",
+      "dueDay": 17,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "TRD-074",
+      "dept": "TRD",
+      "section": "SEC-03",
+      "activity": "Overhead mast / cantilever setting",
+      "criticality": "C",
+      "dueDay": 22,
+      "reason": "no room: SEC-03 corridor, tower wagon full in every week it could go"
+    },
+    {
+      "id": "ENGG-077",
+      "dept": "ENGG",
+      "section": "SEC-03",
+      "activity": "Level crossing surface renewal",
+      "criticality": "C",
+      "dueDay": 12,
+      "reason": "no room: SEC-03 corridor full in every week it could go"
+    },
+    {
+      "id": "SNT-080",
+      "dept": "SNT",
+      "section": "SEC-01",
+      "activity": "Interlocking relay testing",
+      "criticality": "B",
+      "dueDay": 7,
+      "reason": "no room: SEC-01 corridor full in every week it could go"
+    },
+    {
+      "id": "SNT-081",
+      "dept": "SNT",
+      "section": "SEC-03",
+      "activity": "Cable megger / earth fault",
+      "criticality": "B",
+      "dueDay": 9,
+      "reason": "no room: SEC-03 corridor full in every week it could go"
+    },
+    {
+      "id": "SNT-083",
+      "dept": "SNT",
+      "section": "SEC-02",
+      "activity": "Cable megger / earth fault",
+      "criticality": "B",
+      "dueDay": 8,
+      "reason": "no room: SEC-02 corridor full in every week it could go"
+    },
+    {
+      "id": "ENGG-086",
+      "dept": "ENGG",
+      "section": "SEC-02",
+      "activity": "Level crossing surface renewal",
+      "criticality": "C",
+      "dueDay": 21,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "ENGG-088",
+      "dept": "ENGG",
+      "section": "SEC-01",
+      "activity": "Bridge girder inspection",
+      "criticality": "B",
+      "dueDay": 7,
+      "reason": "no room: SEC-01 corridor full in every week it could go"
+    },
+    {
+      "id": "W2-ENGG-000",
+      "dept": "ENGG",
+      "section": "SEC-03",
+      "activity": "Turnout overhaul",
+      "criticality": "B",
+      "dueDay": 14,
+      "reason": "no room: SEC-03 corridor full in every week it could go"
+    },
+    {
+      "id": "W2-ENGG-003",
+      "dept": "ENGG",
+      "section": "SEC-03",
+      "activity": "Level crossing surface renewal",
+      "criticality": "C",
+      "dueDay": 25,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W2-TRD-005",
+      "dept": "TRD",
+      "section": "SEC-03",
+      "activity": "OHE dropper / jumper repair",
+      "criticality": "B",
+      "dueDay": 14,
+      "reason": "no room: SEC-03 corridor, tower wagon full in every week it could go"
+    },
+    {
+      "id": "W2-TRD-006",
+      "dept": "TRD",
+      "section": "SEC-02",
+      "activity": "Overhead mast / cantilever setting",
+      "criticality": "C",
+      "dueDay": 23,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W2-TRD-010",
+      "dept": "TRD",
+      "section": "SEC-02",
+      "activity": "Overhead mast / cantilever setting",
+      "criticality": "C",
+      "dueDay": 21,
+      "reason": "no room: SEC-02 corridor, tower wagon full in every week it could go"
+    },
+    {
+      "id": "W2-SNT-012",
+      "dept": "SNT",
+      "section": "SEC-03",
+      "activity": "Interlocking relay testing",
+      "criticality": "B",
+      "dueDay": 14,
+      "reason": "no room: SEC-03 corridor full in every week it could go"
+    },
+    {
+      "id": "W2-SNT-013",
+      "dept": "SNT",
+      "section": "SEC-04",
+      "activity": "Interlocking relay testing",
+      "criticality": "B",
+      "dueDay": 17,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W2-TRD-014",
+      "dept": "TRD",
+      "section": "SEC-04",
+      "activity": "Overhead mast / cantilever setting",
+      "criticality": "C",
+      "dueDay": 24,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W2-TRD-016",
+      "dept": "TRD",
+      "section": "SEC-02",
+      "activity": "Insulator cleaning / replacement",
+      "criticality": "B",
+      "dueDay": 13,
+      "reason": "no room: SEC-02 corridor, tower wagon full in every week it could go"
+    },
+    {
+      "id": "W2-ENGG-017",
+      "dept": "ENGG",
+      "section": "SEC-02",
+      "activity": "Turnout overhaul",
+      "criticality": "B",
+      "dueDay": 13,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W2-ENGG-018",
+      "dept": "ENGG",
+      "section": "SEC-04",
+      "activity": "Turnout overhaul",
+      "criticality": "B",
+      "dueDay": 16,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W2-TRD-021",
+      "dept": "TRD",
+      "section": "SEC-03",
+      "activity": "Overhead mast / cantilever setting",
+      "criticality": "C",
+      "dueDay": 29,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W2-SNT-022",
+      "dept": "SNT",
+      "section": "SEC-03",
+      "activity": "Signal lamp + LED replacement",
+      "criticality": "C",
+      "dueDay": 24,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W2-ENGG-027",
+      "dept": "ENGG",
+      "section": "SEC-03",
+      "activity": "Turnout overhaul",
+      "criticality": "B",
+      "dueDay": 16,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W2-TRD-028",
+      "dept": "TRD",
+      "section": "SEC-03",
+      "activity": "Overhead mast / cantilever setting",
+      "criticality": "C",
+      "dueDay": 28,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W2-SNT-029",
+      "dept": "SNT",
+      "section": "SEC-03",
+      "activity": "Signal lamp + LED replacement",
+      "criticality": "C",
+      "dueDay": 29,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W2-TRD-032",
+      "dept": "TRD",
+      "section": "SEC-04",
+      "activity": "OHE dropper / jumper repair",
+      "criticality": "B",
+      "dueDay": 17,
+      "reason": "no room: SEC-04 corridor, tower wagon full in every week it could go"
+    },
+    {
+      "id": "W2-ENGG-033",
+      "dept": "ENGG",
+      "section": "SEC-02",
+      "activity": "Level crossing surface renewal",
+      "criticality": "C",
+      "dueDay": 25,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W2-TRD-034",
+      "dept": "TRD",
+      "section": "SEC-04",
+      "activity": "Overhead mast / cantilever setting",
+      "criticality": "C",
+      "dueDay": 18,
+      "reason": "no room: SEC-04 corridor, tower wagon full in every week it could go"
+    },
+    {
+      "id": "W2-ENGG-036",
+      "dept": "ENGG",
+      "section": "SEC-01",
+      "activity": "Bridge girder inspection",
+      "criticality": "B",
+      "dueDay": 15,
+      "reason": "no room: SEC-01 corridor full in every week it could go"
+    },
+    {
+      "id": "W2-SNT-037",
+      "dept": "SNT",
+      "section": "SEC-02",
+      "activity": "Signal lamp + LED replacement",
+      "criticality": "C",
+      "dueDay": 27,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W2-ENGG-039",
+      "dept": "ENGG",
+      "section": "SEC-01",
+      "activity": "Level crossing surface renewal",
+      "criticality": "C",
+      "dueDay": 21,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W2-SNT-040",
+      "dept": "SNT",
+      "section": "SEC-03",
+      "activity": "Signal lamp + LED replacement",
+      "criticality": "C",
+      "dueDay": 29,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W2-SNT-042",
+      "dept": "SNT",
+      "section": "SEC-03",
+      "activity": "Cable megger / earth fault",
+      "criticality": "B",
+      "dueDay": 14,
+      "reason": "no room: SEC-03 corridor full in every week it could go"
+    },
+    {
+      "id": "W2-SNT-043",
+      "dept": "SNT",
+      "section": "SEC-04",
+      "activity": "Signal lamp + LED replacement",
+      "criticality": "C",
+      "dueDay": 17,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W2-ENGG-046",
+      "dept": "ENGG",
+      "section": "SEC-02",
+      "activity": "Bridge girder inspection",
+      "criticality": "B",
+      "dueDay": 18,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W2-TRD-047",
+      "dept": "TRD",
+      "section": "SEC-03",
+      "activity": "Insulator cleaning / replacement",
+      "criticality": "B",
+      "dueDay": 17,
+      "reason": "no room: SEC-03 corridor, tower wagon full in every week it could go"
+    },
+    {
+      "id": "W2-SNT-048",
+      "dept": "SNT",
+      "section": "SEC-03",
+      "activity": "Interlocking relay testing",
+      "criticality": "B",
+      "dueDay": 15,
+      "reason": "no room: SEC-03 corridor full in every week it could go"
+    },
+    {
+      "id": "W2-ENGG-049",
+      "dept": "ENGG",
+      "section": "SEC-04",
+      "activity": "Turnout overhaul",
+      "criticality": "B",
+      "dueDay": 14,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W2-TRD-050",
+      "dept": "TRD",
+      "section": "SEC-03",
+      "activity": "Overhead mast / cantilever setting",
+      "criticality": "C",
+      "dueDay": 29,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W2-SNT-052",
+      "dept": "SNT",
+      "section": "SEC-04",
+      "activity": "Signal lamp + LED replacement",
+      "criticality": "C",
+      "dueDay": 19,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W2-SNT-053",
+      "dept": "SNT",
+      "section": "SEC-01",
+      "activity": "Signal lamp + LED replacement",
+      "criticality": "C",
+      "dueDay": 21,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W2-TRD-055",
+      "dept": "TRD",
+      "section": "SEC-03",
+      "activity": "OHE dropper / jumper repair",
+      "criticality": "B",
+      "dueDay": 17,
+      "reason": "no room: SEC-03 corridor, tower wagon full in every week it could go"
+    },
+    {
+      "id": "W2-ENGG-057",
+      "dept": "ENGG",
+      "section": "SEC-04",
+      "activity": "Level crossing surface renewal",
+      "criticality": "C",
+      "dueDay": 21,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W2-ENGG-059",
+      "dept": "ENGG",
+      "section": "SEC-03",
+      "activity": "Level crossing surface renewal",
+      "criticality": "C",
+      "dueDay": 19,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W2-SNT-062",
+      "dept": "SNT",
+      "section": "SEC-02",
+      "activity": "Signal lamp + LED replacement",
+      "criticality": "C",
+      "dueDay": 21,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W2-SNT-063",
+      "dept": "SNT",
+      "section": "SEC-02",
+      "activity": "Signal lamp + LED replacement",
+      "criticality": "C",
+      "dueDay": 25,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W2-TRD-065",
+      "dept": "TRD",
+      "section": "SEC-02",
+      "activity": "Overhead mast / cantilever setting",
+      "criticality": "C",
+      "dueDay": 24,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W2-TRD-070",
+      "dept": "TRD",
+      "section": "SEC-03",
+      "activity": "Insulator cleaning / replacement",
+      "criticality": "B",
+      "dueDay": 14,
+      "reason": "no room: SEC-03 corridor, tower wagon full in every week it could go"
+    },
+    {
+      "id": "W2-TRD-071",
+      "dept": "TRD",
+      "section": "SEC-01",
+      "activity": "Overhead mast / cantilever setting",
+      "criticality": "C",
+      "dueDay": 17,
+      "reason": "no room: SEC-01 corridor, tower wagon full in every week it could go"
+    },
+    {
+      "id": "W2-ENGG-072",
+      "dept": "ENGG",
+      "section": "SEC-02",
+      "activity": "Level crossing surface renewal",
+      "criticality": "C",
+      "dueDay": 18,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W2-TRD-079",
+      "dept": "TRD",
+      "section": "SEC-01",
+      "activity": "OHE dropper / jumper repair",
+      "criticality": "B",
+      "dueDay": 16,
+      "reason": "no room: SEC-01 corridor, tower wagon full in every week it could go"
+    },
+    {
+      "id": "W2-SNT-080",
+      "dept": "SNT",
+      "section": "SEC-04",
+      "activity": "Cable megger / earth fault",
+      "criticality": "B",
+      "dueDay": 14,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W2-TRD-082",
+      "dept": "TRD",
+      "section": "SEC-04",
+      "activity": "Insulator cleaning / replacement",
+      "criticality": "B",
+      "dueDay": 18,
+      "reason": "no room: SEC-04 corridor, tower wagon full in every week it could go"
+    },
+    {
+      "id": "W2-SNT-083",
+      "dept": "SNT",
+      "section": "SEC-04",
+      "activity": "Signal lamp + LED replacement",
+      "criticality": "C",
+      "dueDay": 19,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W2-SNT-084",
+      "dept": "SNT",
+      "section": "SEC-04",
+      "activity": "Cable megger / earth fault",
+      "criticality": "B",
+      "dueDay": 15,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W2-ENGG-087",
+      "dept": "ENGG",
+      "section": "SEC-03",
+      "activity": "Turnout overhaul",
+      "criticality": "B",
+      "dueDay": 15,
+      "reason": "no room: SEC-03 corridor full in every week it could go"
+    },
+    {
+      "id": "W2-SNT-088",
+      "dept": "SNT",
+      "section": "SEC-04",
+      "activity": "Interlocking relay testing",
+      "criticality": "B",
+      "dueDay": 16,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W3-SNT-003",
+      "dept": "SNT",
+      "section": "SEC-03",
+      "activity": "Interlocking relay testing",
+      "criticality": "B",
+      "dueDay": 22,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W3-TRD-005",
+      "dept": "TRD",
+      "section": "SEC-04",
+      "activity": "Insulator cleaning / replacement",
+      "criticality": "B",
+      "dueDay": 25,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W3-SNT-006",
+      "dept": "SNT",
+      "section": "SEC-01",
+      "activity": "Signal lamp + LED replacement",
+      "criticality": "C",
+      "dueDay": 33,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W3-SNT-007",
+      "dept": "SNT",
+      "section": "SEC-01",
+      "activity": "Cable megger / earth fault",
+      "criticality": "B",
+      "dueDay": 20,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W3-SNT-009",
+      "dept": "SNT",
+      "section": "SEC-02",
+      "activity": "Interlocking relay testing",
+      "criticality": "B",
+      "dueDay": 25,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W3-ENGG-010",
+      "dept": "ENGG",
+      "section": "SEC-02",
+      "activity": "Turnout overhaul",
+      "criticality": "B",
+      "dueDay": 24,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W3-SNT-012",
+      "dept": "SNT",
+      "section": "SEC-02",
+      "activity": "Interlocking relay testing",
+      "criticality": "B",
+      "dueDay": 23,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W3-SNT-014",
+      "dept": "SNT",
+      "section": "SEC-02",
+      "activity": "Cable megger / earth fault",
+      "criticality": "B",
+      "dueDay": 25,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W3-SNT-015",
+      "dept": "SNT",
+      "section": "SEC-01",
+      "activity": "Cable megger / earth fault",
+      "criticality": "B",
+      "dueDay": 20,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W3-ENGG-016",
+      "dept": "ENGG",
+      "section": "SEC-04",
+      "activity": "Bridge girder inspection",
+      "criticality": "B",
+      "dueDay": 24,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W3-ENGG-018",
+      "dept": "ENGG",
+      "section": "SEC-04",
+      "activity": "Level crossing surface renewal",
+      "criticality": "C",
+      "dueDay": 32,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W3-TRD-019",
+      "dept": "TRD",
+      "section": "SEC-04",
+      "activity": "Insulator cleaning / replacement",
+      "criticality": "B",
+      "dueDay": 21,
+      "reason": "no room: SEC-04 corridor, tower wagon full in every week it could go"
+    },
+    {
+      "id": "W3-TRD-020",
+      "dept": "TRD",
+      "section": "SEC-03",
+      "activity": "OHE dropper / jumper repair",
+      "criticality": "B",
+      "dueDay": 24,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W3-ENGG-022",
+      "dept": "ENGG",
+      "section": "SEC-03",
+      "activity": "Bridge girder inspection",
+      "criticality": "B",
+      "dueDay": 23,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W3-ENGG-023",
+      "dept": "ENGG",
+      "section": "SEC-01",
+      "activity": "Level crossing surface renewal",
+      "criticality": "C",
+      "dueDay": 34,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W3-SNT-026",
+      "dept": "SNT",
+      "section": "SEC-02",
+      "activity": "Signal lamp + LED replacement",
+      "criticality": "C",
+      "dueDay": 34,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W3-ENGG-027",
+      "dept": "ENGG",
+      "section": "SEC-01",
+      "activity": "Bridge girder inspection",
+      "criticality": "B",
+      "dueDay": 20,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W3-ENGG-028",
+      "dept": "ENGG",
+      "section": "SEC-03",
+      "activity": "Turnout overhaul",
+      "criticality": "B",
+      "dueDay": 24,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W3-SNT-029",
+      "dept": "SNT",
+      "section": "SEC-02",
+      "activity": "Cable megger / earth fault",
+      "criticality": "B",
+      "dueDay": 24,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W3-SNT-030",
+      "dept": "SNT",
+      "section": "SEC-02",
+      "activity": "Cable megger / earth fault",
+      "criticality": "B",
+      "dueDay": 25,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W3-ENGG-031",
+      "dept": "ENGG",
+      "section": "SEC-03",
+      "activity": "Level crossing surface renewal",
+      "criticality": "C",
+      "dueDay": 30,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W3-SNT-032",
+      "dept": "SNT",
+      "section": "SEC-01",
+      "activity": "Interlocking relay testing",
+      "criticality": "B",
+      "dueDay": 24,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W3-SNT-033",
+      "dept": "SNT",
+      "section": "SEC-01",
+      "activity": "Signal lamp + LED replacement",
+      "criticality": "C",
+      "dueDay": 34,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W3-TRD-035",
+      "dept": "TRD",
+      "section": "SEC-01",
+      "activity": "OHE dropper / jumper repair",
+      "criticality": "B",
+      "dueDay": 21,
+      "reason": "no room: SEC-01 corridor, tower wagon full in every week it could go"
+    },
+    {
+      "id": "W3-SNT-041",
+      "dept": "SNT",
+      "section": "SEC-04",
+      "activity": "Cable megger / earth fault",
+      "criticality": "B",
+      "dueDay": 20,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W3-ENGG-042",
+      "dept": "ENGG",
+      "section": "SEC-04",
+      "activity": "Bridge girder inspection",
+      "criticality": "B",
+      "dueDay": 21,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W3-TRD-046",
+      "dept": "TRD",
+      "section": "SEC-02",
+      "activity": "Insulator cleaning / replacement",
+      "criticality": "B",
+      "dueDay": 21,
+      "reason": "no room: SEC-02 corridor, tower wagon full in every week it could go"
+    },
+    {
+      "id": "W3-ENGG-047",
+      "dept": "ENGG",
+      "section": "SEC-01",
+      "activity": "Turnout overhaul",
+      "criticality": "B",
+      "dueDay": 22,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W3-ENGG-048",
+      "dept": "ENGG",
+      "section": "SEC-04",
+      "activity": "Turnout overhaul",
+      "criticality": "B",
+      "dueDay": 22,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W3-SNT-049",
+      "dept": "SNT",
+      "section": "SEC-02",
+      "activity": "Cable megger / earth fault",
+      "criticality": "B",
+      "dueDay": 25,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W3-ENGG-050",
+      "dept": "ENGG",
+      "section": "SEC-04",
+      "activity": "Bridge girder inspection",
+      "criticality": "B",
+      "dueDay": 22,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W3-ENGG-051",
+      "dept": "ENGG",
+      "section": "SEC-03",
+      "activity": "Turnout overhaul",
+      "criticality": "B",
+      "dueDay": 23,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W3-SNT-053",
+      "dept": "SNT",
+      "section": "SEC-02",
+      "activity": "Interlocking relay testing",
+      "criticality": "B",
+      "dueDay": 25,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W3-TRD-054",
+      "dept": "TRD",
+      "section": "SEC-03",
+      "activity": "Overhead mast / cantilever setting",
+      "criticality": "C",
+      "dueDay": 24,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W3-TRD-057",
+      "dept": "TRD",
+      "section": "SEC-04",
+      "activity": "OHE dropper / jumper repair",
+      "criticality": "B",
+      "dueDay": 20,
+      "reason": "no room: SEC-04 corridor, tower wagon full in every week it could go"
+    },
+    {
+      "id": "W3-TRD-058",
+      "dept": "TRD",
+      "section": "SEC-04",
+      "activity": "Insulator cleaning / replacement",
+      "criticality": "B",
+      "dueDay": 21,
+      "reason": "no room: SEC-04 corridor, tower wagon full in every week it could go"
+    },
+    {
+      "id": "W3-TRD-062",
+      "dept": "TRD",
+      "section": "SEC-02",
+      "activity": "OHE dropper / jumper repair",
+      "criticality": "B",
+      "dueDay": 24,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W3-ENGG-064",
+      "dept": "ENGG",
+      "section": "SEC-02",
+      "activity": "Bridge girder inspection",
+      "criticality": "B",
+      "dueDay": 20,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W3-SNT-065",
+      "dept": "SNT",
+      "section": "SEC-04",
+      "activity": "Interlocking relay testing",
+      "criticality": "B",
+      "dueDay": 25,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W3-SNT-068",
+      "dept": "SNT",
+      "section": "SEC-03",
+      "activity": "Cable megger / earth fault",
+      "criticality": "B",
+      "dueDay": 21,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W3-ENGG-069",
+      "dept": "ENGG",
+      "section": "SEC-03",
+      "activity": "Turnout overhaul",
+      "criticality": "B",
+      "dueDay": 23,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W3-ENGG-070",
+      "dept": "ENGG",
+      "section": "SEC-01",
+      "activity": "Turnout overhaul",
+      "criticality": "B",
+      "dueDay": 21,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W3-SNT-071",
+      "dept": "SNT",
+      "section": "SEC-02",
+      "activity": "Signal lamp + LED replacement",
+      "criticality": "C",
+      "dueDay": 32,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W3-ENGG-073",
+      "dept": "ENGG",
+      "section": "SEC-02",
+      "activity": "Bridge girder inspection",
+      "criticality": "B",
+      "dueDay": 25,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W3-ENGG-075",
+      "dept": "ENGG",
+      "section": "SEC-04",
+      "activity": "Level crossing surface renewal",
+      "criticality": "C",
+      "dueDay": 29,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W3-SNT-077",
+      "dept": "SNT",
+      "section": "SEC-01",
+      "activity": "Interlocking relay testing",
+      "criticality": "B",
+      "dueDay": 23,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W3-SNT-082",
+      "dept": "SNT",
+      "section": "SEC-04",
+      "activity": "Cable megger / earth fault",
+      "criticality": "B",
+      "dueDay": 22,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W3-ENGG-083",
+      "dept": "ENGG",
+      "section": "SEC-03",
+      "activity": "Deep screening + tamping",
+      "criticality": "B",
+      "dueDay": 25,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W3-TRD-086",
+      "dept": "TRD",
+      "section": "SEC-01",
+      "activity": "OHE dropper / jumper repair",
+      "criticality": "B",
+      "dueDay": 25,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W3-ENGG-087",
+      "dept": "ENGG",
+      "section": "SEC-03",
+      "activity": "Level crossing surface renewal",
+      "criticality": "C",
+      "dueDay": 30,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W3-TRD-088",
+      "dept": "TRD",
+      "section": "SEC-04",
+      "activity": "Overhead mast / cantilever setting",
+      "criticality": "C",
+      "dueDay": 27,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W3-TRD-089",
+      "dept": "TRD",
+      "section": "SEC-02",
+      "activity": "Overhead mast / cantilever setting",
+      "criticality": "C",
+      "dueDay": 32,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W4-ENGG-000",
+      "dept": "ENGG",
+      "section": "SEC-04",
+      "activity": "Turnout overhaul",
+      "criticality": "B",
+      "dueDay": 28,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W4-ENGG-001",
+      "dept": "ENGG",
+      "section": "SEC-03",
+      "activity": "Turnout overhaul",
+      "criticality": "B",
+      "dueDay": 27,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W4-TRD-002",
+      "dept": "TRD",
+      "section": "SEC-04",
+      "activity": "Overhead mast / cantilever setting",
+      "criticality": "C",
+      "dueDay": 34,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W4-ENGG-003",
+      "dept": "ENGG",
+      "section": "SEC-01",
+      "activity": "Turnout overhaul",
+      "criticality": "B",
+      "dueDay": 28,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W4-ENGG-005",
+      "dept": "ENGG",
+      "section": "SEC-01",
+      "activity": "Turnout overhaul",
+      "criticality": "B",
+      "dueDay": 31,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W4-TRD-009",
+      "dept": "TRD",
+      "section": "SEC-04",
+      "activity": "Insulator cleaning / replacement",
+      "criticality": "B",
+      "dueDay": 28,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W4-ENGG-011",
+      "dept": "ENGG",
+      "section": "SEC-02",
+      "activity": "Turnout overhaul",
+      "criticality": "B",
+      "dueDay": 32,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W4-SNT-012",
+      "dept": "SNT",
+      "section": "SEC-03",
+      "activity": "Interlocking relay testing",
+      "criticality": "B",
+      "dueDay": 27,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W4-ENGG-013",
+      "dept": "ENGG",
+      "section": "SEC-04",
+      "activity": "Turnout overhaul",
+      "criticality": "B",
+      "dueDay": 30,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W4-SNT-014",
+      "dept": "SNT",
+      "section": "SEC-01",
+      "activity": "Signal lamp + LED replacement",
+      "criticality": "C",
+      "dueDay": 37,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W4-ENGG-015",
+      "dept": "ENGG",
+      "section": "SEC-04",
+      "activity": "Bridge girder inspection",
+      "criticality": "B",
+      "dueDay": 28,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W4-SNT-018",
+      "dept": "SNT",
+      "section": "SEC-04",
+      "activity": "Cable megger / earth fault",
+      "criticality": "B",
+      "dueDay": 32,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W4-TRD-019",
+      "dept": "TRD",
+      "section": "SEC-01",
+      "activity": "OHE dropper / jumper repair",
+      "criticality": "B",
+      "dueDay": 28,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W4-SNT-023",
+      "dept": "SNT",
+      "section": "SEC-04",
+      "activity": "Signal lamp + LED replacement",
+      "criticality": "C",
+      "dueDay": 39,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W4-TRD-024",
+      "dept": "TRD",
+      "section": "SEC-04",
+      "activity": "Overhead mast / cantilever setting",
+      "criticality": "C",
+      "dueDay": 34,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W4-TRD-025",
+      "dept": "TRD",
+      "section": "SEC-04",
+      "activity": "OHE dropper / jumper repair",
+      "criticality": "B",
+      "dueDay": 32,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W4-SNT-028",
+      "dept": "SNT",
+      "section": "SEC-03",
+      "activity": "Interlocking relay testing",
+      "criticality": "B",
+      "dueDay": 28,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W4-SNT-029",
+      "dept": "SNT",
+      "section": "SEC-03",
+      "activity": "Interlocking relay testing",
+      "criticality": "B",
+      "dueDay": 31,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W4-ENGG-030",
+      "dept": "ENGG",
+      "section": "SEC-02",
+      "activity": "Level crossing surface renewal",
+      "criticality": "C",
+      "dueDay": 32,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W4-ENGG-032",
+      "dept": "ENGG",
+      "section": "SEC-04",
+      "activity": "Deep screening + tamping",
+      "criticality": "B",
+      "dueDay": 30,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W4-ENGG-033",
+      "dept": "ENGG",
+      "section": "SEC-03",
+      "activity": "Turnout overhaul",
+      "criticality": "B",
+      "dueDay": 30,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W4-SNT-036",
+      "dept": "SNT",
+      "section": "SEC-02",
+      "activity": "Signal lamp + LED replacement",
+      "criticality": "C",
+      "dueDay": 32,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W4-SNT-040",
+      "dept": "SNT",
+      "section": "SEC-02",
+      "activity": "Cable megger / earth fault",
+      "criticality": "B",
+      "dueDay": 29,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W4-ENGG-041",
+      "dept": "ENGG",
+      "section": "SEC-01",
+      "activity": "Bridge girder inspection",
+      "criticality": "B",
+      "dueDay": 29,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W4-ENGG-045",
+      "dept": "ENGG",
+      "section": "SEC-03",
+      "activity": "Level crossing surface renewal",
+      "criticality": "C",
+      "dueDay": 39,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W4-ENGG-047",
+      "dept": "ENGG",
+      "section": "SEC-03",
+      "activity": "Turnout overhaul",
+      "criticality": "B",
+      "dueDay": 30,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W4-SNT-048",
+      "dept": "SNT",
+      "section": "SEC-03",
+      "activity": "Signal lamp + LED replacement",
+      "criticality": "C",
+      "dueDay": 37,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W4-SNT-050",
+      "dept": "SNT",
+      "section": "SEC-04",
+      "activity": "Cable megger / earth fault",
+      "criticality": "B",
+      "dueDay": 30,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W4-TRD-056",
+      "dept": "TRD",
+      "section": "SEC-04",
+      "activity": "Insulator cleaning / replacement",
+      "criticality": "B",
+      "dueDay": 29,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W4-ENGG-057",
+      "dept": "ENGG",
+      "section": "SEC-03",
+      "activity": "Level crossing surface renewal",
+      "criticality": "C",
+      "dueDay": 31,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W4-ENGG-058",
+      "dept": "ENGG",
+      "section": "SEC-02",
+      "activity": "Turnout overhaul",
+      "criticality": "B",
+      "dueDay": 29,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W4-SNT-060",
+      "dept": "SNT",
+      "section": "SEC-03",
+      "activity": "Cable megger / earth fault",
+      "criticality": "B",
+      "dueDay": 30,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W4-ENGG-061",
+      "dept": "ENGG",
+      "section": "SEC-02",
+      "activity": "Bridge girder inspection",
+      "criticality": "B",
+      "dueDay": 28,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W4-TRD-062",
+      "dept": "TRD",
+      "section": "SEC-04",
+      "activity": "Overhead mast / cantilever setting",
+      "criticality": "C",
+      "dueDay": 39,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W4-ENGG-063",
+      "dept": "ENGG",
+      "section": "SEC-01",
+      "activity": "Level crossing surface renewal",
+      "criticality": "C",
+      "dueDay": 37,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W4-SNT-065",
+      "dept": "SNT",
+      "section": "SEC-03",
+      "activity": "Interlocking relay testing",
+      "criticality": "B",
+      "dueDay": 28,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W4-SNT-066",
+      "dept": "SNT",
+      "section": "SEC-01",
+      "activity": "Interlocking relay testing",
+      "criticality": "B",
+      "dueDay": 29,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W4-SNT-069",
+      "dept": "SNT",
+      "section": "SEC-04",
+      "activity": "Signal lamp + LED replacement",
+      "criticality": "C",
+      "dueDay": 38,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W4-ENGG-070",
+      "dept": "ENGG",
+      "section": "SEC-02",
+      "activity": "Bridge girder inspection",
+      "criticality": "B",
+      "dueDay": 28,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W4-TRD-071",
+      "dept": "TRD",
+      "section": "SEC-02",
+      "activity": "Insulator cleaning / replacement",
+      "criticality": "B",
+      "dueDay": 31,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W4-SNT-077",
+      "dept": "SNT",
+      "section": "SEC-03",
+      "activity": "Cable megger / earth fault",
+      "criticality": "B",
+      "dueDay": 27,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W4-SNT-079",
+      "dept": "SNT",
+      "section": "SEC-01",
+      "activity": "Interlocking relay testing",
+      "criticality": "B",
+      "dueDay": 30,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W4-TRD-081",
+      "dept": "TRD",
+      "section": "SEC-03",
+      "activity": "Overhead mast / cantilever setting",
+      "criticality": "C",
+      "dueDay": 41,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W4-ENGG-085",
+      "dept": "ENGG",
+      "section": "SEC-03",
+      "activity": "Level crossing surface renewal",
+      "criticality": "C",
+      "dueDay": 35,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W4-TRD-086",
+      "dept": "TRD",
+      "section": "SEC-03",
+      "activity": "Insulator cleaning / replacement",
+      "criticality": "B",
+      "dueDay": 27,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    },
+    {
+      "id": "W4-SNT-089",
+      "dept": "SNT",
+      "section": "SEC-03",
+      "activity": "Cable megger / earth fault",
+      "criticality": "B",
+      "dueDay": 28,
+      "reason": "priced out: its risk costs less than the corridor time it would need"
+    }
+  ],
+  "handoff": {
+    "week": 1,
+    "allocated": 66,
+    "scheduled": 60,
+    "blocks": 28,
+    "statutory": [
+      57,
+      62
+    ],
+    "packing": 1.54,
+    "status": "FEASIBLE",
+    "wallTimeS": 182.0,
+    "misses": [
+      {
+        "id": "ENGG-085",
+        "criticality": "B",
+        "activity": "Deep screening + tamping",
+        "section": "SEC-04",
+        "binding": "priced out or displaced by costlier work",
+        "rolledToWeek": 2,
+        "overdue": true
+      },
+      {
+        "id": "TRD-011",
+        "criticality": "A",
+        "activity": "Neutral section attention",
+        "section": "SEC-03",
+        "binding": "Machine and gang availability (C8) \u2014 tower wagon",
+        "rolledToWeek": 4,
+        "overdue": true
+      },
+      {
+        "id": "TRD-029",
+        "criticality": "A",
+        "activity": "Contact wire wear replacement",
+        "section": "SEC-01",
+        "binding": "Machine and gang availability (C8) \u2014 tower wagon",
+        "rolledToWeek": 3,
+        "overdue": true
+      },
+      {
+        "id": "TRD-043",
+        "criticality": "A",
+        "activity": "Contact wire wear replacement",
+        "section": "SEC-02",
+        "binding": "Machine and gang availability (C8) \u2014 tower wagon",
+        "rolledToWeek": 3,
+        "overdue": true
+      },
+      {
+        "id": "TRD-078",
+        "criticality": "A",
+        "activity": "Contact wire wear replacement",
+        "section": "SEC-02",
+        "binding": "Machine and gang availability (C8) \u2014 tower wagon",
+        "rolledToWeek": 3,
+        "overdue": true
+      },
+      {
+        "id": "TRD-079",
+        "criticality": "A",
+        "activity": "Neutral section attention",
+        "section": "SEC-04",
+        "binding": "Machine and gang availability (C8) \u2014 tower wagon",
+        "rolledToWeek": 4,
+        "overdue": true
+      }
+    ]
+  },
+  "rolled": {
+    "status": "FEASIBLE",
+    "carried": 6,
+    "carriedPlaced": 6,
+    "perWeek": [
+      62,
+      31,
+      12
+    ],
+    "deferred": 195
+  }
+}

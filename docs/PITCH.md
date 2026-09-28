@@ -200,6 +200,12 @@ to decompose by section: one tower wagon couples every section inside a
 division, so a section-by-section solve double-books it. Resolve that coupling
 one level up and the divisions genuinely separate.
 
+**"Does it plan monthly, or only weekly?"**
+Both, and the month checks itself. Open `/monthly`: it puts a month of work
+into weeks, then hands week 1 to the weekly solver, which fits 60 of the 66
+jobs to the minute. The rest roll into the next weeks, and the page says which,
+and why. *A monthly plan nobody checks against the week is a wish list.*
+
 **"Does this scale?"**
 Not yet, and `/scale` shows exactly where it stops. Given two minutes, the
 plan is good at this size and degrades fast: at a thousand tasks it is still

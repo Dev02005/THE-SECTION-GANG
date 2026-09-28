@@ -5,6 +5,7 @@ import { DocSection } from "@/components/DocSection";
 import { Split, Stat } from "./Parts";
 import { loadPlan } from "@/lib/loadPlan";
 import { loadBenchmark } from "@/lib/benchmark";
+import { loadMonthly } from "@/lib/loadMonthly";
 
 export const dynamic = "force-static";
 
@@ -16,7 +17,7 @@ export const metadata = {
 };
 
 export default async function LimitsPage() {
-  const [plan, bench] = await Promise.all([loadPlan(), loadBenchmark()]);
+  const [plan, bench, month] = await Promise.all([loadPlan(), loadBenchmark(), loadMonthly()]);
   const { solver, placement, kpis, shortfall } = plan;
 
   //  The reference instance, described from the data rather than typed. The
@@ -207,7 +208,6 @@ export default async function LimitsPage() {
               ["Historical replay harness", "Stage 1 of the rollout, where data-quality problems surface."],
               ["BDMS write-back", "The planner proposes; BDMS grants. We never write to the block register."],
               ["ST-GNN detention surface", "A graph is justified — blocking one section backs traffic into its neighbours — but an unjustified GNN is worse than a justified GBM."],
-              ["Monthly horizon", "The same model at 60-minute slots over 30 days."],
               ["Continuous replanning", "The replanner is built and works one disruption at a time: /replan re-solves a mid-week USFD flaw with the past frozen, statutory work kept first and the fewest approved jobs changed, and names the resource that would have avoided the cost. It runs offline on a precomputed scenario. What is not built is the loop around it - watching a defect feed and re-solving on its own. That needs feeds this project does not have."],
               ["Un-approving a plan", "No railway un-approves a programme; it supersedes it. Supersession itself is built - re-solving marks the division's earlier plans superseded and keeps them as the record of what was granted. What has no real counterpart is reset_plan, which returns the same plan to draft: this instance is shared, so without it the approval chain could be exercised exactly once. The button says so, and the reset is written to the audit log."],
               ["Serving the plan only from the database", "Sign-in and scoping are applied inside Postgres, so a Northern Railway post gets nothing rather than this division's numbers. But plan.json is still served publicly at /data/plan.json so the application runs for anyone who clones it without a database, and requesting that URL directly still yields the artefact. The scoping is enforced; the file is not."],
@@ -242,7 +242,27 @@ export default async function LimitsPage() {
           </ul>
         </DocSection>
 
-        <DocSection n="07" title="Scale, and this is not a safety system">
+        {month && (
+          <DocSection n="07" title="The monthly plan is coarse by design, and checked">
+            <p>
+              It cannot see roads or minutes, so it is held to{" "}
+              {month.calibration.packing} work-hours per block-hour &mdash; what
+              the weekly solver achieves on a full week, measured. Then it is
+              checked: week 1&rsquo;s {month.handoff.allocated} jobs go to the
+              weekly solver unchanged, which fits{" "}
+              <strong>{month.handoff.scheduled}</strong>. The{" "}
+              {month.handoff.misses.length} it cannot place roll into the later
+              weeks;{" "}
+              {month.handoff.misses.filter((x) => x.criticality === "A").length}{" "}
+              of them are statutory and are overdue by then. So the month&rsquo;s{" "}
+              {month.totals.statutoryPlaced} of {month.totals.statutoryTotal}{" "}
+              statutory placed is the monthly plan&rsquo;s figure, not a promise
+              at minute resolution.
+            </p>
+          </DocSection>
+        )}
+
+        <DocSection n="08" title="Scale, and this is not a safety system">
           <p>
             The reference instance is {plan.sections.length} sections,{" "}
             {nTasks} tasks

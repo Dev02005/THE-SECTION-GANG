@@ -262,7 +262,7 @@ suspiciously perfect result.
 ## 6. What is designed but not built
 
 Named here rather than implied by omission. The `/limits` page carries the
-same eight names, and a test fails if the two lists disagree.
+same seven names, and a test fails if the two lists disagree.
 
 - **Reading the Train Signal Register.** The duration model trains on
   generated durations and never improves without field data. The route in is
@@ -278,7 +278,6 @@ same eight names, and a test fails if the two lists disagree.
 - **ST-GNN detention surface.** A graph is justified, because blocking one
   section backs traffic into its neighbours. But an unjustified GNN is worse
   than a justified GBM, so we ship the GBM and say so.
-- **Monthly horizon.** The same model at 60-minute slots over 30 days.
 - **Continuous replanning.** The replanner is built and works on one
   disruption at a time: `/replan` re-solves a mid-week USFD flaw with the past
   frozen, statutory work kept first and the fewest approved jobs changed, and
@@ -349,6 +348,35 @@ not change it. What it does and does not establish:
   security entirely, and could rewrite the plan, its hash and the log
   together. The copy outside our control is the printed one, which is why the
   fingerprint is printed.
+
+---
+
+## 6c. The monthly horizon - coarse by design, and checked
+
+**Built on 28 Sep.** `/monthly` allocates a month of backlog to weeks: which
+week each job goes in, and how much corridor each section needs that week.
+The month starts from the planner's own week - all 90 of its jobs, id for
+id - plus three more weeks of backlog behind it, 360 jobs in all.
+
+**It cannot see roads or minutes.** So it is held to the packing the weekly
+solver actually achieves on a full week: 1.2 work-hours per block-hour. The
+shipped week packs 2.06, but that week is light; a full one packs 1.22. Planned
+at 2.0, the month gave week 1 103 jobs and the weekly solver could place 66.
+Measured, not chosen.
+
+**Checked, not assumed.** Week 1's allocation is handed, unchanged, to the
+weekly solver. Scheduled to the minute it places **60 of 66** (91%). The
+6 it cannot place roll into weeks 2-4, which are re-planned with them. 5 of
+those 6 are statutory, all behind the tower wagon, and after the roll they are
+**overdue** - so the month's "139 of 139 statutory placed" is the monthly plan's
+figure, and at minute resolution 5 slip past their due dates.
+
+**What else to know.** Risk is priced over the 28-day horizon, so the same job
+carries a somewhat higher price than in the week's plan. 197 of 360 jobs are
+deferred out of the month - none statutory: 137 priced out (their risk costs less
+than the corridor they would need), 60 with no room (every week they could use
+was already full). It is one division, precomputed offline, and served as a
+static file beside the plan, as the replan is - not held in the database.
 
 ---
 

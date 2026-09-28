@@ -32,6 +32,17 @@ from engine.solver.constraints import CONSTRAINTS
 SCHEMA_VERSION = 2
 
 
+#  The provenance declaration every artefact carries - one copy, imported by
+#  the monthly builder too, so the two cannot come to say different things.
+NOTICE = (
+    "TMS, SMMS, TDMS, COA and BDMS are internal Indian Railways "
+    "systems with no external access. The maintenance backlog shown "
+    "here is generated, not observed. Corridor geometry and "
+    "protected paths are measured from published data; the daily "
+    "shape of detention cost is assumed."
+)
+
+
 def _hhmm(slot: int) -> str:
     mins = (slot % SLOTS_DAY) * SLOT_MIN
     return f"{mins // 60:02d}:{mins % 60:02d}"
@@ -148,13 +159,7 @@ def build_payload(
             #  publish headline numbers their own code manufactures; our
             #  position is the opposite and it has to be visible.
             "synthetic": bool(instance.get("synthetic", True)),
-            "notice": (
-                "TMS, SMMS, TDMS, COA and BDMS are internal Indian Railways "
-                "systems with no external access. The maintenance backlog shown "
-                "here is generated, not observed. Corridor geometry and "
-                "protected paths are measured from published data; the daily "
-                "shape of detention cost is assumed."
-            ),
+            "notice": NOTICE,
             "seed": instance.get("seed"),
             "pricedBy": instance.get("priced_by", []),
             "modelVersions": instance.get("model_versions", {}),

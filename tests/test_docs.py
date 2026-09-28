@@ -408,3 +408,34 @@ def test_the_scale_table_matches_the_benchmark() -> None:
         seen.add(int(tasks))
     missing = sorted(set(rows) - seen)
     assert not missing, f"LIMITATIONS §7 is missing rungs {missing}"
+
+
+MONTHLY = ROOT / "web" / "public" / "data" / "monthly.json"
+
+
+def test_monthly_claims_match_the_artefact() -> None:
+    """
+    The README, LIMITATIONS and the pitch state what the month measured - how
+    much of week 1 the weekly solver fits, how the deferrals split. Each of
+    those is one build of the month; prose that outlives it is the drift this
+    file exists to stop.
+    """
+    if not MONTHLY.exists():
+        pytest.skip("monthly.json not built - run python -m engine.build_monthly")
+    m = json.loads(MONTHLY.read_text(encoding="utf-8"))
+    h, t = m["handoff"], m["totals"]
+    fit = f"{h['scheduled']} of {h['allocated']}"
+    priced = sum(d["reason"].startswith("priced") for d in m["deferred"])
+    noroom = sum(d["reason"].startswith("no room") for d in m["deferred"])
+    #  "60 of 66" in prose, "60 of the 66" where the pitch is read aloud
+    said = re.compile(rf"(?<!\d){h['scheduled']} of (?:the )?{h['allocated']}(?!\d)")
+    for doc in (README, LIMITATIONS, PITCH):
+        text = _flat(doc.read_text(encoding="utf-8")).replace("**", "")
+        assert said.search(text), f"{doc.name} does not state that week 1 fits {fit}"
+    lim = _flat(LIMITATIONS.read_text(encoding="utf-8")).replace("**", "")
+    assert f"{priced} priced out" in lim and f"{noroom} with no room" in lim, (
+        "LIMITATIONS 6c misstates how the month's deferrals split"
+    )
+    assert f"{t['statutoryPlaced']} of {t['statutoryTotal']}" in lim
+    slipped = sum(x["criticality"] == "A" for x in h["misses"])
+    assert f"{slipped} slip" in lim, "LIMITATIONS must say how many statutory jobs slip"

@@ -275,8 +275,22 @@ table is in LIMITATIONS §7 and on `/scale`. Decomposition by section is
 refused on purpose: the tower wagon couples the sections, and a
 section-by-section solve double-books it.
 
-**Monthly horizon (designed, not built).** The same model at 60-minute slots
-over 30 days, feeding the weekly solve as hints rather than constraints.
+### 5.8 The monthly horizon (`engine/monthly.py`, `engine/build_monthly.py`)
+
+A month is planned a level up: which week each job goes in, and how much
+corridor each section needs that week. The same job cannot be scheduled to the
+minute over 28 days at this scale, and a division does not plan a month that
+way either. Each monthly rule is a coarse form of a weekly one - a job only in
+a week some window can take it by its due date (the weekly `feasible_pair`,
+used as is); corridor time per section-week from the real windows, four nights
+at most; at most as much simultaneous work on a resource as there are units;
+each resource's weekly hours within one block per corridor per day; and work
+held to 1.2 work-hours per block-hour, the packing the weekly solver
+achieves on a full week. Priced in the same unit, with the same penalties.
+
+The builder then does what makes a monthly plan worth having: it hands week 1
+to the weekly solver unchanged, records how much fits (60 of
+66), and re-plans weeks 2-4 with what did not.
 
 ---
 
@@ -368,6 +382,7 @@ user table of our own.
 | `test_placement.py` · `test_explain.py` · `test_pareto.py` | The bound's restriction travels with it; explanations quote only real numbers; dominated points are kept |
 | `test_replan.py` | Properties of any replan: the past frozen, the defect required, disruption minimal and reported as found |
 | `test_benchmark.py` | The variable filter is exact; larger instances keep contiguous, named sections |
+| `test_monthly.py` | Every job in a week it can be done; corridor, packing and resource limits held; one tower wagon never in two places; a job waits for its predecessor; deterministic |
 | `test_docs.py` | Numbers stated in the docs match the artefacts, including the test count itself |
 
 The web side is checked against the live database by

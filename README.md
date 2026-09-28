@@ -72,6 +72,7 @@ proven by the solver rather than claimed.
  synthetic backlog                              /dashboard the week at a glance
    → 3 models price every task      plan.json   /planner   comparison screen
    → current-practice baseline    replan.json   /plan      printable block plan
+   → monthly allocation          monthly.json   /monthly   the month ahead, checked
    → CP-SAT joint solve          ──────────────▶/replan    one disruption, re-solved
    → explanations, Pareto, bound        │       /audit     the append-only record
    → replan of one disruption           │       /login     zone → division → post
@@ -126,6 +127,13 @@ gang and nothing is lost, with no approved job changed at all**; one more USFD
 unit does not help. One disruption, precomputed offline; live replanning is not
 built.
 
+**Weekly and monthly** — `/monthly`. The month allocates 360 jobs to weeks
+(66 · 62 · 30 · 5 jobs in weeks 1-4) with all 139 statutory jobs placed, and then checks
+itself: week 1 goes to the weekly solver unchanged, which fits **60 of
+66** to the minute. The 6 it cannot place roll forward and weeks 2-4 are
+re-planned with them. The month starts from the planner's own week of backlog,
+id for id.
+
 `web/scripts/check-auth.cjs` proves it by attacking it — **52 checks**,
 including a DRM of a *different* division trying to approve this one's plan.
 
@@ -167,9 +175,10 @@ needs step 2.
 
 ```bash
 pip install -r requirements.txt
-python -m pytest tests -q                              # 171 tests
+python -m pytest tests -q                              # 185 tests
 python -m engine.build_plan --tasks 90 --time 90       # writes web/public/data/plan.json
 python -m engine.build_replan                           # writes web/public/data/replan.json
+python -m engine.build_monthly                          # writes web/public/data/monthly.json
 cd web && npx tsx scripts/build-seed.ts                # refreshes the plan seed SQL
 ```
 
@@ -217,14 +226,16 @@ engine/
   replan.py     mid-week disruption: freeze the past, statutory first, least change
   benchmark.py  the scale ladder
   build_plan.py   CLI: the plan artefact
+  monthly.py    the month: which week each job goes in
   build_replan.py CLI: the replan artefact
+  build_monthly.py CLI: the month, week 1 checked, the rest rolled
 tools/          extract_traffic.py — published timetable → engine/core/traffic.py
 model_store/    the three promoted models and their cards
-tests/          171 tests — one per constraint, plus a doc-drift guard
+tests/          185 tests — one per constraint, plus a doc-drift guard
 supabase/
   migrations/   schema · row-level security · seed · credentials · approval chain
 web/
-  app/          /  /login  /dashboard  /planner  /plan  /replan  /audit  /method  /limits  /scale  /network
+  app/          /  /login  /dashboard  /planner  /monthly  /plan  /replan  /audit  /method  /limits  /scale  /network
   components/   charts · heat canvas · Gantt · corridor map · panels · approval · fingerprint
   lib/          db · session · plan · replan · fingerprint · railways · roles
   scripts/      build-seed · build-stations-csv · check-db · check-auth · check-fingerprint

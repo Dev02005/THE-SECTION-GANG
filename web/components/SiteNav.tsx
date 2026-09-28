@@ -19,6 +19,7 @@ import { useSession } from "@/lib/session";
 const WORK = [
   { href: "/dashboard", label: "Dashboard" },
   { href: "/planner", label: "Planner" },
+  { href: "/monthly", label: "Monthly" },
   { href: "/plan", label: "Block plan" },
   { href: "/replan", label: "Replan" },
   { href: "/audit", label: "Audit" },

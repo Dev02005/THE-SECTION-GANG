@@ -163,7 +163,23 @@ export default async function MethodPage() {
           </p>
         </DocSection>
 
-        <DocSection n="07" title="When the week does not go to plan">
+        <DocSection n="07" title="A month, then a week">
+          <p>
+            A month is planned a level up: which week each job goes in, and how
+            much corridor each section needs that week. It cannot see roads or
+            minutes, so it is held to the packing the weekly solver actually
+            achieves on a full week, and every rule it keeps is a coarse form of
+            a weekly one.
+          </p>
+          <p>
+            Then it is checked. Week 1&rsquo;s allocation goes to the weekly
+            solver unchanged; what does not fit to the minute rolls forward, and
+            the rest of the month is re-planned with it. The fit rate is shown,
+            not tuned away.
+          </p>
+        </DocSection>
+
+        <DocSection n="08" title="When the week does not go to plan">
           <p>
             A defect found mid-week is not priced like the backlog. It is{" "}
             <strong>required</strong>: either it is dealt with by its deadline

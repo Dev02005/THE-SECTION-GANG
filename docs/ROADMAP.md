@@ -185,6 +185,22 @@ running order, now with the replan and the fingerprint.
 
 ---
 
+## Phase 6 — the monthly horizon · DONE 28 Sep
+
+The problem statement asks for weekly **and** monthly plans; at least three
+of the 28 rivals had a monthly one and we had none. `/monthly` now allocates a
+month of backlog to weeks and checks itself against the weekly solver: week 1
+fits **60 of 66** to the minute, and the rest roll forward into a re-plan of
+weeks 2-4.
+
+**The first version was three times too optimistic**, and the check is what
+caught it: it assumed every crew could work in every block at once and put 103
+jobs into week 1, of which the weekly solver could place 66. Held instead to
+the packing the weekly solver achieves on a full week (1.2 work-hours per
+block-hour, measured), week 1 gets 66 and 60 fit. A second bug was in the
+explanation, not the plan: every deferral read "no room" while weeks 3 and 4
+stood half empty - most were priced out, and now say so.
+
 ## 28 Sep — the cleanup pass
 
 Asked for dead code and stale docs. What mattered more were four claims the

@@ -109,8 +109,8 @@ def build(
     #  `feasible_pair` drops any (task, window) the task could not fit into or
     #  could not finish by its due date. Both are already constraints, so this
     #  deletes no solution - but it deletes 51% of the variables on the
-    #  reference instance and 91% at division scale (re-measured 28 Sep), which is the difference
-    #  between a model that builds and one that does not.
+    #  reference instance and 91% at division scale (re-measured 28 Sep), which
+    #  is the difference between a model that builds and one that does not.
     x: dict[tuple[str, str], Any] = {}
     by_task: dict[str, list[str]] = {t.tid: [] for t in tasks}
     by_window: dict[str, list[str]] = {win.wid: [] for win in windows}
