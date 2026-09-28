@@ -38,9 +38,12 @@ const STATUS: Record<string, { label: string; className: string }> = {
 export function ApprovalPanel({
   record,
   refresh,
+  checksOk,
 }: {
   record: PlanState["record"];
   refresh: () => void;
+  /** A passing set of pre-approval checks that belongs to this plan. */
+  checksOk: boolean;
 }) {
   const { session } = useSession();
   const [busy, setBusy] = useState(false);
@@ -101,7 +104,8 @@ export function ApprovalPanel({
           {canSubmit && (
             <button
               type="button"
-              disabled={busy}
+              disabled={busy || !checksOk}
+              title={checksOk ? undefined : "Needs a passing set of pre-approval checks"}
               onClick={() =>
                 act(() => submitPlan(session.credential, record.id))
               }
@@ -125,7 +129,8 @@ export function ApprovalPanel({
             <>
               <button
                 type="button"
-                disabled={busy}
+                disabled={busy || !checksOk}
+                title={checksOk ? undefined : "Needs a passing set of pre-approval checks"}
                 onClick={() =>
                   act(() => decidePlan(session.credential, record.id, true))
                 }
@@ -145,6 +150,15 @@ export function ApprovalPanel({
           )}
         </span>
       </div>
+
+      {/*  Reject and reset stay open: a DRM must always be able to send back a
+           plan that fails. Only moving it FORWARD needs the checks.  */}
+      {(canSubmit || canDecide) && !checksOk && (
+        <p className="mt-2 text-[12px] leading-relaxed text-ink">
+          Submission and approval are held until this plan has a passing set of
+          pre-approval checks.
+        </p>
+      )}
 
       {/*  A rejection needs a reason. The database refuses one without it, so
            the field is not a formality - it is the same rule, shown early.  */}

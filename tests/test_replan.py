@@ -25,6 +25,7 @@ from engine.replan import (
     diff,
     freeze_past,
     replan,
+    urgent_job,
     usfd_flaw,
 )
 from engine.solver.build import build
@@ -216,3 +217,29 @@ def test_under_soft_rules_a_possible_flaw_is_done(instance, approved_soft, urgen
     r = replan(instance, approved_soft, urgent, AT, time_limit_s=25.0)
     u = next(t for t in r.plan.tasks if t.tid == URGENT_TID)
     assert u.scheduled and u.end is not None and u.end <= urgent.due_slot
+
+
+
+def test_an_emergency_traction_job_gets_a_power_block(instance, approved_soft):
+    """
+    Any activity can be the emergency, and it keeps its department's physical
+    rules: OHE work takes the section down, so the job must land in a
+    whole-section power block - never a single-road one.
+    """
+    sec = instance["sections"][0].sid
+    d = Disruption(AT, sec, Line.UP, 3 * SLOTS_DAY, "OHE fault")
+    job = urgent_job(instance, d, "TRD.OHE.CONTACT_WIRE")
+    assert job.needs_power_block and job.criticality is Criticality.A
+    r = replan(instance, approved_soft, job, AT, time_limit_s=25.0)
+    if r.plan.stats.status not in ("OPTIMAL", "FEASIBLE"):
+        pytest.skip("no window before the deadline on this instance")
+    placed = next(t for t in r.plan.tasks if t.tid == job.tid)
+    block = next(b for b in r.plan.blocks if b.wid == placed.window)
+    assert block.scope.value == "SECTION", f"OHE job in a {block.scope.value} block"
+
+
+def test_the_usfd_scenario_is_unchanged_by_the_generalisation(instance):
+    """usfd_flaw is now urgent_job with the USFD code - byte for byte the same job."""
+    d = Disruption(AT, instance["sections"][0].sid, Line.UP, SLOTS_DAY, "x")
+    assert usfd_flaw(instance, d) == urgent_job(instance, d)
+    assert usfd_flaw(instance, d).tid == URGENT_TID

@@ -339,6 +339,15 @@ this project does not have.
 
 ---
 
+### 7.1 Eight disruptions (`engine/build_replan.py`)
+
+`urgent_job` builds any activity in the vocabulary as the emergency, with its
+department's physical rules - a traction job needs a power block over the
+section, an S&T job a disconnection. The builder runs 8 of them against the
+approved week: three kinds of fault, on different sections, days and deadlines.
+One that cannot be met by its deadline would be kept and said plainly, with the
+resource that would make it possible; on this week all 8 are met.
+
 ## 8. The record and the application
 
 **Postgres is the system of record** (`supabase/migrations/`). Every table has
@@ -354,6 +363,12 @@ re-solve supersedes earlier plans rather than deleting them. Each plan carries
 a SHA-256 **fingerprint** of what it grants (`web/lib/fingerprint.ts`, one
 implementation for the seed and the browser), written into the audit log at
 submission and decision and printed on the document.
+
+**Pre-approval checks** (`engine/validate.py`). 12 checks re-verify the
+published plan - the artefact, not a re-solve - against every hard rule, sharing
+no code with the solver's model. `build_plan` refuses to write a plan that fails
+one; `build_checks` writes the result beside the plan, and the site holds Submit
+and Approve unless a passing set belongs to the plan on screen.
 
 **The web app** (`web/`) is static Next.js: `/dashboard`, `/planner` (the
 comparison - current practice above, the joint plan below, detention heat
@@ -382,6 +397,7 @@ user table of our own.
 | `test_placement.py` · `test_explain.py` · `test_pareto.py` | The bound's restriction travels with it; explanations quote only real numbers; dominated points are kept |
 | `test_replan.py` | Properties of any replan: the past frozen, the defect required, disruption minimal and reported as found |
 | `test_benchmark.py` | The variable filter is exact; larger instances keep contiguous, named sections |
+| `test_validate.py` | The shipped plan passes all checks, and each check fails when its one rule is broken on a copy of it |
 | `test_monthly.py` | Every job in a week it can be done; corridor, packing and resource limits held; one tower wagon never in two places; a job waits for its predecessor; deterministic |
 | `test_docs.py` | Numbers stated in the docs match the artefacts, including the test count itself |
 

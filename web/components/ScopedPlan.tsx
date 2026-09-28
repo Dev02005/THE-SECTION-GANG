@@ -8,6 +8,8 @@ import { ZoneDivisions } from "@/components/ZoneDivisions";
 import { ApprovalPanel } from "@/components/ApprovalPanel";
 import { NoPlanPanel } from "@/components/NoPlanPanel";
 import { PlanFingerprint } from "@/components/PlanFingerprint";
+import { PlanChecks } from "@/components/PlanChecks";
+import { checksClear, useChecks } from "@/lib/checks";
 import { asRole, useSession } from "@/lib/session";
 
 /**
@@ -38,6 +40,8 @@ export function ScopedPlan({
   children: (plan: PlanPayload) => ReactNode;
 }) {
   const { session } = useSession();
+  //  Called before any early return, as every hook must be.
+  const checks = useChecks();
   const role = asRole(session);
   //  Only a zonal post can move this. A divisional post is pinned to its own
   //  division inside the query, so the state exists but cannot do anything.
@@ -103,7 +107,7 @@ export function ScopedPlan({
            take on it. Above the plan because the status changes what the plan
            below it means: a draft is a proposal, an approved plan is a
            programme.  */}
-      <ApprovalPanel record={record} refresh={refresh} />
+      <ApprovalPanel record={record} refresh={refresh} checksOk={checksClear(checks, plan)} />
       {/*  Recomputed from the plan being drawn and checked against the record.
            No record at all - offline, or the artefact fallback - is passed as
            undefined, which the component states rather than hides.  */}
@@ -112,6 +116,9 @@ export function ScopedPlan({
         stored={record === null ? undefined : (record.plan_hash ?? null)}
         variant="panel"
       />
+      {/*  Re-run on the published plan, independently of the solver. Submit and
+           approve above are held unless this set passes and belongs here.  */}
+      <PlanChecks plan={plan} s={checks} />
       {source !== "database" && (
         <p className="mb-4 rounded border border-caution bg-caution-soft px-3 py-2 text-[12.5px] leading-relaxed text-ink print:hidden">
           {source === "artefact" ? (

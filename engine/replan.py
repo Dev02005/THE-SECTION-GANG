@@ -73,8 +73,14 @@ from engine.solver.extract import extract
 from engine.solver.model import _configure
 from engine.solver.objective import add_objective
 
-URGENT_TID = "ENGG-URG-01"
-_USFD = next(a for a in ACTIVITIES if a.code == "ENG.RAIL.USFD_FLAW")
+URGENT_TID = "ENGG-URG-01"  # the USFD flaw's id; other emergencies take their dept's
+USFD_FLAW = "ENG.RAIL.USFD_FLAW"
+_BY_CODE = {a.code: a for a in ACTIVITIES}
+
+
+def urgent_tid(dept: Department) -> str:
+    """One urgent job per replan; its id names the department that owns it."""
+    return f"{dept.value}-URG-01"
 
 
 @dataclass(frozen=True)
@@ -88,30 +94,43 @@ class Disruption:
     label: str
 
 
-def usfd_flaw(instance: dict[str, Any], d: Disruption) -> Task:
+def urgent_job(instance: dict[str, Any], d: Disruption, code: str = USFD_FLAW) -> Task:
     """
     The urgent job, built from the shared activity vocabulary and then priced by
     the same models as every other task - so its duration is the duration model's
     P90 for this activity on this section, not a number chosen for the demo.
+
+    Any activity in the vocabulary can be the emergency. It is always statutory
+    (it must be dealt with), and it carries its department's physical rules: a
+    traction job needs a power block over the section, an S&T job a disconnection.
     """
+    act = _BY_CODE[code]
     sec = next(s for s in instance["sections"] if s.sid == d.section)
+    p50 = max(1, round(act.p50_minutes / (1440 / SLOTS_DAY)))
     raw = Task(
-        tid=URGENT_TID,
-        dept=Department.ENGG,
+        tid=urgent_tid(act.dept),
+        dept=act.dept,
         section=d.section,
         line=d.line,
         km=round((sec.km_from + sec.km_to) / 2, 1),
-        activity=_USFD.label,
+        activity=act.label,
         criticality=Criticality.A,
-        p50=max(1, round(_USFD.p50_minutes / (1440 / SLOTS_DAY))),
-        p90=max(2, round(_USFD.p50_minutes / (1440 / SLOTS_DAY)) + 1),
+        p50=p50,
+        p90=max(2, p50 + 1),
         due_slot=d.at_slot + d.due_within_slots,
-        hazard=_USFD.base_hazard,
-        consequence=_USFD.consequence_minutes,
-        resources=dict(_USFD.resources),
+        hazard=act.base_hazard,
+        consequence=act.consequence_minutes,
+        resources=dict(act.resources),
+        needs_power_block=act.dept is Department.TRD,
+        needs_disconnection=act.dept is Department.SNT,
     )
     priced = price_instance({**instance, "tasks": [raw]})
     return priced["tasks"][0]
+
+
+def usfd_flaw(instance: dict[str, Any], d: Disruption) -> Task:
+    """The original scenario's job: a USFD rail flaw."""
+    return urgent_job(instance, d, USFD_FLAW)
 
 
 def freeze_past(mv: ModelVars, approved: Plan, at_slot: int) -> int:
@@ -341,7 +360,9 @@ def replan(
     )
 
 
-def diff(approved: Plan, replanned: Plan, at_slot: int) -> dict[str, Any]:
+def diff(
+    approved: Plan, replanned: Plan, at_slot: int, urgent_id: str = URGENT_TID
+) -> dict[str, Any]:
     """
     What the replan changed, in the terms a block meeting would use.
 
@@ -382,7 +403,7 @@ def diff(approved: Plan, replanned: Plan, at_slot: int) -> dict[str, Any]:
     dropped = sorted(w for w, b in a_blk.items() if b.start >= at_slot and w not in r_blk)
     added = sorted(w for w in r_blk if w not in a_blk)
 
-    urgent = r_task.get(URGENT_TID)
+    urgent = r_task.get(urgent_id)
 
     def det(p: Plan, after: bool) -> int:
         return sum(b.detention_minutes for b in p.blocks if (b.start >= at_slot) == after)

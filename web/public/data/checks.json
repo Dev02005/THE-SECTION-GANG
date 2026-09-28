@@ -1,0 +1,109 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-28T03:27:31+00:00",
+  "plan": {
+    "objective": 36639101,
+    "seed": 7,
+    "blocks": 18,
+    "generatedAt": "2026-09-27T19:20:45.884858+00:00"
+  },
+  "passed": true,
+  "checks": [
+    {
+      "id": "C1",
+      "name": "Every block inside its sanctioned window",
+      "passed": true,
+      "examined": 18,
+      "failed": 0,
+      "failures": []
+    },
+    {
+      "id": "C7",
+      "name": "One block per road at a time",
+      "passed": true,
+      "examined": 18,
+      "failed": 0,
+      "failures": []
+    },
+    {
+      "id": "PROT",
+      "name": "No block across a protected train",
+      "passed": true,
+      "examined": 18,
+      "failed": 0,
+      "failures": []
+    },
+    {
+      "id": "C2",
+      "name": "No empty block, no job half-placed",
+      "passed": true,
+      "examined": 90,
+      "failed": 0,
+      "failures": []
+    },
+    {
+      "id": "FIT",
+      "name": "Right section, road and scope for each job",
+      "passed": true,
+      "examined": 48,
+      "failed": 0,
+      "failures": []
+    },
+    {
+      "id": "C6",
+      "name": "Work inside protection and clearance",
+      "passed": true,
+      "examined": 48,
+      "failed": 0,
+      "failures": []
+    },
+    {
+      "id": "C4",
+      "name": "Every placed job done by its due date",
+      "passed": true,
+      "examined": 48,
+      "failed": 0,
+      "failures": []
+    },
+    {
+      "id": "C8",
+      "name": "Machines and gangs never double-booked",
+      "passed": true,
+      "examined": 6,
+      "failed": 0,
+      "failures": []
+    },
+    {
+      "id": "C9",
+      "name": "At most 2 blocks per section per day",
+      "passed": true,
+      "examined": 16,
+      "failed": 0,
+      "failures": []
+    },
+    {
+      "id": "C10",
+      "name": "At most 4 night blocks per section per week",
+      "passed": true,
+      "examined": 3,
+      "failed": 0,
+      "failures": []
+    },
+    {
+      "id": "C11",
+      "name": "Predecessors finish first",
+      "passed": true,
+      "examined": 0,
+      "failed": 0,
+      "failures": []
+    },
+    {
+      "id": "STAT",
+      "name": "Every statutory job left out is declared, with its reason",
+      "passed": true,
+      "examined": 5,
+      "failed": 0,
+      "failures": []
+    }
+  ]
+}

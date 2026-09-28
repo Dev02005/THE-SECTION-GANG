@@ -204,6 +204,21 @@ export default async function MethodPage() {
           </p>
         </DocSection>
 
+        <DocSection n="09" title="Checked before it can be approved">
+          <p>
+            A solver can be wrong in a way its own output cannot show: a rule
+            posted slightly wrongly is simply not a rule. So the plan is checked
+            again, afterwards, by code that never saw the model &mdash; 12 checks,
+            one per hard rule, run on the published plan itself.
+          </p>
+          <p>
+            A plan that fails any of them is never written, and the approval
+            panel holds Submit and Approve unless a passing set belongs to the
+            plan on screen. A check with nothing to examine says so, rather than
+            wearing a pass it did not earn.
+          </p>
+        </DocSection>
+
         <p className="mt-12 border-t border-rule pt-6 text-[14px] leading-relaxed text-ink-mut">
           What this method does <em>not</em> establish is set out on the{" "}
           <a href="/limits" className="text-accent underline underline-offset-2">

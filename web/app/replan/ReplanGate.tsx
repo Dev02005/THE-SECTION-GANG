@@ -3,7 +3,7 @@
 import { ReplanView } from "@/components/ReplanView";
 import { ScopedPlan } from "@/components/ScopedPlan";
 import type { PlanPayload } from "@/lib/plan";
-import type { ReplanPayload } from "@/lib/replan";
+import type { ReplanSet } from "@/lib/replan";
 
 /**
  * The client boundary, as for every page behind `ScopedPlan` - a render prop
@@ -18,7 +18,7 @@ export function ReplanGate({
   replan,
 }: {
   fallback: PlanPayload;
-  replan: ReplanPayload | null;
+  replan: ReplanSet | null;
 }) {
   return (
     <ScopedPlan fallback={fallback}>

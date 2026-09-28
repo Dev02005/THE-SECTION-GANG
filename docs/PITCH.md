@@ -136,7 +136,8 @@ The dials are not a gimmick; this is the price list.
 
 ## 6:00 — When the week does not go to plan
 
-Open `/replan`. A USFD flaw is found on SEC-02 on Wednesday morning, it must
+Open `/replan`. There are 8 disruptions to pick from - let a judge choose one.
+The featured one: a USFD flaw is found on SEC-02 on Wednesday morning, it must
 be removed within 24 hours, and Thursday is a blackout day.
 
 > Blocks already worked are frozen as they ran. Then, in order: keep every
@@ -227,6 +228,12 @@ because the defensible claim is the floor.
 No. It does not touch signalling or interlocking, it does not grant blocks, and
 no output is safety-critical in the interlocking sense. It produces the proposal
 the divisional block meeting reviews and amends.
+
+**"How do I know the plan is safe to approve?"**
+Open the pre-approval checks on the planner: 12 of them, one per hard rule, run on
+the published plan by code that never saw the solver's model. A plan that fails
+one is never written, and Submit and Approve stay held without a passing set.
+*They are our model's rules, not G&SR citations - and we say so on the card.*
 
 **"How do I know the numbers are real?"**
 One scoring function, one instance, both sides. There is a test asserting the

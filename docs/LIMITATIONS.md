@@ -281,8 +281,8 @@ same seven names, and a test fails if the two lists disagree.
 - **Continuous replanning.** The replanner is built and works on one
   disruption at a time: `/replan` re-solves a mid-week USFD flaw with the past
   frozen, statutory work kept first and the fewest approved jobs changed, and
-  names the resource that would have avoided the cost. It runs offline and the
-  scenario is precomputed. What is NOT built is the loop around it - watching
+  names the resource that would have avoided the cost. It runs offline: 8
+  scenarios are precomputed and offered as a choice. What is NOT built is the loop around it - watching
   a defect feed and re-solving on its own as things happen. That needs the
   feeds this project does not have.
 - **Serving the plan only from the database.** The credential check and the
@@ -348,6 +348,20 @@ not change it. What it does and does not establish:
   security entirely, and could rewrite the plan, its hash and the log
   together. The copy outside our control is the printed one, which is why the
   fingerprint is printed.
+
+**The pre-approval checks** re-verify the published plan against 12 hard rules,
+independently of the solver, and gate both `build_plan` and the site's Submit
+and Approve. What they do and do not establish:
+
+- They check the plan against **this model's rules**. Those are named the way a
+  division says them and have not been checked against the General and
+  Subsidiary Rules, so they are not presented as G&SR citations.
+- They are enforced by the engine and by the application - **not yet by the
+  database**. `decide_plan` does not re-run them, so a post calling the database
+  directly could approve a plan the site would hold.
+- One check examines nothing on this plan: no job in the generated backlog has a
+  predecessor, so "predecessors finish first" reports *none to check* rather
+  than a pass it did not earn. It is still tested, on a plan with one.
 
 ---
 

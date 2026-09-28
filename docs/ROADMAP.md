@@ -201,6 +201,21 @@ block-hour, measured), week 1 gets 66 and 60 fit. A second bug was in the
 explanation, not the plan: every deferral read "no room" while weeks 3 and 4
 stood half empty - most were priced out, and now say so.
 
+## Phase 7 — checked before approval, and a choice of disruptions · DONE 28 Sep
+
+Two of rail-bloc's visible advantages, closed without changing a number:
+
+- **Pre-approval checks.** 12 checks re-verify the published plan, independently
+  of the solver, and gate both `build_plan` and Submit / Approve. rail-bloc
+  labels five of its ten checks "G&SR-1..5"; ours are named the way a division
+  speaks and deliberately not presented as rulebook citations. Verified both
+  ways in the browser: 12 of 12 pass and Submit is enabled; one check failed on
+  purpose and Submit is held, with the failure named.
+- **Choose a disruption.** 8 precomputed disruptions - rail flaws, S&T
+  failures, OHE faults - instead of one. All 8 are met; 3 cost a statutory
+  job, and in 2 of those the fix is one more tower wagon: the same bottleneck
+  the weekly shortfall names. The original scenario is rebuilt byte-for-byte.
+
 ## 28 Sep — the cleanup pass
 
 Asked for dead code and stale docs. What mattered more were four claims the

@@ -1,20 +1,21 @@
 import type { PlanBlock, PlanPayload } from "./plan";
 
 /**
- * The precomputed replan, as `engine/build_replan.py` wrote it.
+ * The precomputed replans, as `engine/build_replan.py` wrote them: eight
+ * disruptions against the approved week, each solved by the same replanner.
  *
  * Kept in its own file beside plan.json rather than inside it, so the approved
- * plan, its fingerprint and the seeded database are all left untouched by the
- * scenario.
+ * plan, its fingerprint and the seeded database are all left untouched.
  *
  * Types and the match rule only - no filesystem - so the browser can import it.
  * The loader lives in loadReplan.ts, as the plan's does in loadPlan.ts.
  */
-export interface ReplanPayload {
-  schemaVersion: number;
-  generatedAt: string;
-  /** Identifies the approved plan this replan is OF. */
-  approved: { objective: number; seed: number; blocks: number };
+export interface ReplanScenario {
+  id: string;
+  /** "USFD rail flaw · SEC-02 · Wed 06:00" */
+  title: string;
+  /** Whether the job could be dealt with by its deadline at all. */
+  feasible: boolean;
   disruption: {
     atSlot: number;
     atLabel: string;
@@ -48,6 +49,7 @@ export interface ReplanPayload {
     frozenBlocks: number;
     wallTimeS: number;
   };
+  /** Null when the job cannot be dealt with in time: there is no replan to diff. */
   diff: {
     executed: string[];
     kept: string[];
@@ -59,7 +61,7 @@ export interface ReplanPayload {
     tasksPickedUp: string[];
     detentionAhead: { approved: number; replanned: number };
     statutory: { approved: [number, number]; replanned: [number, number] };
-  };
+  } | null;
   lost: {
     tid: string;
     activity: string;
@@ -74,25 +76,35 @@ export interface ReplanPayload {
     resource: string;
     from: number;
     to: number;
+    feasible: boolean;
     statutoryKept: number | null;
     minChanges: number | null;
     lost: string[];
+    /** Met deadline: it loses less. Missed deadline: it makes the job possible. */
     avoidsTheLoss: boolean;
   }[];
-  blackoutDays: string[];
   replannedBlocks: PlanBlock[];
 }
 
+export interface ReplanSet {
+  schemaVersion: number;
+  generatedAt: string;
+  /** Identifies the approved plan these replans are OF. */
+  approved: { objective: number; seed: number; blocks: number };
+  blackoutDays: string[];
+  featured: string;
+  scenarios: ReplanScenario[];
+}
+
 /**
- * Whether this replan is a replan OF this plan.
+ * Whether these replans are replans OF this plan.
  *
- * The replan is precomputed against one specific approved week. Showing it
- * beside any other plan - a re-solve, another division's, a stale file after
- * a rebuild - would present a disruption response to a plan it was never
- * computed for. The objective and seed identify the exact solve; both have to
- * match, or the page says the scenario belongs to a different plan.
+ * Each is precomputed against one specific approved week. Showing them beside
+ * any other plan - a re-solve, another division's, a stale file after a
+ * rebuild - would present disruption responses to a plan they were never
+ * computed for. The objective and seed identify the exact solve.
  */
-export function replanMatches(r: ReplanPayload, plan: PlanPayload): boolean {
+export function replanMatches(r: ReplanSet, plan: PlanPayload): boolean {
   return (
     r.approved.objective === plan.solver.objective &&
     r.approved.seed === plan.provenance.seed

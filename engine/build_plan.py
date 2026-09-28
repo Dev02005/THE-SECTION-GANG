@@ -22,6 +22,7 @@ from engine.models.pricing import price_instance
 from engine.pareto import sweep
 from engine.solver.model import solve
 from engine.solver.placement import placement_optimality
+from engine.validate import all_passed, check_plan
 
 
 def main() -> None:
@@ -116,10 +117,18 @@ def main() -> None:
             f"{len(good)} non-dominated"
         )
 
-    path = write(
-        build_payload(optimised, baseline, instance, placement, pareto),
-        Path(args.out),
-    )
+    payload = build_payload(optimised, baseline, instance, placement, pareto)
+    #  The pre-approval checks run on the artefact itself, independently of the
+    #  solver. A plan that fails any of them is never written - so no failing
+    #  plan can reach the site or the database seed.
+    checks = check_plan(payload, instance)
+    if not all_passed(checks):
+        failed = [f"{c['id']} {c['name']}: {c['failures']}"
+                  for c in checks if not c["passed"]]
+        raise SystemExit("plan fails its pre-approval checks - not written: "
+                         + "; ".join(failed))
+    print(f"  pre-approval checks: {len(checks)} of {len(checks)} pass")
+    path = write(payload, Path(args.out))
     size_kb = path.stat().st_size / 1024
     print(f"\n  artefact written: {path}  ({size_kb:.0f} KB)")
 

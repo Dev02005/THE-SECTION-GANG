@@ -116,6 +116,17 @@ recorded as it was approved. The planner recomputes it from the plan on screen
 and says plainly if the two ever disagree. Status and approver fields are
 outside the hash, so moving through the approval chain does not change it.
 
+**Checked before it can move.** 12 pre-approval checks re-verify the published
+plan against every hard rule - one block per road at a time, no block across a
+protected train, machines and gangs never double-booked, work inside protection
+and clearance, every job by its due date, the per-day and night limits, every
+statutory job left out declared with its reason. They run on the artefact
+itself and share no code with the solver's model, so a bug in how a constraint
+was posted cannot hide from them. `build_plan` refuses to write a plan that
+fails one, and the site holds Submit and Approve unless a passing set belongs
+to the plan on screen. They are this model's rules, named the way a division
+says them - not General and Subsidiary Rules citations.
+
 **When the week does not go to plan** — `/replan`. A USFD flaw found on
 Wednesday morning must be removed within 24 hours, and Thursday is a blackout
 day. The replan freezes what has already run, then, in order: keeps every
@@ -124,8 +135,11 @@ shipped week the flaw goes into a block already granted, 7 of 10 approved
 blocks are untouched, and one statutory job is deferred — proven unavoidable.
 It then re-solves with one more of each resource the flaw needs: **one more
 gang and nothing is lost, with no approved job changed at all**; one more USFD
-unit does not help. One disruption, precomputed offline; live replanning is not
-built.
+unit does not help. That is one of **8 disruptions to choose from** on the
+page - rail flaws, S&T failures and OHE faults, on different sections, days and
+deadlines, each re-solved by the same replanner and none tuned. All 8 are dealt
+with in time; 3 cost a statutory job, and in 2 of those 3 the fix is one
+more tower wagon. Precomputed offline; live replanning is not built.
 
 **Weekly and monthly** — `/monthly`. The month allocates 360 jobs to weeks
 (66 · 62 · 30 · 5 jobs in weeks 1-4) with all 139 statutory jobs placed, and then checks
@@ -175,10 +189,11 @@ needs step 2.
 
 ```bash
 pip install -r requirements.txt
-python -m pytest tests -q                              # 185 tests
+python -m pytest tests -q                              # 204 tests
 python -m engine.build_plan --tasks 90 --time 90       # writes web/public/data/plan.json
 python -m engine.build_replan                           # writes web/public/data/replan.json
 python -m engine.build_monthly                          # writes web/public/data/monthly.json
+python -m engine.build_checks                           # writes web/public/data/checks.json
 cd web && npx tsx scripts/build-seed.ts                # refreshes the plan seed SQL
 ```
 
@@ -222,6 +237,7 @@ engine/
   baseline/     current-practice simulation · KPIs
   export/       plan_json — the artefact the web app loads
   explain.py    per-block explanations
+  validate.py   pre-approval checks - independent of the solver
   pareto.py     the policy-dial sweep
   replan.py     mid-week disruption: freeze the past, statutory first, least change
   benchmark.py  the scale ladder
@@ -229,9 +245,10 @@ engine/
   monthly.py    the month: which week each job goes in
   build_replan.py CLI: the replan artefact
   build_monthly.py CLI: the month, week 1 checked, the rest rolled
+  build_checks.py  CLI: the checks, run on the published plan
 tools/          extract_traffic.py — published timetable → engine/core/traffic.py
 model_store/    the three promoted models and their cards
-tests/          185 tests — one per constraint, plus a doc-drift guard
+tests/          204 tests — one per constraint, plus a doc-drift guard
 supabase/
   migrations/   schema · row-level security · seed · credentials · approval chain
 web/

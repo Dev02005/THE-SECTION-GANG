@@ -217,7 +217,9 @@ def test_readme_replan_claims_match_the_artefact(readme: str) -> None:
     """
     if not REPLAN.exists():
         pytest.skip("replan.json not built - run python -m engine.build_replan")
-    r = json.loads(REPLAN.read_text(encoding="utf-8"))
+    data = json.loads(REPLAN.read_text(encoding="utf-8"))
+    #  The README describes the FEATURED disruption; the page offers the rest.
+    r = next(s for s in data["scenarios"] if s["id"] == data["featured"])
     d = r["diff"]
     total = len(d["kept"]) + len(d["changed"]) + len(d["dropped"])
     assert f"{len(d['kept'])} of {total} approved" in readme, (
@@ -439,3 +441,25 @@ def test_monthly_claims_match_the_artefact() -> None:
     assert f"{t['statutoryPlaced']} of {t['statutoryTotal']}" in lim
     slipped = sum(x["criticality"] == "A" for x in h["misses"])
     assert f"{slipped} slip" in lim, "LIMITATIONS must say how many statutory jobs slip"
+
+
+CHECKS = ROOT / "web" / "public" / "data" / "checks.json"
+
+
+def test_checks_and_disruption_claims_match_the_artefacts(readme: str) -> None:
+    """
+    The README states how many pre-approval checks there are and how many
+    disruptions the replan page offers. Add a check or a scenario and forget
+    the prose, and this fails.
+    """
+    if not (CHECKS.exists() and REPLAN.exists()):
+        pytest.skip("checks.json or replan.json not built")
+    checks = json.loads(CHECKS.read_text(encoding="utf-8"))["checks"]
+    scenarios = json.loads(REPLAN.read_text(encoding="utf-8"))["scenarios"]
+    text = _flat(readme).replace("**", "")
+    assert f"{len(checks)} pre-approval checks" in text, "README check count is stale"
+    assert f"{len(scenarios)} disruptions to choose from" in text, (
+        "README disruption count is stale"
+    )
+    costly = [s for s in scenarios if s["lost"]]
+    assert f"{len(costly)} cost a statutory job" in text
